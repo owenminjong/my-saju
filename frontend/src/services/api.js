@@ -33,6 +33,22 @@ export const adminAPI = {
     createProduct: (data) => api.post('/admin/products', data),
     updateProduct: (id, data) => api.put(`/admin/products/${id}`, data),
     deleteProduct: (id) => api.delete(`/admin/products/${id}`),
+
+    // API Keys 관리
+    getApiKeys: () => api.get('/admin/api-keys'),
+    getApiKeyDetail: (id) => api.get(`/admin/api-keys/${id}`),
+    upsertApiKey: (data) => api.post('/admin/api-keys', data),
+    toggleApiKey: (id, is_active) => api.patch(`/admin/api-keys/${id}/toggle`, { is_active }),
+    deleteApiKey: (id) => api.delete(`/admin/api-keys/${id}`),
+
+
+};
+
+// 결제 API 추가
+export const paymentAPI = {
+    prepare: (data) => api.post('/payment/prepare', data),
+    verify: (data) => api.post('/payment/verify', data),
+    cancel: (data) => api.post('/payment/cancel', data),
 };
 
 export default api;

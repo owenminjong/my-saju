@@ -17,11 +17,15 @@ const adminDashboardRoutes = require('./routes/admin/dashboard');
 const adminUsersRoutes = require('./routes/admin/users');
 const adminPromptsRoutes = require('./routes/admin/prompts');
 const adminProductsRoutes = require('./routes/admin/products');
+const adminApiKeysRoutes = require('./routes/admin/apiKeys');
+const paymentRoutes = require('./routes/payment');
 
 app.use('/api/admin/dashboard', adminDashboardRoutes);
 app.use('/api/admin/users', adminUsersRoutes);
 app.use('/api/admin/prompts', adminPromptsRoutes);
 app.use('/api/admin/products', adminProductsRoutes);
+app.use('/api/admin/api-keys', adminApiKeysRoutes);
+app.use('/api/payment', paymentRoutes);
 
 // 테스트 라우트
 app.get('/', (req, res) => {

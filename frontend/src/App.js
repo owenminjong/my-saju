@@ -5,6 +5,8 @@ import UsersPage from './pages/admin/UsersPage';
 import PromptsPage from './pages/admin/PromptsPage';
 import ProductsPage from './pages/admin/ProductsPage';
 import UserDetailPage from './pages/admin/UserDetailPage';
+import ApiKeysPage from './pages/admin/ApiKeysPage';
+import PaymentTestPage from './pages/PaymentTestPage';
 
 function App() {
   return (
@@ -27,6 +29,12 @@ function App() {
                   <Link to="/products" className="flex items-center px-3 py-2 text-gray-700 hover:text-gray-900">
                     상품 관리
                   </Link>
+                  <Link to="/api-keys" className="flex items-center px-3 py-2 text-gray-700 hover:text-gray-900">
+                    API Keys
+                  </Link>
+                  <Link to="/payment-test" className="flex items-center px-3 py-2 text-gray-700 hover:text-gray-900">
+                    결제 테스트
+                  </Link>
                 </div>
               </div>
             </div>
@@ -34,13 +42,16 @@ function App() {
 
           {/* 라우트 */}
           <Routes>
+            {/* 관리자 페이지 */}
             <Route path="/" element={<DashboardPage />} />
             <Route path="/users" element={<UsersPage />} />
+            <Route path="/users/:id" element={<UserDetailPage />} />
             <Route path="/prompts" element={<PromptsPage />} />
             <Route path="/products" element={<ProductsPage />} />
-            <Route path="/users/:id" element={<UserDetailPage />} />
+            <Route path="/api-keys" element={<ApiKeysPage />} />
 
-            {/* 나머지 라우트는 나중에 추가 */}
+            {/* 결제 테스트 페이지 */}
+            <Route path="/payment-test" element={<PaymentTestPage />} />
           </Routes>
         </div>
       </Router>
