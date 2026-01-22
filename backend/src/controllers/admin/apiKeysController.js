@@ -1,27 +1,32 @@
 const { pool } = require('../../config/database');
 const { encrypt, decrypt } = require('../../utils/encryption');
 
-// API 키 목록 조회
+// API 키 목록 조회 (카테고리별)
 exports.getApiKeys = async (req, res) => {
     try {
+        const { category } = req.query; // 'ai', 'payment', 'social'
         const connection = await pool.getConnection();
 
-        const [apiKeys] = await connection.query(
-            'SELECT id, service_name, is_active, created_at, updated_at FROM api_keys ORDER BY service_name'
-        );
+        let whereClause = 'WHERE 1=1';
+        const params = [];
 
-        // API 키는 마스킹 처리
-        const maskedKeys = apiKeys.map(key => ({
-            ...key,
-            api_key_masked: '********************',
-            has_key: false // 실제로는 키 존재 여부 체크
-        }));
+        if (category) {
+            whereClause += ' AND category = ?';
+            params.push(category);
+        }
+
+        const [apiKeys] = await connection.query(
+            `SELECT id, service_name, provider, category, is_active, created_at, updated_at 
+       FROM api_keys ${whereClause} 
+       ORDER BY category, service_name`,
+            params
+        );
 
         connection.release();
 
         res.json({
             success: true,
-            data: maskedKeys
+            data: apiKeys
         });
 
     } catch (error) {
@@ -75,12 +80,12 @@ exports.getApiKey = async (req, res) => {
 // API 키 생성/수정
 exports.upsertApiKey = async (req, res) => {
     try {
-        const { service_name, api_key, is_active } = req.body;
+        const { id, service_name, provider, category, api_key, is_active } = req.body;
 
-        if (!service_name || !api_key) {
+        if (!service_name || !api_key || !category) {
             return res.status(400).json({
                 success: false,
-                message: '서비스명과 API 키는 필수입니다.'
+                message: '서비스명, 카테고리, API 키는 필수입니다.'
             });
         }
 
@@ -89,24 +94,44 @@ exports.upsertApiKey = async (req, res) => {
 
         const connection = await pool.getConnection();
 
-        // UPSERT (있으면 업데이트, 없으면 생성)
-        const [result] = await connection.query(
-            `INSERT INTO api_keys (service_name, api_key, is_active) 
-       VALUES (?, ?, ?)
-       ON DUPLICATE KEY UPDATE 
-       api_key = VALUES(api_key),
-       is_active = VALUES(is_active),
-       updated_at = CURRENT_TIMESTAMP`,
-            [service_name, encryptedKey, is_active !== undefined ? is_active : true]
-        );
+        if (id) {
+            // 수정
+            const [result] = await connection.query(
+                `UPDATE api_keys 
+         SET api_key = ?, is_active = ?, updated_at = CURRENT_TIMESTAMP
+         WHERE id = ?`,
+                [encryptedKey, is_active !== undefined ? is_active : true, id]
+            );
 
-        connection.release();
+            connection.release();
 
-        res.json({
-            success: true,
-            message: 'API 키가 저장되었습니다.',
-            data: { id: result.insertId || result.affectedRows }
-        });
+            if (result.affectedRows === 0) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'API 키를 찾을 수 없습니다.'
+                });
+            }
+
+            res.json({
+                success: true,
+                message: 'API 키가 수정되었습니다.'
+            });
+        } else {
+            // 생성
+            const [result] = await connection.query(
+                `INSERT INTO api_keys (service_name, provider, category, api_key, is_active) 
+         VALUES (?, ?, ?, ?, ?)`,
+                [service_name, provider, category, encryptedKey, is_active !== undefined ? is_active : true]
+            );
+
+            connection.release();
+
+            res.status(201).json({
+                success: true,
+                message: 'API 키가 생성되었습니다.',
+                data: { id: result.insertId }
+            });
+        }
 
     } catch (error) {
         console.error('API 키 저장 오류:', error);
@@ -117,7 +142,7 @@ exports.upsertApiKey = async (req, res) => {
     }
 };
 
-// API 키 활성화/비활성화 토글
+// 나머지 함수들은 동일...
 exports.toggleApiKey = async (req, res) => {
     try {
         const { id } = req.params;
@@ -153,7 +178,6 @@ exports.toggleApiKey = async (req, res) => {
     }
 };
 
-// API 키 삭제
 exports.deleteApiKey = async (req, res) => {
     try {
         const { id } = req.params;

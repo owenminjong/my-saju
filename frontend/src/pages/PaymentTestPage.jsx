@@ -86,12 +86,6 @@ function PaymentTestPage() {
                     <p className="text-sm text-blue-800">
                         ℹ️ <strong>나이스페이 테스트 모드입니다.</strong>
                     </p>
-                    <p className="text-sm text-blue-700 mt-2">
-                        <strong>테스트 카드번호:</strong> 5465-1234-5678-9012
-                    </p>
-                    <p className="text-sm text-blue-700">
-                        <strong>유효기간:</strong> 12/25 / <strong>CVC:</strong> 123 / <strong>비밀번호:</strong> 00
-                    </p>
                 </div>
 
                 {/* 상품 목록 */}
@@ -126,33 +120,6 @@ function PaymentTestPage() {
                         <span className="text-sm">관리자 페이지에서 상품을 추가해주세요.</span>
                     </div>
                 )}
-
-                {/* 결제 테스트 가이드 */}
-                <div className="mt-8 bg-white rounded-lg shadow p-6">
-                    <h2 className="text-xl font-bold mb-4">💳 결제 테스트 가이드</h2>
-                    <div className="space-y-3 text-sm text-gray-700">
-                        <div className="flex items-start gap-2">
-                            <span className="font-bold min-w-[20px]">1.</span>
-                            <span>위 상품 중 하나를 선택하고 "결제하기" 클릭</span>
-                        </div>
-                        <div className="flex items-start gap-2">
-                            <span className="font-bold min-w-[20px]">2.</span>
-                            <div>
-                                <div>결제창에서 테스트 카드 정보 입력:</div>
-                                <div className="mt-2 bg-gray-50 p-3 rounded">
-                                    <div>카드번호: <code className="bg-white px-2 py-1 rounded">5465-1234-5678-9012</code></div>
-                                    <div>유효기간: <code className="bg-white px-2 py-1 rounded">12/25</code></div>
-                                    <div>CVC: <code className="bg-white px-2 py-1 rounded">123</code></div>
-                                    <div>비밀번호: <code className="bg-white px-2 py-1 rounded">00</code></div>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="flex items-start gap-2">
-                            <span className="font-bold min-w-[20px]">3.</span>
-                            <span>결제 완료 후 관리자 페이지 → 회원 관리 → 회원 상세에서 주문 내역 확인</span>
-                        </div>
-                    </div>
-                </div>
             </div>
         </div>
     );
