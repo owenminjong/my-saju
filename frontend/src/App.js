@@ -8,7 +8,8 @@ import UserDetailPage from './pages/admin/UserDetailPage';
 import ApiKeysPage from './pages/admin/ApiKeysPage';
 import PaymentTestPage from './pages/PaymentTestPage';
 
-// 사주 서비스 페이지
+// 🏠 메인 & 사주 서비스 페이지
+import MainPage from './pages/MainPage';
 import SajuInput from './pages/SajuInput';
 import SajuResult from './pages/SajuResult';
 
@@ -38,7 +39,7 @@ function AdminNav() {
                 결제 테스트
               </Link>
               <Link to="/" className="flex items-center px-3 py-2 text-blue-600 hover:text-blue-800 font-semibold">
-                🔮 사주 서비스로
+                🏠 메인으로
               </Link>
             </div>
           </div>
@@ -65,8 +66,11 @@ function App() {
       <Router>
         <Layout>
           <Routes>
-            {/* 🔮 사주 서비스 (메인) */}
-            <Route path="/" element={<SajuInput />} />
+            {/* 🏠 메인 페이지 */}
+            <Route path="/" element={<MainPage />} />
+
+            {/* 🔮 사주 서비스 */}
+            <Route path="/saju-input" element={<SajuInput />} />
             <Route path="/result" element={<SajuResult />} />
 
             {/* 🔧 관리자 페이지 */}
