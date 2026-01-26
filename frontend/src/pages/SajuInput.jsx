@@ -5,42 +5,48 @@ import { analyzeSaju } from '../services/sajuApi';
 function SajuInput() {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
+    const [currentStep, setCurrentStep] = useState(1);
     const [formData, setFormData] = useState({
         name: '',
         birthDate: '',
         isLunar: false,
-        timeOption: 'select', // ✅ select로 변경
-        selectedTime: '', // ✅ 빈 값으로 시작
+        gender: '',
+        mbti: '',
+        timeOption: 'select',
+        selectedTime: '',
         hour: '0',
         minute: '0'
     });
 
+    // MBTI 16가지 옵션
+    const mbtiOptions = [
+        'ISTJ', 'ISFJ', 'INFJ', 'INTJ',
+        'ISTP', 'ISFP', 'INFP', 'INTP',
+        'ESTP', 'ESFP', 'ENFP', 'ENTP',
+        'ESTJ', 'ESFJ', 'ENFJ', 'ENTJ'
+    ];
+
     // 십이지 시간대 옵션
     const timeOptions = [
         { label: '시간 모름', hour: 0, isUnknown: true },
-        { label: '子/자/鼠 (00:00~01:29)', hour: 0 },
-        { label: '丑/축/牛 (01:30~03:29)', hour: 1 },
-        { label: '寅/인/虎 (03:30~05:29)', hour: 3 },
-        { label: '卯/묘/兔 (05:30~07:29)', hour: 5 },
-        { label: '辰/진/龍 (07:30~09:29)', hour: 7 },
-        { label: '巳/사/蛇 (09:30~11:29)', hour: 9 },
-        { label: '午/오/馬 (11:30~13:29)', hour: 11 },
-        { label: '未/미/羊 (13:30~15:29)', hour: 13 },
-        { label: '申/신/猴 (15:30~17:29)', hour: 15 },
-        { label: '酉/유/鷄 (17:30~19:29)', hour: 17 },
-        { label: '戌/술/犬 (19:30~21:29)', hour: 19 },
-        { label: '亥/해/猪 (21:30~23:29)', hour: 21 },
-        { label: '子/자/鼠 (23:30~23:59)', hour: 23 }
+        { label: '子시 자시 쥐 (23:30~01:29)', hour: 0 },
+        { label: '丑시 축시 소 (01:30~03:29)', hour: 1 },
+        { label: '寅시 인시 호랑이 (03:30~05:29)', hour: 3 },
+        { label: '卯시 묘시 토끼 (05:30~07:29)', hour: 5 },
+        { label: '辰시 진시 용 (07:30~09:29)', hour: 7 },
+        { label: '巳시 사시 뱀 (09:30~11:29)', hour: 9 },
+        { label: '午시 오시 말 (11:30~13:29)', hour: 11 },
+        { label: '未시 미시 양 (13:30~15:29)', hour: 13 },
+        { label: '申시 신시 원숭이 (15:30~17:29)', hour: 15 },
+        { label: '酉시 유시 닭 (17:30~19:29)', hour: 17 },
+        { label: '戌시 술시 개 (19:30~21:29)', hour: 19 },
+        { label: '亥시 해시 돼지 (21:30~23:29)', hour: 21 }
     ];
 
-    // 생년월일 입력 처리 (자동 포맷팅)
+    // 생년월일 입력 처리
     const handleBirthDateChange = (e) => {
         let value = e.target.value;
-
-        // . 제거하고 숫자만 추출
         const numbers = value.replace(/\D/g, '');
-
-        // 자동 포맷팅
         let formatted = numbers;
         if (numbers.length >= 5) {
             formatted = numbers.slice(0, 4) + '.' + numbers.slice(4);
@@ -51,25 +57,13 @@ function SajuInput() {
         if (numbers.length > 8) {
             formatted = numbers.slice(0, 4) + '.' + numbers.slice(4, 6) + '.' + numbers.slice(6, 8);
         }
-
         setFormData(prev => ({ ...prev, birthDate: formatted }));
-    };
-
-    // 시간 옵션 변경
-    const handleTimeOptionChange = (option) => {
-        setFormData(prev => ({
-            ...prev,
-            timeOption: option,
-            hour: option === 'unknown' ? '0' : prev.hour,
-            minute: option === 'unknown' ? '0' : prev.minute
-        }));
     };
 
     // 십이지 시간 선택
     const handleTimeSelect = (e) => {
         const value = e.target.value;
         const selected = timeOptions.find(opt => opt.label === value);
-
         if (!selected) return;
 
         if (selected.isUnknown) {
@@ -91,17 +85,36 @@ function SajuInput() {
         }
     };
 
+    // 다음 단계
+    const nextStep = () => {
+        if (currentStep === 1 && !formData.name.trim()) {
+            alert('이름을 입력해주세요.');
+            return;
+        }
+        if (currentStep === 2 && !formData.birthDate) {
+            alert('생년월일을 입력해주세요.');
+            return;
+        }
+        if (currentStep === 3 && !formData.gender) {
+            alert('성별을 선택해주세요.');
+            return;
+        }
+        if (currentStep === 4 && !formData.mbti) {
+            alert('MBTI를 선택해주세요.');
+            return;
+        }
+        setCurrentStep(prev => prev + 1);
+    };
+
+    // 이전 단계
+    const prevStep = () => {
+        setCurrentStep(prev => prev - 1);
+    };
+
     // 폼 제출
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        // 유효성 검사
-        if (!formData.name.trim()) {
-            alert('이름을 입력해주세요.');
-            return;
-        }
-
-        // 생년월일 파싱
         const dateParts = formData.birthDate.split('.');
         if (dateParts.length !== 3) {
             alert('생년월일을 올바른 형식(YYYY.MM.DD)으로 입력해주세요.');
@@ -127,12 +140,12 @@ function SajuInput() {
                 day,
                 hour: parseInt(formData.hour),
                 minute: parseInt(formData.minute),
-                isLunar: formData.isLunar
+                isLunar: formData.isLunar,
+                gender: formData.gender,
+                mbti: formData.mbti
             };
 
             const response = await analyzeSaju(requestData);
-
-            // 결과 페이지로 이동
             navigate('/result', { state: { result: response.data } });
 
         } catch (error) {
@@ -143,126 +156,301 @@ function SajuInput() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 py-8 px-4">
-            <div className="max-w-md mx-auto bg-white rounded-lg shadow-md p-6">
+        <div className="min-h-screen bg-gradient-to-b from-[#0f172a] via-[#1e293b] to-[#334155] py-12 px-4">
+            <div className="max-w-2xl mx-auto">
 
                 {/* 헤더 */}
-                <div className="text-center mb-8">
-                    <h1 className="text-2xl font-bold text-gray-800 mb-2">
-                        무료 사주 풀이
+                <div className="text-center mb-12">
+                    <div className="inline-block mb-4">
+                        <div className="text-6xl mb-4 animate-pulse">✨</div>
+                    </div>
+                    <h1 className="text-4xl font-bold text-white mb-3">
+                        나만의 인생 코드 확인하기
                     </h1>
-                    <p className="text-sm text-gray-600">
-                        기본 정보를 입력하시면 사주를 분석해드립니다
+                    <p className="text-lg text-white/70">
+                        당신의 정보를 입력하면 AI가 분석해드립니다
                     </p>
                 </div>
 
-                {/* 입력 폼 */}
-                <form onSubmit={handleSubmit} className="space-y-6">
-
-                    {/* 이름 */}
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                            이름 <span className="text-red-500">*</span>
-                        </label>
-                        <input
-                            type="text"
-                            value={formData.name}
-                            onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                            maxLength={10}
-                            placeholder="이름을 입력하세요"
-                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                {/* 진행 바 */}
+                <div className="mb-8">
+                    <div className="flex justify-between mb-2">
+                        {[1, 2, 3, 4, 5].map(step => (
+                            <div key={step} className="flex flex-col items-center">
+                                <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold transition-all ${
+                                    currentStep >= step
+                                        ? 'bg-gradient-to-r from-[#d4af37] to-[#f59e0b] text-white scale-110'
+                                        : 'bg-white/20 text-white/50'
+                                }`}>
+                                    {step}
+                                </div>
+                                <span className="text-xs text-white/60 mt-1">
+                                    {step === 1 && '이름'}
+                                    {step === 2 && '생년월일'}
+                                    {step === 3 && '성별'}
+                                    {step === 4 && 'MBTI'}
+                                    {step === 5 && '생시'}
+                                </span>
+                            </div>
+                        ))}
+                    </div>
+                    <div className="h-2 bg-white/10 rounded-full overflow-hidden">
+                        <div
+                            className="h-full bg-gradient-to-r from-[#d4af37] to-[#f59e0b] transition-all duration-500"
+                            style={{ width: `${(currentStep / 5) * 100}%` }}
                         />
                     </div>
+                </div>
 
-                    {/* 생년월일 */}
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                            나의 생년월일 <span className="text-red-500">*</span>
-                        </label>
-                        <input
-                            type="text"
-                            value={formData.birthDate}
-                            onChange={handleBirthDateChange}
-                            placeholder="0000.00.00"
-                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-center text-lg tracking-wider"
-                        />
-                    </div>
+                {/* 입력 폼 카드 */}
+                <div className="bg-white/10 backdrop-blur-lg rounded-3xl p-8 shadow-2xl border border-white/20">
+                    <form onSubmit={handleSubmit}>
 
-                    {/* 양력/음력 선택 */}
-                    <div className="flex gap-4 justify-center">
-                        <label className="flex items-center cursor-pointer">
-                            <input
-                                type="radio"
-                                checked={!formData.isLunar}
-                                onChange={() => setFormData(prev => ({ ...prev, isLunar: false }))}
-                                className="w-5 h-5 mr-2"
-                            />
-                            <span className="text-gray-700 text-lg">양력</span>
-                        </label>
-                        <label className="flex items-center cursor-pointer">
-                            <input
-                                type="radio"
-                                checked={formData.isLunar}
-                                onChange={() => setFormData(prev => ({ ...prev, isLunar: true }))}
-                                className="w-5 h-5 mr-2"
-                            />
-                            <span className="text-gray-700 text-lg">음력</span>
-                        </label>
-                    </div>
-
-                    {/* 시간 선택 */}
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                            나의 태어난 시간
-                        </label>
-
-                        {/* 시간 모름 체크박스 */}
-                        <div className="mb-3">
-                            <label className="flex items-center cursor-pointer">
-                                <input
-                                    type="checkbox"
-                                    checked={formData.timeOption === 'unknown'}
-                                    onChange={(e) => handleTimeOptionChange(e.target.checked ? 'unknown' : 'select')}
-                                    className="w-5 h-5 mr-2"
-                                />
-                                <span className="text-gray-600">시간모름</span>
-                            </label>
-                        </div>
-
-                        {/* 시간 선택 드롭다운 */}
-                        {formData.timeOption !== 'unknown' && (
-                            <div>
-                                <select
-                                    value={formData.selectedTime}
-                                    onChange={handleTimeSelect}
-                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        {/* Step 1: 이름 */}
+                        {currentStep === 1 && (
+                            <div className="space-y-6 animate-fadeIn">
+                                <div>
+                                    <label className="block text-white text-lg font-bold mb-4">
+                                        이름을 알려주세요
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={formData.name}
+                                        onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                                        className="w-full px-6 py-4 bg-white/90 rounded-2xl text-gray-800 text-lg focus:outline-none focus:ring-4 focus:ring-[#d4af37]/50 transition-all"
+                                        placeholder="홍길동"
+                                        autoFocus
+                                    />
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={nextStep}
+                                    className="w-full bg-gradient-to-r from-[#d4af37] to-[#f59e0b] text-white py-4 rounded-2xl text-lg font-bold hover:scale-105 transition-transform"
                                 >
-                                    <option value="">태어난 시간을 선택해주세요.</option>
-                                    {timeOptions.map((option) => (
-                                        <option key={option.label} value={option.label}>
-                                            {option.label}
-                                        </option>
-                                    ))}
-                                </select>
-
-                                <p className="mt-2 text-xs text-blue-600">
-                                    ⓘ 정확한 시간을 아시면 더 정확한 사주를 볼 수 있습니다.
-                                </p>
+                                    다음 →
+                                </button>
                             </div>
                         )}
-                    </div>
 
-                    {/* 제출 버튼 */}
+                        {/* Step 2: 생년월일 */}
+                        {currentStep === 2 && (
+                            <div className="space-y-6 animate-fadeIn">
+                                <div>
+                                    <label className="block text-white text-lg font-bold mb-4">
+                                        생년월일을 알려주세요
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={formData.birthDate}
+                                        onChange={handleBirthDateChange}
+                                        className="w-full px-6 py-4 bg-white/90 rounded-2xl text-gray-800 text-lg focus:outline-none focus:ring-4 focus:ring-[#d4af37]/50 transition-all"
+                                        placeholder="1992.09.22"
+                                        maxLength="10"
+                                        autoFocus
+                                    />
+                                    <p className="text-white/60 text-sm mt-2">
+                                        형식: YYYY.MM.DD
+                                    </p>
+                                </div>
+
+                                <div className="flex items-center gap-3">
+                                    <input
+                                        type="checkbox"
+                                        id="isLunar"
+                                        checked={formData.isLunar}
+                                        onChange={(e) => setFormData(prev => ({ ...prev, isLunar: e.target.checked }))}
+                                        className="w-5 h-5 rounded"
+                                    />
+                                    <label htmlFor="isLunar" className="text-white text-sm">
+                                        음력입니다
+                                    </label>
+                                </div>
+
+                                <div className="flex gap-3">
+                                    <button
+                                        type="button"
+                                        onClick={prevStep}
+                                        className="flex-1 bg-white/20 text-white py-4 rounded-2xl text-lg font-bold hover:bg-white/30 transition-colors"
+                                    >
+                                        ← 이전
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={nextStep}
+                                        className="flex-1 bg-gradient-to-r from-[#d4af37] to-[#f59e0b] text-white py-4 rounded-2xl text-lg font-bold hover:scale-105 transition-transform"
+                                    >
+                                        다음 →
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Step 3: 성별 */}
+                        {currentStep === 3 && (
+                            <div className="space-y-6 animate-fadeIn">
+                                <div>
+                                    <label className="block text-white text-lg font-bold mb-6">
+                                        성별을 선택해주세요
+                                    </label>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <button
+                                            type="button"
+                                            onClick={() => setFormData(prev => ({ ...prev, gender: 'M' }))}
+                                            className={`py-6 rounded-2xl text-lg font-bold transition-all ${
+                                                formData.gender === 'M'
+                                                    ? 'bg-gradient-to-r from-[#d4af37] to-[#f59e0b] text-white scale-105'
+                                                    : 'bg-white/20 text-white hover:bg-white/30'
+                                            }`}
+                                        >
+                                            👨 남성
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setFormData(prev => ({ ...prev, gender: 'F' }))}
+                                            className={`py-6 rounded-2xl text-lg font-bold transition-all ${
+                                                formData.gender === 'F'
+                                                    ? 'bg-gradient-to-r from-[#d4af37] to-[#f59e0b] text-white scale-105'
+                                                    : 'bg-white/20 text-white hover:bg-white/30'
+                                            }`}
+                                        >
+                                            👩 여성
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div className="flex gap-3">
+                                    <button
+                                        type="button"
+                                        onClick={prevStep}
+                                        className="flex-1 bg-white/20 text-white py-4 rounded-2xl text-lg font-bold hover:bg-white/30 transition-colors"
+                                    >
+                                        ← 이전
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={nextStep}
+                                        className="flex-1 bg-gradient-to-r from-[#d4af37] to-[#f59e0b] text-white py-4 rounded-2xl text-lg font-bold hover:scale-105 transition-transform"
+                                    >
+                                        다음 →
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Step 4: MBTI */}
+                        {currentStep === 4 && (
+                            <div className="space-y-6 animate-fadeIn">
+                                <div>
+                                    <label className="block text-white text-lg font-bold mb-4">
+                                        MBTI를 선택해주세요
+                                    </label>
+                                    <select
+                                        value={formData.mbti}
+                                        onChange={(e) => setFormData(prev => ({ ...prev, mbti: e.target.value }))}
+                                        className="w-full px-6 py-4 bg-white/90 rounded-2xl text-gray-800 text-lg focus:outline-none focus:ring-4 focus:ring-[#d4af37]/50 transition-all"
+                                    >
+                                        <option value="">선택해주세요</option>
+                                        {mbtiOptions.map(mbti => (
+                                            <option key={mbti} value={mbti}>{mbti}</option>
+                                        ))}
+                                    </select>
+                                    <p className="text-white/60 text-sm mt-2">
+                                        💡 MBTI를 모르시면 <a href="https://www.16personalities.com/ko" target="_blank" rel="noopener noreferrer" className="text-[#d4af37] underline">여기서 테스트</a>
+                                    </p>
+                                </div>
+
+                                <div className="flex gap-3">
+                                    <button
+                                        type="button"
+                                        onClick={prevStep}
+                                        className="flex-1 bg-white/20 text-white py-4 rounded-2xl text-lg font-bold hover:bg-white/30 transition-colors"
+                                    >
+                                        ← 이전
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={nextStep}
+                                        className="flex-1 bg-gradient-to-r from-[#d4af37] to-[#f59e0b] text-white py-4 rounded-2xl text-lg font-bold hover:scale-105 transition-transform"
+                                    >
+                                        다음 →
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Step 5: 생시 */}
+                        {currentStep === 5 && (
+                            <div className="space-y-6 animate-fadeIn">
+                                <div>
+                                    <label className="block text-white text-lg font-bold mb-4">
+                                        태어난 시간을 선택해주세요
+                                    </label>
+                                    <select
+                                        value={formData.selectedTime}
+                                        onChange={handleTimeSelect}
+                                        className="w-full px-6 py-4 bg-white/90 rounded-2xl text-gray-800 text-lg focus:outline-none focus:ring-4 focus:ring-[#d4af37]/50 transition-all"
+                                    >
+                                        <option value="">선택해주세요</option>
+                                        {timeOptions.map((option, idx) => (
+                                            <option key={idx} value={option.label}>
+                                                {option.label}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    <p className="text-white/60 text-sm mt-2">
+                                        💡 정확한 시간을 모르시면 '시간 모름'을 선택해주세요
+                                    </p>
+                                </div>
+
+                                <div className="flex gap-3">
+                                    <button
+                                        type="button"
+                                        onClick={prevStep}
+                                        className="flex-1 bg-white/20 text-white py-4 rounded-2xl text-lg font-bold hover:bg-white/30 transition-colors"
+                                    >
+                                        ← 이전
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        disabled={loading}
+                                        className="flex-1 bg-gradient-to-r from-[#d4af37] to-[#f59e0b] text-white py-4 rounded-2xl text-lg font-bold hover:scale-105 transition-transform disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        {loading ? '분석 중...' : '✨ 내 운세 확인하기'}
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+
+                    </form>
+                </div>
+
+                {/* 돌아가기 */}
+                <div className="text-center mt-8">
                     <button
-                        type="submit"
-                        disabled={loading}
-                        className="w-full bg-blue-600 text-white py-4 rounded-lg font-semibold hover:bg-blue-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+                        onClick={() => navigate('/')}
+                        className="text-white/60 hover:text-white transition-colors"
                     >
-                        {loading ? '분석 중...' : '사주 분석하기'}
+                        ← 메인으로 돌아가기
                     </button>
-                </form>
-
+                </div>
             </div>
+
+            {/* CSS 애니메이션 */}
+            <style jsx>{`
+                @keyframes fadeIn {
+                    from {
+                        opacity: 0;
+                        transform: translateY(20px);
+                    }
+                    to {
+                        opacity: 1;
+                        transform: translateY(0);
+                    }
+                }
+                .animate-fadeIn {
+                    animation: fadeIn 0.5s ease-out;
+                }
+            `}</style>
         </div>
     );
 }

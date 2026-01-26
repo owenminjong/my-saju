@@ -127,6 +127,55 @@ function calculateHourPillar(dayStemIndex, hour) {
 }
 
 /**
+ * 4대 분야 점수 계산 (오행 기반)
+ */
+function calculate4Fields(elements) {
+    const { percentage } = elements;
+
+    // 숫자로 변환
+    const 목 = parseFloat(percentage.목);
+    const 화 = parseFloat(percentage.화);
+    const 토 = parseFloat(percentage.토);
+    const 금 = parseFloat(percentage.금);
+    const 수 = parseFloat(percentage.수);
+
+    // 1. 재물운: 토(土) + 금(金) 비중
+    let wealth = 50 + (토 + 금) / 2;
+    wealth = Math.min(100, Math.max(40, wealth));
+
+    // 2. 직업운: 목(木) + 화(火) 비중
+    let career = 50 + (목 + 화) / 2;
+    career = Math.min(100, Math.max(40, career));
+
+    // 3. 연애운: 수(水) + 목(木) 비중
+    let love = 50 + (수 + 목) / 2;
+    love = Math.min(100, Math.max(40, love));
+
+    // 4. 건강운: 오행 균형도 (표준편차 역수)
+    const values = [목, 화, 토, 금, 수];
+    const avg = 20; // 완벽한 균형 = 각 20%
+    const variance = values.reduce((sum, val) => sum + Math.pow(val - avg, 2), 0) / 5;
+    const stdDev = Math.sqrt(variance);
+    let health = 100 - (stdDev * 3);
+    health = Math.min(100, Math.max(40, health));
+
+    // 점수를 등급으로 변환
+    const getGrade = (score) => {
+        if (score >= 90) return 'S';
+        if (score >= 75) return 'A';
+        if (score >= 60) return 'B';
+        return 'C';
+    };
+
+    return {
+        wealth: { score: Math.round(wealth), grade: getGrade(wealth) },
+        career: { score: Math.round(career), grade: getGrade(career) },
+        love: { score: Math.round(love), grade: getGrade(love) },
+        health: { score: Math.round(health), grade: getGrade(health) }
+    };
+}
+
+/**
  * 사주팔자 전체 계산
  */
 function calculateSaju(birthInfo) {
@@ -266,11 +315,15 @@ function getBasicSajuAnalysis(birthInfo) {
     // 4. 용신 추천
     const usefulGod = recommendUsefulGod(elements);
 
+    // 5. 4대 분야 점수 계산 ← 추가
+    const fields = calculate4Fields(elements);
+
     return {
         saju,
         elements,
         dayMaster,
         usefulGod,
+        fields,
         birthInfo
     };
 }
@@ -281,5 +334,6 @@ module.exports = {
     analyzeDayMasterStrength,
     recommendUsefulGod,
     getBasicSajuAnalysis,
-    solarToLunar
+    solarToLunar,
+    calculate4Fields
 };

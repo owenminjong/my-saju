@@ -71,13 +71,20 @@ class SajuService {
      * 분석 결과 포맷팅
      */
     formatAnalysisResult(name, analysis, userInput) {
-        const { saju, elements, dayMaster, usefulGod } = analysis;
+        const { saju, elements, dayMaster, usefulGod, fields } = analysis;
         const { year, month, day, isLunar, selectedTime } = userInput;
 
-        // 시간 표시
+        // 시간 표시 개선
         let timeDisplay = selectedTime || `${userInput.hour}시`;
+
+        // 시주에서 지지 정보 가져오기
+        const hourBranch = saju.hour.branch;
+        const koreanTime = `${hourBranch.char}시 (${hourBranch.animal}, ${hourBranch.time})`;
+
         if (selectedTime === '시간 모름') {
             timeDisplay = '시간 모름 (자시 기준)';
+        } else {
+            timeDisplay = koreanTime;
         }
 
         return {
@@ -109,7 +116,13 @@ class SajuService {
                 avoid: usefulGod.avoid,
                 description: usefulGod.description
             },
-            summary: this.generateSummary(name, saju, elements, dayMaster)
+            fields: {
+                wealth: fields.wealth,
+                career: fields.career,
+                love: fields.love,
+                health: fields.health
+            },
+            summary: this.generateSummary(name, saju, elements, dayMaster, fields)
         };
     }
 
@@ -152,7 +165,7 @@ class SajuService {
     /**
      * 요약 생성
      */
-    generateSummary(name, saju, elements, dayMaster) {
+    generateSummary(name, saju, elements, dayMaster, fields) {
         const dominant = Object.entries(elements.count)
             .sort((a, b) => b[1] - a[1])[0];
 
@@ -163,10 +176,11 @@ class SajuService {
         return {
             intro: `${name}님의 사주를 분석했습니다.`,
             dayMaster: `일간은 '${saju.day.stem.char}(${dayMaster.element})'이며, ${dayMaster.strength}한 사주입니다.`,
-            dominant: `${dominant[0]} 기운이 가장 강합니다. (${dominant[1]}개)`,
+            dominant: `${dominant[0]} 기운이 가장 강합니다.(${dominant[1]}개)`,
             lacking: lacking.length > 0
                 ? `${lacking.join(', ')} 기운이 부족합니다.`
                 : '오행이 고르게 분포되어 있습니다.',
+            fields: `재물 ${fields.wealth.grade} | 직업 ${fields.career.grade} | 연애 ${fields.love.grade} | 건강 ${fields.health.grade}`,  // ← 추가
             advice: '더 자세한 풀이는 유료 서비스를 이용해주세요.'
         };
     }

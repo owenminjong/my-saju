@@ -14,16 +14,16 @@ function SajuResult() {
         return null;
     }
 
-    const { user, saju, elements, dayMaster, recommendation, summary } = result;
+    const { user, saju, elements, dayMaster, recommendation, fields, summary } = result;
 
     return (
         <div className="min-h-screen bg-gray-50 py-8 px-4">
             <div className="max-w-4xl mx-auto">
 
                 {/* 헤더 */}
-                <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+                    <div className="bg-white rounded-lg shadow-md p-6 mb-6">
                     <h1 className="text-2xl font-bold text-gray-800 mb-2">
-                        {user.name}님의 사주 분석 결과
+                {user.name}님의 사주 분석 결과
                     </h1>
                     <div className="space-y-1">
                         <p className="text-sm text-gray-600">
@@ -45,8 +45,11 @@ function SajuResult() {
                         <p>• {summary.dayMaster}</p>
                         <p>• {summary.dominant}</p>
                         <p>• {summary.lacking}</p>
+                        <p>• {summary.fields}</p>
                     </div>
                 </div>
+
+
 
                 {/* 사주팔자 표 */}
                 <div className="bg-white rounded-lg shadow-md p-6 mb-6">
@@ -176,6 +179,120 @@ function SajuResult() {
                         <p className="text-gray-700 mt-4 p-4 bg-gray-50 rounded-lg">
                             {recommendation.description}
                         </p>
+                    </div>
+                </div>
+
+                {/* ✨ 4대 분야 점수 섹션 추가 */}
+                <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+                    <h2 className="text-xl font-bold text-gray-800 mb-4">
+                        🎯 4대 분야 운세
+                    </h2>
+
+                    <div className="grid md:grid-cols-2 gap-4">
+                        {/* 재물운 */}
+                        <div className="border-2 border-gray-200 rounded-lg p-4 hover:shadow-lg transition-shadow">
+                            <div className="flex items-center justify-between mb-3">
+                                <div className="flex items-center gap-2">
+                                    <span className="text-2xl">💰</span>
+                                    <h3 className="text-lg font-bold text-gray-800">재물운</h3>
+                                </div>
+                                <div className={`text-3xl font-bold ${
+                                    fields.wealth.grade === 'S' ? 'text-red-500' :
+                                        fields.wealth.grade === 'A' ? 'text-orange-500' :
+                                            fields.wealth.grade === 'B' ? 'text-blue-500' : 'text-gray-500'
+                                }`}>
+                                    {fields.wealth.grade}
+                                </div>
+                            </div>
+                            <div className="w-full bg-gray-200 rounded-full h-3 mb-2">
+                                <div
+                                    className="bg-gradient-to-r from-yellow-400 to-yellow-600 h-3 rounded-full transition-all"
+                                    style={{ width: `${fields.wealth.score}%` }}
+                                />
+                            </div>
+                            <p className="text-sm text-gray-600 text-right">{fields.wealth.score}점</p>
+                        </div>
+
+                        {/* 직업운 */}
+                        <div className="border-2 border-gray-200 rounded-lg p-4 hover:shadow-lg transition-shadow">
+                            <div className="flex items-center justify-between mb-3">
+                                <div className="flex items-center gap-2">
+                                    <span className="text-2xl">💼</span>
+                                    <h3 className="text-lg font-bold text-gray-800">직업운</h3>
+                                </div>
+                                <div className={`text-3xl font-bold ${
+                                    fields.career.grade === 'S' ? 'text-red-500' :
+                                        fields.career.grade === 'A' ? 'text-orange-500' :
+                                            fields.career.grade === 'B' ? 'text-blue-500' : 'text-gray-500'
+                                }`}>
+                                    {fields.career.grade}
+                                </div>
+                            </div>
+                            <div className="w-full bg-gray-200 rounded-full h-3 mb-2">
+                                <div
+                                    className="bg-gradient-to-r from-blue-400 to-blue-600 h-3 rounded-full transition-all"
+                                    style={{ width: `${fields.career.score}%` }}
+                                />
+                            </div>
+                            <p className="text-sm text-gray-600 text-right">{fields.career.score}점</p>
+                        </div>
+
+                        {/* 연애운 */}
+                        <div className="border-2 border-gray-200 rounded-lg p-4 hover:shadow-lg transition-shadow">
+                            <div className="flex items-center justify-between mb-3">
+                                <div className="flex items-center gap-2">
+                                    <span className="text-2xl">💕</span>
+                                    <h3 className="text-lg font-bold text-gray-800">연애운</h3>
+                                </div>
+                                <div className={`text-3xl font-bold ${
+                                    fields.love.grade === 'S' ? 'text-red-500' :
+                                        fields.love.grade === 'A' ? 'text-orange-500' :
+                                            fields.love.grade === 'B' ? 'text-blue-500' : 'text-gray-500'
+                                }`}>
+                                    {fields.love.grade}
+                                </div>
+                            </div>
+                            <div className="w-full bg-gray-200 rounded-full h-3 mb-2">
+                                <div
+                                    className="bg-gradient-to-r from-pink-400 to-pink-600 h-3 rounded-full transition-all"
+                                    style={{ width: `${fields.love.score}%` }}
+                                />
+                            </div>
+                            <p className="text-sm text-gray-600 text-right">{fields.love.score}점</p>
+                        </div>
+
+                        {/* 건강운 */}
+                        <div className="border-2 border-gray-200 rounded-lg p-4 hover:shadow-lg transition-shadow">
+                            <div className="flex items-center justify-between mb-3">
+                                <div className="flex items-center gap-2">
+                                    <span className="text-2xl">🏥</span>
+                                    <h3 className="text-lg font-bold text-gray-800">건강운</h3>
+                                </div>
+                                <div className={`text-3xl font-bold ${
+                                    fields.health.grade === 'S' ? 'text-red-500' :
+                                        fields.health.grade === 'A' ? 'text-orange-500' :
+                                            fields.health.grade === 'B' ? 'text-blue-500' : 'text-gray-500'
+                                }`}>
+                                    {fields.health.grade}
+                                </div>
+                            </div>
+                            <div className="w-full bg-gray-200 rounded-full h-3 mb-2">
+                                <div
+                                    className="bg-gradient-to-r from-green-400 to-green-600 h-3 rounded-full transition-all"
+                                    style={{ width: `${fields.health.score}%` }}
+                                />
+                            </div>
+                            <p className="text-sm text-gray-600 text-right">{fields.health.score}점</p>
+                        </div>
+                    </div>
+
+                    <div className="mt-6 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                        <p className="text-sm text-gray-700">
+                            💡 <strong>더 자세한 분석이 궁금하신가요?</strong> 프리미엄 풀코스에서 각 분야별 맞춤 전략을 확인하세요!
+                        </p>
+                        <button className="mt-3 w-full bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-2 rounded-lg font-bold hover:scale-105 transition-transform">
+                            프리미엄으로 업그레이드 →
+                        </button>
                     </div>
                 </div>
 
