@@ -244,7 +244,7 @@ function SajuInput() {
                                         value={formData.birthDate}
                                         onChange={handleBirthDateChange}
                                         className="w-full px-6 py-4 bg-white/90 rounded-2xl text-gray-800 text-lg focus:outline-none focus:ring-4 focus:ring-[#d4af37]/50 transition-all"
-                                        placeholder="1992.09.22"
+                                        placeholder="1990.01.01"
                                         maxLength="10"
                                         autoFocus
                                     />
