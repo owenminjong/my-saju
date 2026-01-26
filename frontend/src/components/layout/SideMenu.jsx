@@ -28,12 +28,12 @@ function SideMenu({ isOpen, onClose }) {
                             ℹ️ 이용 안내
                         </a>
                         <div className="border-t pt-6">
-                            <a href="#" className="block text-lg text-gray-600 hover:text-gray-800">
+                            <a href="/login" className="block text-lg text-gray-600 hover:text-gray-800">
                                 👤 로그인
                             </a>
-                            <a href="#" className="block text-lg text-gray-600 hover:text-gray-800 mt-4">
+                            {/*<a href="#" className="block text-lg text-gray-600 hover:text-gray-800 mt-4">
                                 ✍️ 회원가입
-                            </a>
+                            </a>*/}
                         </div>
                     </nav>
                 </div>

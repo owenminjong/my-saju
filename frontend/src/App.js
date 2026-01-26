@@ -10,6 +10,9 @@ import PaymentTestPage from './pages/PaymentTestPage';
 
 // 🏠 메인 & 사주 서비스 페이지
 import MainPage from './pages/MainPage';
+import LoginPage from './pages/LoginPage';
+import AuthSuccess from './pages/AuthSuccess';
+import AuthFail from './pages/AuthFail';
 import SajuInput from './pages/SajuInput';
 import SajuResult from './pages/SajuResult';
 
@@ -68,6 +71,11 @@ function App() {
           <Routes>
             {/* 🏠 메인 페이지 */}
             <Route path="/" element={<MainPage />} />
+
+            {/* 로그인 */}
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/auth/success" element={<AuthSuccess />} />
+            <Route path="/auth/fail" element={<AuthFail />} />
 
             {/* 🔮 사주 서비스 */}
             <Route path="/saju-input" element={<SajuInput />} />

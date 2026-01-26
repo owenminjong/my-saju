@@ -20,6 +20,7 @@ const adminProductsRoutes = require('./routes/admin/products');
 const adminApiKeysRoutes = require('./routes/admin/apiKeys');
 const paymentRoutes = require('./routes/payment');
 const sajuRoutes = require('./routes/saju-routes');
+const authRoutes = require('./routes/auth');
 
 app.use('/api/admin/dashboard', adminDashboardRoutes);
 app.use('/api/admin/users', adminUsersRoutes);
@@ -28,6 +29,7 @@ app.use('/api/admin/products', adminProductsRoutes);
 app.use('/api/admin/api-keys', adminApiKeysRoutes);
 app.use('/api/payment', paymentRoutes);
 app.use('/api/saju', sajuRoutes);
+app.use('/api/auth', authRoutes);
 
 // 테스트 라우트
 app.get('/', (req, res) => {
