@@ -1,4 +1,5 @@
 const sajuService = require('../services/saju-service');
+const { generateFreePrompt } = require('../services/prompt-service');
 
 /**
  * 무료 사주 분석
@@ -6,7 +7,7 @@ const sajuService = require('../services/saju-service');
  */
 const analyzeFreeSaju = async (req, res) => {
     try {
-        const { name, year, month, day, hour, minute, isLunar } = req.body;
+        const { name, year, month, day, hour, minute, isLunar, gender, mbti } = req.body;
 
         // 필수 입력값 검증
         if (!name || !year || !month || !day) {
@@ -26,6 +27,41 @@ const analyzeFreeSaju = async (req, res) => {
             minute: minute || 0,
             isLunar: isLunar || false
         });
+
+        // 프롬프트 생성 (항상 실행)
+        const promptData = {
+            user: {
+                ...result.user,
+                gender: gender || 'M'
+            },
+            saju: result.saju,
+            elements: result.elements,  // ✅ 전체 객체 전달
+            dayMaster: result.dayMaster,
+            fields: result.fields,      // ✅ fields도 추가
+            mbti: mbti
+        };
+
+        const prompt = generateFreePrompt(promptData);
+
+        // 콘솔에 프롬프트 출력
+        console.log('\n' + '='.repeat(80));
+        console.log('📋 무료 베이직 진단 프롬프트');
+        console.log('='.repeat(80) + '\n');
+
+        console.log('🤖 SYSTEM PROMPT');
+        console.log('─'.repeat(80));
+        console.log(prompt.systemPrompt);
+        console.log('\n');
+
+        console.log('👤 USER PROMPT');
+        console.log('─'.repeat(80));
+        console.log(prompt.userPrompt);
+        console.log('\n');
+
+        console.log('📌 메타데이터');
+        console.log('─'.repeat(80));
+        console.log(JSON.stringify(prompt.metadata, null, 2));
+        console.log('\n' + '='.repeat(80) + '\n');
 
         res.status(200).json({
             success: true,
