@@ -54,7 +54,8 @@ function generateCharacterInfo(saju, birthMonth, birthHour) {
         seasonBg,
         timeOfDay,
         timeBg,
-        fullDescription: `${color} ${animalName}띠 · ${season} · ${timeOfDay}`
+        fullDescription: `${color} ${animalName}띠 · ${season} · ${timeOfDay}`,
+        characterSummary: `**[${color} ${animalName}띠] [${color} ${animalName}]**\n\n${seasonBg} + ${timeBg} 하늘\n\n`
     };
 }
 
@@ -110,7 +111,14 @@ function generateFreePrompt(sajuData) {
     const systemPrompt = `당신은 사주명리학 전문가입니다.
 
 **출력 구조:**
-1. 🎭 캐릭터: ${character.animalEmoji} ${character.fullDescription} + 한 줄 설명
+1. 🎭 당신의 사주 캐릭터
+
+**[${character.color} ${character.animalName}띠] [${character.color} ${character.animalName}]**
+
+${character.seasonBg} ${character.timeBg} 하늘 | ${dominantEffect}
+
+"[한 줄 설명]"
+${character.fullDescription}
 2. 📊 운명 성적표 (표 형식)
 3. ⚡ 2026년 키워드 1개
 4. 📄 진단 소견서 (정확히 300자)

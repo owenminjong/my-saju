@@ -3,10 +3,11 @@
 const express = require('express');
 const router = express.Router();
 const { generateFreePrompt } = require('../services/prompt-service');
+const { callClaudeAPIFree } = require('../services/claude-service');  // ⬅️ 무료 버전
 
 /**
  * POST /api/diagnosis/free
- * 무료 베이직 진단 생성 (프롬프트만 출력, Claude API 미연동)
+ * 무료 베이직 진단 생성
  */
 router.post('/free', async (req, res) => {
     try {
@@ -22,10 +23,10 @@ router.post('/free', async (req, res) => {
         // 프롬프트 생성
         const prompt = generateFreePrompt({ ...sajuData, mbti });
 
-        // 콘솔에 프롬프트 출력 (테스트용)
+        // 콘솔에 프롬프트 출력 (디버깅용)
         console.log('\n');
         console.log('='.repeat(80));
-        console.log('📋 무료 베이직 진단 프롬프트 (Claude API 전송 직전)');
+        console.log('📋 무료 베이직 진단 프롬프트');
         console.log('='.repeat(80));
         console.log('\n');
 
@@ -48,27 +49,33 @@ router.post('/free', async (req, res) => {
         console.log('\n');
 
         console.log('='.repeat(80));
-        console.log('💡 위 프롬프트를 복사해서 Claude.ai에 붙여넣으세요!');
+        console.log('🤖 Claude API 호출 중...');
         console.log('='.repeat(80));
         console.log('\n');
+
+        // Claude API 호출 (무료 버전)
+        const result = await callClaudeAPIFree(
+            prompt.systemPrompt,
+            prompt.userPrompt,
+            sajuData.user.id  // userId 추가
+        );
+
+        console.log('✅ 진단 완료!\n');
 
         // 응답
         res.json({
             success: true,
-            message: '프롬프트가 콘솔에 출력되었습니다.',
-            prompt: {
-                system: prompt.systemPrompt,
-                user: prompt.userPrompt
-            },
+            message: '무료 베이직 진단이 완료되었습니다.',
+            diagnosis: result.text,
+            usage: result.usage,
             metadata: prompt.metadata
         });
 
     } catch (error) {
-        console.error('프롬프트 생성 오류:', error);
+        console.error('진단 생성 오류:', error);
         res.status(500).json({
             success: false,
-            message: '프롬프트 생성 중 오류가 발생했습니다.',
-            error: error.message
+            message: error.message || '진단 생성 중 오류가 발생했습니다.'
         });
     }
 });
