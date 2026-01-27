@@ -14,11 +14,11 @@ function ElementChart({ elements }) {
                                     className="w-3 h-3 rounded-full"
                                     style={{ backgroundColor: element.color }}
                                 ></div>
-                                <span className="font-medium text-gray-700">
+                                <span className="font-medium text-white">
                   {element.element} ({element.name})
                 </span>
                             </div>
-                            <span className="text-sm font-semibold text-gray-600">
+                            <span className="text-sm font-semibold text-white">
                 {element.percentage}%
               </span>
                         </div>

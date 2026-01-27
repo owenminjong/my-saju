@@ -26,7 +26,20 @@ export const getTimeInfo = async () => {
     }
 };
 
+/**
+ * 무료 진단 API 호출 (새로 추가 - Claude 진단 포함)
+ */
+export const getFreeDiagnosis = async (userData) => {
+    try {
+        const response = await axios.post(`${API_BASE_URL}/diagnosis/free`, userData);
+        return response.data;
+    } catch (error) {
+        throw new Error(error.response?.data?.message || '진단에 실패했습니다.');
+    }
+}
+
 export default {
     analyzeSaju,
-    getTimeInfo
+    getTimeInfo,
+    getFreeDiagnosis
 };

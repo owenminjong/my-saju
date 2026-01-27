@@ -11,6 +11,7 @@ import PaymentTestPage from './pages/PaymentTestPage';
 // 🏠 메인 & 사주 서비스 페이지
 import MainPage from './pages/MainPage';
 import LoginPage from './pages/LoginPage';
+import SampleResult from './pages/SampleResult';
 import AuthSuccess from './pages/AuthSuccess';
 import AuthFail from './pages/AuthFail';
 import SajuInput from './pages/SajuInput';
@@ -72,6 +73,8 @@ function App() {
             {/* 🏠 메인 페이지 */}
             <Route path="/" element={<MainPage />} />
 
+            {/* 결과 예시 페이지 */}
+            <Route path="/ex-result" element={<SampleResult />} />
             {/* 로그인 */}
             <Route path="/login" element={<LoginPage />} />
             <Route path="/auth/success" element={<AuthSuccess />} />

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { analyzeSaju } from '../services/sajuApi';
+import { getFreeDiagnosis } from '../services/sajuApi';
 
 function SajuInput() {
     const navigate = useNavigate();
@@ -145,8 +146,19 @@ function SajuInput() {
                 mbti: formData.mbti
             };
 
-            const response = await analyzeSaju(requestData);
-            navigate('/result', { state: { result: response.data } });
+            const response = await getFreeDiagnosis(requestData);
+
+            navigate('/result', {
+                state: {
+                    result: {
+                        ...response.sajuData,     // 기존 사주 데이터 유지
+                        summary: response.sajuData.summary, // 혹시 이미 있으면 유지
+                        diagnosis: response.diagnosis,      // ⬅️ 여기로 넣어줌
+                        usage: response.usage               // (필요하면 사용)
+                    }
+                }
+            });
+
 
         } catch (error) {
             alert(error.message);
