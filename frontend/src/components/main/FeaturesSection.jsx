@@ -20,23 +20,23 @@ function FeaturesSection() {
     ];
 
     return (
-        <section className="py-20 px-4 bg-white">
+        <section className="py-12 sm:py-16 md:py-20 px-4 bg-white">
             <div className="max-w-6xl mx-auto">
-                <h2 className="text-4xl font-bold text-center mb-16 text-gray-800">
+                <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-center mb-8 sm:mb-12 md:mb-16 text-gray-800 px-2">
                     왜 MyLifeCode인가요?
                 </h2>
 
-                <div className="grid md:grid-cols-3 gap-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8">
                     {features.map((feature, index) => (
                         <div
                             key={index}
-                            className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-shadow border border-gray-100"
+                            className="bg-white rounded-2xl p-6 sm:p-8 shadow-lg hover:shadow-2xl transition-shadow border border-gray-100"
                         >
-                            <div className="text-5xl mb-4">{feature.icon}</div>
-                            <h3 className="text-2xl font-bold mb-3 text-gray-800">
+                            <div className="text-4xl sm:text-5xl mb-4">{feature.icon}</div>
+                            <h3 className="text-xl sm:text-2xl font-bold mb-3 text-gray-800">
                                 {feature.title}
                             </h3>
-                            <p className="text-gray-600 whitespace-pre-line">
+                            <p className="text-sm sm:text-base text-gray-600 whitespace-pre-line">
                                 {feature.description}
                             </p>
                         </div>

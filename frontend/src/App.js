@@ -11,11 +11,11 @@ import PaymentTestPage from './pages/PaymentTestPage';
 // 🏠 메인 & 사주 서비스 페이지
 import MainPage from './pages/MainPage';
 import LoginPage from './pages/LoginPage';
-import SampleResult from './pages/SampleResult';
 import AuthSuccess from './pages/AuthSuccess';
 import AuthFail from './pages/AuthFail';
 import SajuInput from './pages/SajuInput';
 import SajuResult from './pages/SajuResult';
+import SampleResult from './pages/SampleResult';
 
 // 관리자 네비게이션 컴포넌트
 function AdminNav() {
@@ -56,9 +56,10 @@ function AdminNav() {
 function Layout({ children }) {
   const location = useLocation();
   const isAdminPage = location.pathname.startsWith('/admin');
+  const isMainPage = location.pathname === '/';  // ⬅️ 추가
 
   return (
-      <div className="min-h-screen bg-gray-100">
+      <div className={`min-h-screen ${isMainPage ? '' : 'bg-gray-100'}`}>
         {isAdminPage && <AdminNav />}
         {children}
       </div>
@@ -73,8 +74,6 @@ function App() {
             {/* 🏠 메인 페이지 */}
             <Route path="/" element={<MainPage />} />
 
-            {/* 결과 예시 페이지 */}
-            <Route path="/ex-result" element={<SampleResult />} />
             {/* 로그인 */}
             <Route path="/login" element={<LoginPage />} />
             <Route path="/auth/success" element={<AuthSuccess />} />
@@ -83,6 +82,7 @@ function App() {
             {/* 🔮 사주 서비스 */}
             <Route path="/saju-input" element={<SajuInput />} />
             <Route path="/result" element={<SajuResult />} />
+            <Route path="/ex-result" element={<SampleResult />} />
 
             {/* 🔧 관리자 페이지 */}
             <Route path="/admin" element={<DashboardPage />} />
