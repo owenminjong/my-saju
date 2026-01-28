@@ -25,12 +25,16 @@ function solarToLunar(year, month, day) {
  * 년주 계산 (Year Pillar)
  * 기준: 1984년 = 갑자년 (천간0, 지지0)
  */
-function calculateYearPillar(year) {
-    const baseYear = 1984;
-    const yearDiff = year - baseYear;
+/**
+ * 년주 계산 (Year Pillar)
+ * lunar-javascript 사용 (입춘 자동 처리)
+ */
+function calculateYearPillar(year, month, day) {
+    const solar = Lunar.Solar.fromYmd(year, month, day);
+    const lunar = solar.getLunar();
 
-    const stemIndex = (yearDiff % 10 + 10) % 10;
-    const branchIndex = (yearDiff % 12 + 12) % 12;
+    const stemIndex = lunar.getYearGanIndex();
+    const branchIndex = lunar.getYearZhiIndex();
 
     return {
         stem: HEAVENLY_STEMS[stemIndex],
@@ -42,25 +46,14 @@ function calculateYearPillar(year) {
 
 /**
  * 월주 계산 (Month Pillar)
- * 오호십법(五虎十法) - 음력 기준
+ * lunar-javascript 사용
  */
 function calculateMonthPillar(year, month, day, isLunar = false) {
-    // 양력이면 음력으로 변환
-    let lunarMonth = month;
-    if (!isLunar) {
-        const lunar = solarToLunar(year, month, day);
-        lunarMonth = lunar.month;
-    }
+    const solar = Lunar.Solar.fromYmd(year, month, day);
+    const lunar = solar.getLunar();
 
-    const yearStemIndex = calculateYearPillar(year).stemIndex;
-    const branchIndex = MONTH_TO_BRANCH[lunarMonth];
-
-    // 오호십법 월간 계산
-    const firstMonthStem = [2, 4, 6, 8, 0][yearStemIndex % 5];
-    let monthCount = lunarMonth - 1;
-    if (monthCount < 0) monthCount += 12;
-
-    const stemIndex = (firstMonthStem + monthCount) % 10;
+    const stemIndex = lunar.getMonthGanIndex();
+    const branchIndex = lunar.getMonthZhiIndex();
 
     return {
         stem: HEAVENLY_STEMS[stemIndex],
@@ -194,7 +187,7 @@ function calculateSaju(birthInfo) {
         solarDay = solar.getDay();
     }
 
-    const yearPillar = calculateYearPillar(solarYear);
+    const yearPillar = calculateYearPillar(solarYear, solarMonth, solarDay);
     const monthPillar = calculateMonthPillar(solarYear, solarMonth, solarDay, false); // 항상 false
     const dayPillar = calculateDayPillar(solarYear, solarMonth, solarDay);
     const hourPillar = calculateHourPillar(dayPillar.stemIndex, hour);
