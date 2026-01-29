@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const { testConnection } = require('./config/database');
+const db = require('./models');
 require('dotenv').config();
 
 const app = express();
@@ -9,8 +9,8 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// DB 연결 테스트
-testConnection();
+// Sequelize DB 연결 테스트
+db.testConnection();
 
 // 관리자 라우트
 const adminDashboardRoutes = require('./routes/admin/dashboard');
@@ -35,7 +35,7 @@ app.use('/api/diagnosis', diagnosisRoutes);
 
 // 테스트 라우트
 app.get('/', (req, res) => {
-    res.json({ message: 'My Saju API Server' });
+    res.json({ message: 'My Saju API Server - Using Sequelize ORM' });
 });
 
 // 서버 실행
