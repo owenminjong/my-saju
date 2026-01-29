@@ -1,4 +1,4 @@
-// backend/src/controllers/auth-controller.js
+// backend/src/controllers/authController.js
 const axios = require('axios');
 const jwt = require('jsonwebtoken');
 const { pool } = require('../config/database');

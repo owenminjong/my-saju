@@ -1,7 +1,7 @@
 // backend/src/routes/auth.js
 const express = require('express');
 const router = express.Router();
-const authController = require('../controllers/auth-controller');
+const authController = require('../controllers/authController');
 
 // 활성화된 소셜 로그인 목록
 router.get('/social-logins', authController.getActiveSocialLogins);
