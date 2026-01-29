@@ -1,0 +1,18 @@
+{
+  "development": {
+    "username": "root",
+    "password": "0000",
+    "database": "my_saju",
+    "host": "127.0.0.1",
+    "dialect": "mysql",
+    "timezone": "+09:00"
+  },
+  "production": {
+    "username": "root",
+    "password": "0000",
+    "database": "my_saju",
+    "host": "127.0.0.1",
+    "dialect": "mysql",
+    "timezone": "+09:00"
+  }
+}
