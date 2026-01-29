@@ -1,4 +1,4 @@
-const { getBasicSajuAnalysis } = require('../utils/saju-calculator');
+const { getBasicSajuAnalysis } = require('../utils/sajuCalculator');
 
 /**
  * 무료 사주 분석 서비스

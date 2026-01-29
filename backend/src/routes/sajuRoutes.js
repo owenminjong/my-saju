@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const sajuController = require('../controllers/saju-controller');
+const sajuController = require('../controllers/sajuController');
 
 /**
  * POST /api/saju/analyze

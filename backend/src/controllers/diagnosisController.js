@@ -1,6 +1,6 @@
-const sajuService = require('../services/saju-service');  // ⬅️ 추가
-const { generateFreePrompt } = require('../services/prompt-service');
-const { callClaudeAPIFree } = require('../services/claude-service');
+const sajuService = require('../services/sajuService');  // ⬅️ 추가
+const { generateFreePrompt } = require('../services/promptService');
+const { callClaudeAPIFree } = require('../services/claudeService');
 
 const generateFreeDiagnosis = async (req, res) => {
     try {

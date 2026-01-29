@@ -19,9 +19,9 @@ const adminPromptsRoutes = require('./routes/admin/prompts');
 const adminProductsRoutes = require('./routes/admin/products');
 const adminApiKeysRoutes = require('./routes/admin/apiKeys');
 const paymentRoutes = require('./routes/payment');
-const sajuRoutes = require('./routes/saju-routes');
+const sajuRoutes = require('./routes/sajuRoutes');
 const authRoutes = require('./routes/auth');
-const diagnosisRoutes = require('./routes/diagnosis-routes');
+const diagnosisRoutes = require('./routes/diagnosisRoutes');
 
 app.use('/api/admin/dashboard', adminDashboardRoutes);
 app.use('/api/admin/users', adminUsersRoutes);

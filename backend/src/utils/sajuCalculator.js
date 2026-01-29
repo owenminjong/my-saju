@@ -5,7 +5,7 @@ const {
     FIVE_ELEMENTS,
     TIME_TO_BRANCH,
     MONTH_TO_BRANCH
-} = require('../data/saju-data');
+} = require('../data/sajuData');
 
 /**
  * 양력을 음력으로 변환

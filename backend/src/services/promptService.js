@@ -8,7 +8,7 @@ const {
     HOUR_TO_TIME_OF_DAY,
     TIME_OF_DAY_TO_ATMOSPHERE,
     ELEMENT_TO_EFFECT
-} = require('./saju-mappings');
+} = require('./sajuMappings');
 
 /**
  * MBTI 표현 변환

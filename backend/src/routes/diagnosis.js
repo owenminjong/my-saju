@@ -2,8 +2,8 @@
 
 const express = require('express');
 const router = express.Router();
-const { generateFreePrompt } = require('../services/prompt-service');
-const { callClaudeAPIFree } = require('../services/claude-service');  // ⬅️ 무료 버전
+const { generateFreePrompt } = require('../services/promptService');
+const { callClaudeAPIFree } = require('../services/claudeService');  // ⬅️ 무료 버전
 
 /**
  * POST /api/diagnosis/free

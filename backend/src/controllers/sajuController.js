@@ -1,5 +1,5 @@
-const sajuService = require('../services/saju-service');
-const { generateFreePrompt } = require('../services/prompt-service');
+const sajuService = require('../services/sajuService');
+const { generateFreePrompt } = require('../services/promptService');
 
 /**
  * 무료 사주 분석
