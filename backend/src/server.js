@@ -1,42 +1,54 @@
 const express = require('express');
 const cors = require('cors');
+const dotenv = require('dotenv');
 const { sequelize } = require('../models');
-require('dotenv').config();
+
+// 환경변수 로드
+dotenv.config();
 
 const app = express();
+const PORT = process.env.PORT || 5000;
 
 // 미들웨어
 app.use(cors());
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-// 관리자 라우트
-const adminDashboardRoutes = require('./routes/admin/dashboard');
-const adminUsersRoutes = require('./routes/admin/users');
-const adminPromptsRoutes = require('./routes/admin/prompts');
-const adminProductsRoutes = require('./routes/admin/products');
-const adminApiKeysRoutes = require('./routes/admin/apiKeys');
-const paymentRoutes = require('./routes/payment');
-const sajuRoutes = require('./routes/sajuRoutes');
+// 라우트
 const authRoutes = require('./routes/auth');
-const diagnosisRoutes = require('./routes/diagnosis');
+const sajuRoutes = require('./routes/sajuRoutes');
+const diagnosisRoutes = require('./routes/diagnosisRoutes');  // ← 변경
+const paymentRoutes = require('./routes/payment');
+const adminUsersRoutes = require('./routes/admin/users');
+const adminProductsRoutes = require('./routes/admin/products');
+const adminPromptsRoutes = require('./routes/admin/prompts');
+const adminApiKeysRoutes = require('./routes/admin/apiKeys');
+const adminDashboardRoutes = require('./routes/admin/dashboard');
 
-app.use('/api/admin/dashboard', adminDashboardRoutes);
-app.use('/api/admin/users', adminUsersRoutes);
-app.use('/api/admin/prompts', adminPromptsRoutes);
-app.use('/api/admin/products', adminProductsRoutes);
-app.use('/api/admin/api-keys', adminApiKeysRoutes);
-app.use('/api/payment', paymentRoutes);
-app.use('/api/saju', sajuRoutes);
+// API 라우트 등록
 app.use('/api/auth', authRoutes);
-app.use('/api/diagnosis', diagnosisRoutes);
+app.use('/api/saju', sajuRoutes);
+app.use('/api/diagnosis', diagnosisRoutes);  // ← 동일
+app.use('/api/payment', paymentRoutes);
+app.use('/api/admin/users', adminUsersRoutes);
+app.use('/api/admin/products', adminProductsRoutes);
+app.use('/api/admin/prompts', adminPromptsRoutes);
+app.use('/api/admin/api-keys', adminApiKeysRoutes);
+app.use('/api/admin/dashboard', adminDashboardRoutes);
 
-// 테스트 라우트
+// 루트 경로
 app.get('/', (req, res) => {
-    res.json({ message: 'My Saju API Server' });
+    res.json({ message: 'MyLifeCode Backend API' });
 });
 
-// 서버 실행
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-    console.log(`🚀 Server running on port ${PORT}`);
+// 서버 시작 + Sequelize 연결
+app.listen(PORT, async () => {
+    try {
+        await sequelize.authenticate();
+        console.log('✅ Sequelize 연결 성공!');
+        console.log(`🚀 서버 실행: http://localhost:${PORT}`);
+    } catch (error) {
+        console.error('❌ 데이터베이스 연결 실패:', error);
+        process.exit(1);
+    }
 });

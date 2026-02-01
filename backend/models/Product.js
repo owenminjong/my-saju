@@ -1,5 +1,5 @@
 const { DataTypes } = require('sequelize');
-const { sequelize } = require('./sequelize');
+const { sequelize } = require('../models/sequelize');
 
 const Product = sequelize.define('products', {
     id: {
@@ -17,7 +17,23 @@ const Product = sequelize.define('products', {
     },
     price: {
         type: DataTypes.INTEGER(11),
-        allowNull: false
+        allowNull: false,
+        comment: '정가'
+    },
+    discount_rate: {
+        type: DataTypes.INTEGER(11),
+        defaultValue: 0,
+        comment: '할인율(%)'
+    },
+    discount_price: {
+        type: DataTypes.INTEGER(11),
+        allowNull: true,
+        comment: '할인된 가격'
+    },
+    promotion_active: {
+        type: DataTypes.TINYINT(1),
+        defaultValue: 0,
+        comment: '프로모션 활성화'
     },
     is_active: {
         type: DataTypes.TINYINT(1),

@@ -10,8 +10,21 @@ function ProductsPage() {
         name: '',
         description: '',
         price: '',
+        discount_rate: 0,
+        promotion_active: false,
         is_active: true,
     });
+
+    // 할인가 자동 계산
+    const calculateDiscountPrice = (price, discountRate) => {
+        if (!price || !discountRate) return price;
+        return Math.floor(price * (1 - discountRate / 100));
+    };
+
+    const discountedPrice = calculateDiscountPrice(
+        parseInt(formData.price) || 0,
+        parseInt(formData.discount_rate) || 0
+    );
 
     useEffect(() => {
         fetchProducts();
@@ -35,6 +48,8 @@ function ProductsPage() {
         const productData = {
             ...formData,
             price: parseInt(formData.price),
+            discount_rate: parseInt(formData.discount_rate) || 0,
+            discount_price: discountedPrice,
         };
 
         try {
@@ -48,7 +63,14 @@ function ProductsPage() {
 
             setShowModal(false);
             setEditingProduct(null);
-            setFormData({ name: '', description: '', price: '', is_active: true });
+            setFormData({
+                name: '',
+                description: '',
+                price: '',
+                discount_rate: 0,
+                promotion_active: false,
+                is_active: true
+            });
             fetchProducts();
         } catch (error) {
             console.error('상품 저장 실패:', error);
@@ -62,6 +84,8 @@ function ProductsPage() {
             name: product.name,
             description: product.description || '',
             price: product.price,
+            discount_rate: product.discount_rate || 0,
+            promotion_active: product.promotion_active || false,
             is_active: product.is_active,
         });
         setShowModal(true);
@@ -84,7 +108,14 @@ function ProductsPage() {
 
     const handleAdd = () => {
         setEditingProduct(null);
-        setFormData({ name: '', description: '', price: '', is_active: true });
+        setFormData({
+            name: '',
+            description: '',
+            price: '',
+            discount_rate: 0,
+            promotion_active: false,
+            is_active: true
+        });
         setShowModal(true);
     };
 
@@ -113,6 +144,7 @@ function ProductsPage() {
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">상품명</th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">설명</th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">가격</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">프로모션</th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">상태</th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">관리</th>
                     </tr>
@@ -123,17 +155,44 @@ function ProductsPage() {
                             <td className="px-6 py-4 whitespace-nowrap text-sm">{product.id}</td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">{product.name}</td>
                             <td className="px-6 py-4 text-sm text-gray-500">{product.description}</td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold">
-                                {parseInt(product.price).toLocaleString()}원
+                            <td className="px-6 py-4 whitespace-nowrap text-sm">
+                                {product.promotion_active && product.discount_rate > 0 ? (
+                                    <div>
+                                        <div className="line-through text-gray-400">
+                                            {parseInt(product.price).toLocaleString()}원
+                                        </div>
+                                        <div className="font-bold text-red-600">
+                                            {parseInt(product.discount_price).toLocaleString()}원
+                                            <span className="ml-2 text-xs bg-red-100 text-red-800 px-2 py-1 rounded">
+                                                {product.discount_rate}% 할인
+                                            </span>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <span className="font-semibold">
+                                        {parseInt(product.price).toLocaleString()}원
+                                    </span>
+                                )}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">
-                  <span
-                      className={`px-2 py-1 text-xs rounded-full ${
-                          product.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
-                      }`}
-                  >
-                    {product.is_active ? '판매중' : '판매중지'}
-                  </span>
+                                {product.promotion_active ? (
+                                    <span className="px-2 py-1 text-xs rounded-full bg-red-100 text-red-800">
+                                        활성
+                                    </span>
+                                ) : (
+                                    <span className="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-800">
+                                        비활성
+                                    </span>
+                                )}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                                <span
+                                    className={`px-2 py-1 text-xs rounded-full ${
+                                        product.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                                    }`}
+                                >
+                                    {product.is_active ? '판매중' : '판매중지'}
+                                </span>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm">
                                 <button
@@ -158,7 +217,7 @@ function ProductsPage() {
             {/* 상품 추가/수정 모달 */}
             {showModal && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                    <div className="bg-white rounded-lg p-8 max-w-2xl w-full mx-4">
+                    <div className="bg-white rounded-lg p-8 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
                         <h2 className="text-2xl font-bold mb-6">
                             {editingProduct ? '상품 수정' : '새 상품'}
                         </h2>
@@ -186,7 +245,7 @@ function ProductsPage() {
                             </div>
 
                             <div className="mb-4">
-                                <label className="block text-sm font-medium mb-2">가격 (원) *</label>
+                                <label className="block text-sm font-medium mb-2">정가 (원) *</label>
                                 <input
                                     type="number"
                                     value={formData.price}
@@ -195,6 +254,58 @@ function ProductsPage() {
                                     required
                                     min="0"
                                 />
+                            </div>
+
+                            {/* 프로모션 섹션 */}
+                            <div className="mb-4 p-4 bg-red-50 rounded-lg border border-red-200">
+                                <h3 className="font-semibold mb-3 text-red-900">🎁 프로모션 설정</h3>
+
+                                <div className="mb-3">
+                                    <label className="block text-sm font-medium mb-2">할인율 (%)</label>
+                                    <input
+                                        type="number"
+                                        value={formData.discount_rate}
+                                        onChange={(e) => setFormData({ ...formData, discount_rate: e.target.value })}
+                                        className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                                        min="0"
+                                        max="100"
+                                    />
+                                </div>
+
+                                {formData.price && formData.discount_rate > 0 && (
+                                    <div className="mb-3 p-3 bg-white rounded border">
+                                        <div className="flex justify-between items-center">
+                                            <span className="text-sm text-gray-600">정가:</span>
+                                            <span className="line-through text-gray-400">
+                                                {parseInt(formData.price).toLocaleString()}원
+                                            </span>
+                                        </div>
+                                        <div className="flex justify-between items-center mt-2">
+                                            <span className="text-sm font-bold text-red-600">할인가:</span>
+                                            <span className="text-xl font-bold text-red-600">
+                                                {discountedPrice.toLocaleString()}원
+                                            </span>
+                                        </div>
+                                        <div className="text-right mt-1 text-xs text-red-600">
+                                            {parseInt(formData.discount_rate)}% 할인
+                                        </div>
+                                    </div>
+                                )}
+
+                                <div className="mb-0">
+                                    <label className="flex items-center">
+                                        <input
+                                            type="checkbox"
+                                            checked={formData.promotion_active}
+                                            onChange={(e) => setFormData({ ...formData, promotion_active: e.target.checked })}
+                                            className="mr-2"
+                                        />
+                                        <span className="text-sm font-medium text-red-900">프로모션 적용</span>
+                                    </label>
+                                    <p className="text-xs text-gray-500 ml-6 mt-1">
+                                        체크하면 할인가가 고객에게 표시됩니다
+                                    </p>
+                                </div>
                             </div>
 
                             <div className="mb-6">

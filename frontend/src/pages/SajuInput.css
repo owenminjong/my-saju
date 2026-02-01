@@ -1,0 +1,268 @@
+/* Saju Input Form Styles - 월하 디자인 */
+
+.form-section-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 80px 20px 100px;
+    position: relative;
+    background: var(--bg-color, #0b101a);
+    min-height: 100vh;
+}
+
+.container {
+    width: 100%;
+    max-width: 480px;
+    padding: 40px 30px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(212, 175, 55, 0.3);
+    border-radius: 20px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+    position: relative;
+    overflow: hidden;
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.header h2 {
+    font-family: 'Noto Serif KR', serif;
+    font-size: 2rem;
+    color: #d4af37;
+    margin-bottom: 10px;
+}
+
+.header p {
+    color: #a0a0a0;
+    font-size: 0.95rem;
+}
+
+/* Form Groups */
+.form-group {
+    margin-bottom: 25px;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 8px;
+    color: #f3e5ab;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+/* Text Inputs */
+input[type="text"],
+input[type="date"] {
+    width: 100%;
+    padding: 12px 0;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+    font-size: 1rem;
+    outline: none;
+    border-radius: 0;
+    transition: border-color 0.3s;
+}
+
+input[type="text"]:focus,
+input[type="date"]:focus {
+    border-bottom: 1px solid #d4af37;
+}
+
+input[type="text"]::placeholder {
+    color: rgba(255, 255, 255, 0.3);
+}
+
+/* Checkbox Group */
+.checkbox-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.checkbox-input {
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    accent-color: #d4af37;
+}
+
+.checkbox-label {
+    color: #ffffff;
+    font-size: 0.9rem;
+    cursor: pointer;
+    user-select: none;
+}
+
+/* Date Input - 월하 스타일로 커스터마이징 */
+input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(1) brightness(0.7);
+    cursor: pointer;
+}
+
+/* Select Dropdown - 새로 추가 */
+.select-input {
+    width: 100%;
+    padding: 12px 15px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    color: #ffffff;
+    font-size: 1rem;
+    outline: none;
+    cursor: pointer;
+    transition: all 0.3s;
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23d4af37' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 20px;
+    padding-right: 40px;
+}
+
+.select-input:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(212, 175, 55, 0.5);
+}
+
+.select-input:focus {
+    border-color: #d4af37;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.select-input option {
+    background: #1a1f2e;
+    color: #ffffff;
+    padding: 10px;
+}
+
+/* Radio Groups */
+.radio-group {
+    display: flex;
+    gap: 10px;
+}
+
+.radio-item {
+    flex: 1;
+    position: relative;
+}
+
+.radio-item input {
+    display: none;
+}
+
+.radio-item label {
+    display: block;
+    text-align: center;
+    padding: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: 0.3s;
+    font-size: 0.95rem;
+    color: #a0a0a0;
+    background: transparent;
+}
+
+.radio-item label:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.radio-item input:checked + label {
+    border-color: #d4af37;
+    color: #d4af37;
+    background: rgba(212, 175, 55, 0.1);
+}
+
+/* Submit Button */
+.submit-btn {
+    width: 100%;
+    padding: 18px;
+    background: linear-gradient(135deg, #d4af37 0%, #aa8a2e 100%);
+    color: #0b101a;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.3s;
+    margin-top: 20px;
+    font-family: 'Noto Serif KR', serif;
+}
+
+.submit-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(212, 175, 55, 0.4);
+}
+
+.submit-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Corner Decorations */
+.corner-deco {
+    position: absolute;
+    width: 40px;
+    height: 40px;
+    border: 2px solid rgba(212, 175, 55, 0.3);
+    pointer-events: none;
+}
+
+.top-left {
+    top: 10px;
+    left: 10px;
+    border-right: none;
+    border-bottom: none;
+}
+
+.top-right {
+    top: 10px;
+    right: 10px;
+    border-left: none;
+    border-bottom: none;
+}
+
+.bottom-left {
+    bottom: 10px;
+    left: 10px;
+    border-right: none;
+    border-top: none;
+}
+
+.bottom-right {
+    bottom: 10px;
+    right: 10px;
+    border-left: none;
+    border-top: none;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+    .container {
+        padding: 30px 20px;
+    }
+
+    .header h2 {
+        font-size: 1.6rem;
+    }
+
+    .radio-group {
+        gap: 8px;
+    }
+
+    .radio-item label {
+        padding: 10px 8px;
+        font-size: 0.85rem;
+    }
+
+    .select-input {
+        font-size: 0.9rem;
+    }
+}

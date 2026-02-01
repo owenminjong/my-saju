@@ -52,7 +52,14 @@ exports.getProductDetail = async (req, res) => {
 // 상품 생성
 exports.createProduct = async (req, res) => {
     try {
-        const { name, description, price, is_active = true } = req.body;
+        const {
+            name,
+            description,
+            price,
+            discount_rate = 0,
+            promotion_active = false,
+            is_active = true
+        } = req.body;
 
         if (!name || price === undefined) {
             return res.status(400).json({
@@ -61,10 +68,18 @@ exports.createProduct = async (req, res) => {
             });
         }
 
+        // 할인가 계산
+        const discountPrice = discount_rate > 0
+            ? Math.floor(price * (1 - discount_rate / 100))
+            : null;
+
         const product = await Product.create({
             name,
             description,
             price,
+            discount_rate,
+            discount_price: discountPrice,
+            promotion_active,
             is_active
         });
 
@@ -87,14 +102,41 @@ exports.createProduct = async (req, res) => {
 exports.updateProduct = async (req, res) => {
     try {
         const { id } = req.params;
-        const { name, description, price, is_active } = req.body;
+        const {
+            name,
+            description,
+            price,
+            discount_rate,
+            promotion_active,
+            is_active
+        } = req.body;
 
         // 수정할 데이터만 포함
         const updateData = {};
         if (name !== undefined) updateData.name = name;
         if (description !== undefined) updateData.description = description;
         if (price !== undefined) updateData.price = price;
+        if (discount_rate !== undefined) updateData.discount_rate = discount_rate;
+        if (promotion_active !== undefined) updateData.promotion_active = promotion_active;
         if (is_active !== undefined) updateData.is_active = is_active;
+
+        // 할인가 재계산 (가격 또는 할인율이 변경된 경우)
+        if (price !== undefined || discount_rate !== undefined) {
+            const currentProduct = await Product.findByPk(id);
+            if (!currentProduct) {
+                return res.status(404).json({
+                    success: false,
+                    message: '상품을 찾을 수 없습니다.'
+                });
+            }
+
+            const finalPrice = price !== undefined ? price : currentProduct.price;
+            const finalDiscountRate = discount_rate !== undefined ? discount_rate : currentProduct.discount_rate;
+
+            updateData.discount_price = finalDiscountRate > 0
+                ? Math.floor(finalPrice * (1 - finalDiscountRate / 100))
+                : null;
+        }
 
         const [updated] = await Product.update(updateData, {
             where: { id }
