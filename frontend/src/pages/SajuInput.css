@@ -77,29 +77,6 @@ input[type="text"]::placeholder {
     color: rgba(255, 255, 255, 0.3);
 }
 
-/* Checkbox Group */
-.checkbox-group {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-top: 15px;
-}
-
-.checkbox-input {
-    width: 20px;
-    height: 20px;
-    border-radius: 4px;
-    cursor: pointer;
-    accent-color: #d4af37;
-}
-
-.checkbox-label {
-    color: #ffffff;
-    font-size: 0.9rem;
-    cursor: pointer;
-    user-select: none;
-}
-
 /* Date Input - 월하 스타일로 커스터마이징 */
 input[type="date"]::-webkit-calendar-picker-indicator {
     filter: invert(1) brightness(0.7);

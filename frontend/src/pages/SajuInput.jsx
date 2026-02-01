@@ -92,9 +92,14 @@ const SajuInput = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
+        console.log('🔵 [1단계] 폼 제출 버튼 클릭됨');
+        console.log('현재 formData:', formData);
+
         const dateParts = formData.birthDate.split('.');
+        console.log('🔵 [2단계] 생년월일 파싱:', dateParts);
 
         if (dateParts.length !== 3) {
+            console.error('❌ 생년월일 형식 오류');
             alert('생년월일을 올바른 형식(YYYY.MM.DD)으로 입력해주세요.');
             return;
         }
@@ -106,12 +111,14 @@ const SajuInput = () => {
         console.log('🔵 [3단계] 날짜 변환:', { year, month, day });
 
         if (!year || !month || !day) {
+            console.error('❌ 날짜 변환 실패');
             alert('올바른 생년월일을 입력해주세요.');
             return;
         }
 
         try {
             setLoading(true);
+            console.log('🔵 [4단계] 로딩 시작');
 
             const requestData = {
                 name: formData.name,
@@ -125,8 +132,16 @@ const SajuInput = () => {
                 mbti: formData.mbti
             };
 
+            console.log('🔵 [5단계] API 요청 데이터 준비:');
+            console.log(JSON.stringify(requestData, null, 2));
+            console.log('🔵 [6단계] getFreeDiagnosis 호출 시작...');
+
             const response = await getFreeDiagnosis(requestData);
 
+            console.log('✅ [7단계] API 응답 성공:');
+            console.log(response);
+
+            console.log('🔵 [8단계] 네비게이션 시작...');
             navigate('/result', {
                 state: {
                     result: {
@@ -137,6 +152,7 @@ const SajuInput = () => {
                     }
                 }
             });
+            console.log('✅ [9단계] 네비게이션 완료');
 
         } catch (error) {
             console.error('❌ [에러 발생]');
@@ -222,17 +238,27 @@ const SajuInput = () => {
                             * 형식: YYYY.MM.DD
                         </p>
 
-                        <div className="checkbox-group">
-                            <input
-                                type="checkbox"
-                                id="isLunar"
-                                checked={formData.isLunar}
-                                onChange={(e) => setFormData(prev => ({ ...prev, isLunar: e.target.checked }))}
-                                className="checkbox-input"
-                            />
-                            <label htmlFor="isLunar" className="checkbox-label">
-                                음력입니다
-                            </label>
+                        <div className="radio-group" style={{ marginTop: '10px' }}>
+                            <div className="radio-item">
+                                <input
+                                    type="radio"
+                                    id="solar"
+                                    name="calendar"
+                                    checked={!formData.isLunar}
+                                    onChange={() => setFormData(prev => ({ ...prev, isLunar: false }))}
+                                />
+                                <label htmlFor="solar">양력</label>
+                            </div>
+                            <div className="radio-item">
+                                <input
+                                    type="radio"
+                                    id="lunar"
+                                    name="calendar"
+                                    checked={formData.isLunar}
+                                    onChange={() => setFormData(prev => ({ ...prev, isLunar: true }))}
+                                />
+                                <label htmlFor="lunar">음력</label>
+                            </div>
                         </div>
                     </div>
 
