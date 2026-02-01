@@ -1,5 +1,5 @@
 const Iamport = require('iamport');
-const { pool } = require('../config/database');
+const { Order } = require('../../models');
 
 // 아임포트 클라이언트 초기화
 const iamport = new Iamport({
@@ -13,22 +13,20 @@ class PaymentService {
      */
     static async createOrder(userId, productId, amount) {
         try {
-            const connection = await pool.getConnection();
-
             // 주문번호 생성 (merchant_uid)
             const merchantUid = `order_${Date.now()}_${userId}`;
 
-            const [result] = await connection.query(
-                `INSERT INTO orders (user_id, product_id, amount, merchant_uid, status) 
-         VALUES (?, ?, ?, ?, 'pending')`,
-                [userId, productId, amount, merchantUid]
-            );
-
-            connection.release();
+            const order = await Order.create({
+                user_id: userId,
+                product_id: productId,
+                amount,
+                merchant_uid: merchantUid,
+                status: 'pending'
+            });
 
             return {
-                orderId: result.insertId,
-                merchantUid,
+                orderId: order.id,
+                merchantUid: order.merchant_uid
             };
         } catch (error) {
             console.error('주문 생성 오류:', error);
@@ -71,21 +69,19 @@ class PaymentService {
      */
     static async completePayment(merchantUid, impUid, paymentMethod) {
         try {
-            const connection = await pool.getConnection();
-
-            const [result] = await connection.query(
-                `UPDATE orders 
-         SET imp_uid = ?, 
-             payment_method = ?, 
-             status = 'completed', 
-             paid_at = NOW() 
-         WHERE merchant_uid = ?`,
-                [impUid, paymentMethod, merchantUid]
+            const [updated] = await Order.update(
+                {
+                    imp_uid: impUid,
+                    payment_method: paymentMethod,
+                    status: 'completed',
+                    paid_at: new Date()
+                },
+                {
+                    where: { merchant_uid: merchantUid }
+                }
             );
 
-            connection.release();
-
-            if (result.affectedRows === 0) {
+            if (updated === 0) {
                 throw new Error('주문을 찾을 수 없습니다.');
             }
 
@@ -106,16 +102,10 @@ class PaymentService {
                 reason,
             });
 
-            const connection = await pool.getConnection();
-
-            await connection.query(
-                `UPDATE orders 
-         SET status = 'cancelled' 
-         WHERE imp_uid = ?`,
-                [impUid]
+            await Order.update(
+                { status: 'cancelled' },
+                { where: { imp_uid: impUid } }
             );
-
-            connection.release();
 
             return cancel;
         } catch (error) {

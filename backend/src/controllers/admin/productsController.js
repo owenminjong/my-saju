@@ -1,15 +1,11 @@
-const { pool } = require('../../config/database');
+const { Product } = require('../../../models');
 
 // 상품 목록 조회
 exports.getProducts = async (req, res) => {
     try {
-        const connection = await pool.getConnection();
-
-        const [products] = await connection.query(
-            'SELECT * FROM products ORDER BY created_at DESC'
-        );
-
-        connection.release();
+        const products = await Product.findAll({
+            order: [['created_at', 'DESC']]
+        });
 
         res.json({
             success: true,
@@ -29,16 +25,10 @@ exports.getProducts = async (req, res) => {
 exports.getProductDetail = async (req, res) => {
     try {
         const { id } = req.params;
-        const connection = await pool.getConnection();
 
-        const [products] = await connection.query(
-            'SELECT * FROM products WHERE id = ?',
-            [id]
-        );
+        const product = await Product.findByPk(id);
 
-        connection.release();
-
-        if (products.length === 0) {
+        if (!product) {
             return res.status(404).json({
                 success: false,
                 message: '상품을 찾을 수 없습니다.'
@@ -47,7 +37,7 @@ exports.getProductDetail = async (req, res) => {
 
         res.json({
             success: true,
-            data: products[0]
+            data: product
         });
 
     } catch (error) {
@@ -71,19 +61,17 @@ exports.createProduct = async (req, res) => {
             });
         }
 
-        const connection = await pool.getConnection();
-
-        const [result] = await connection.query(
-            'INSERT INTO products (name, description, price, is_active) VALUES (?, ?, ?, ?)',
-            [name, description, price, is_active]
-        );
-
-        connection.release();
+        const product = await Product.create({
+            name,
+            description,
+            price,
+            is_active
+        });
 
         res.status(201).json({
             success: true,
             message: '상품이 생성되었습니다.',
-            data: { id: result.insertId }
+            data: { id: product.id }
         });
 
     } catch (error) {
@@ -101,21 +89,18 @@ exports.updateProduct = async (req, res) => {
         const { id } = req.params;
         const { name, description, price, is_active } = req.body;
 
-        const connection = await pool.getConnection();
+        // 수정할 데이터만 포함
+        const updateData = {};
+        if (name !== undefined) updateData.name = name;
+        if (description !== undefined) updateData.description = description;
+        if (price !== undefined) updateData.price = price;
+        if (is_active !== undefined) updateData.is_active = is_active;
 
-        const [result] = await connection.query(
-            `UPDATE products 
-       SET name = COALESCE(?, name),
-           description = COALESCE(?, description),
-           price = COALESCE(?, price),
-           is_active = COALESCE(?, is_active)
-       WHERE id = ?`,
-            [name, description, price, is_active, id]
-        );
+        const [updated] = await Product.update(updateData, {
+            where: { id }
+        });
 
-        connection.release();
-
-        if (result.affectedRows === 0) {
+        if (updated === 0) {
             return res.status(404).json({
                 success: false,
                 message: '상품을 찾을 수 없습니다.'
@@ -140,16 +125,12 @@ exports.updateProduct = async (req, res) => {
 exports.deleteProduct = async (req, res) => {
     try {
         const { id } = req.params;
-        const connection = await pool.getConnection();
 
-        const [result] = await connection.query(
-            'DELETE FROM products WHERE id = ?',
-            [id]
-        );
+        const deleted = await Product.destroy({
+            where: { id }
+        });
 
-        connection.release();
-
-        if (result.affectedRows === 0) {
+        if (deleted === 0) {
             return res.status(404).json({
                 success: false,
                 message: '상품을 찾을 수 없습니다.'

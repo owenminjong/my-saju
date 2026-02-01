@@ -98,7 +98,19 @@ function PromptsPage() {
                     + 새 프롬프트
                 </button>
             </div>
-
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                <h3 className="font-bold text-blue-800 mb-2">📌 사용 가능한 변수</h3>
+                <div className="text-sm text-blue-700 space-y-1">
+                    <p><code className="bg-blue-100 px-2 py-1 rounded">{`{color}`}</code> - 천간 색상 (예: 푸른, 붉은)</p>
+                    <p><code className="bg-blue-100 px-2 py-1 rounded">{`{animalName}`}</code> - 띠 동물 이름 (예: 원숭이, 쥐)</p>
+                    <p><code className="bg-blue-100 px-2 py-1 rounded">{`{animalEmoji}`}</code> - 띠 이모지 (예: 🐵, 🐭)</p>
+                    <p><code className="bg-blue-100 px-2 py-1 rounded">{`{seasonBg}`}</code> - 계절 배경 (예: 가을 단풍)</p>
+                    <p><code className="bg-blue-100 px-2 py-1 rounded">{`{timeBg}`}</code> - 시간대 분위기 (예: 오후 햇살)</p>
+                    <p><code className="bg-blue-100 px-2 py-1 rounded">{`{dominantEffect}`}</code> - 가장 강한 오행 효과</p>
+                    <p><code className="bg-blue-100 px-2 py-1 rounded">{`{fullDescription}`}</code> - 캐릭터 전체 설명</p>
+                    <p><code className="bg-blue-100 px-2 py-1 rounded">{`{personalityExpression}`}</code> - MBTI 기반 성향 표현</p>
+                </div>
+            </div>
             {/* 프롬프트 목록 */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {prompts.map((prompt) => (
@@ -154,7 +166,7 @@ function PromptsPage() {
                                 <input
                                     type="text"
                                     value={formData.name}
-                                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                    onChange={(e) => setFormData({...formData, name: e.target.value})}
                                     className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                                     required
                                 />
@@ -165,7 +177,7 @@ function PromptsPage() {
                                 <input
                                     type="text"
                                     value={formData.category}
-                                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                                    onChange={(e) => setFormData({...formData, category: e.target.value})}
                                     className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                                     placeholder="예: saju, love, wealth"
                                 />
@@ -175,7 +187,7 @@ function PromptsPage() {
                                 <label className="block text-sm font-medium mb-2">내용 *</label>
                                 <textarea
                                     value={formData.content}
-                                    onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+                                    onChange={(e) => setFormData({...formData, content: e.target.value})}
                                     rows="10"
                                     className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                                     required
@@ -187,7 +199,7 @@ function PromptsPage() {
                                     <input
                                         type="checkbox"
                                         checked={formData.is_active}
-                                        onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
+                                        onChange={(e) => setFormData({...formData, is_active: e.target.checked})}
                                         className="mr-2"
                                     />
                                     <span className="text-sm">활성화</span>

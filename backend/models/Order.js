@@ -1,0 +1,61 @@
+const { DataTypes } = require('sequelize');
+const { sequelize } = require('./sequelize');
+
+const Order = sequelize.define('orders', {
+    id: {
+        type: DataTypes.INTEGER(11),
+        primaryKey: true,
+        autoIncrement: true
+    },
+    user_id: {
+        type: DataTypes.INTEGER(11),
+        allowNull: false
+    },
+    product_id: {
+        type: DataTypes.INTEGER(11),
+        allowNull: false
+    },
+    amount: {
+        type: DataTypes.INTEGER(11),
+        allowNull: false
+    },
+    status: {
+        type: DataTypes.ENUM('pending', 'completed', 'cancelled', 'refunded'),
+        allowNull: true,
+        defaultValue: 'pending'
+    },
+    created_at: {
+        type: DataTypes.DATE,
+        allowNull: true,
+        defaultValue: DataTypes.NOW
+    },
+    updated_at: {
+        type: DataTypes.DATE,
+        allowNull: true,
+        defaultValue: DataTypes.NOW
+    },
+    imp_uid: {
+        type: DataTypes.STRING(100),
+        allowNull: true
+    },
+    merchant_uid: {
+        type: DataTypes.STRING(100),
+        allowNull: true,
+        unique: true
+    },
+    payment_method: {
+        type: DataTypes.STRING(50),
+        allowNull: true
+    },
+    paid_at: {
+        type: DataTypes.DATE,
+        allowNull: true
+    }
+}, {
+    tableName: 'orders',
+    timestamps: true,
+    createdAt: 'created_at',
+    updatedAt: 'updated_at'
+});
+
+module.exports = Order;

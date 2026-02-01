@@ -1,3 +1,4 @@
+const { Prompt } = require('../../models');
 const {
     MBTI_EXPRESSIONS,
     STEM_TO_COLOR,
@@ -62,14 +63,10 @@ function generateCharacterInfo(saju, birthMonth, birthHour) {
 /**
  * 가장 강한 오행 이펙트
  */
-/**
- * 가장 강한 오행 이펙트
- */
 function getDominantElementEffect(elements) {
     const percentages = elements.percentage;
     const elementList = [];
 
-    // 가장 높은 값 찾기
     let maxValue = 0;
     for (const [element, value] of Object.entries(percentages)) {
         const numValue = parseFloat(value);
@@ -78,7 +75,6 @@ function getDominantElementEffect(elements) {
         }
     }
 
-    // 가장 높은 값과 같은 오행들 모두 찾기
     for (const [element, value] of Object.entries(percentages)) {
         const numValue = parseFloat(value);
         if (numValue === maxValue) {
@@ -86,7 +82,6 @@ function getDominantElementEffect(elements) {
         }
     }
 
-    // 동률이면 오행 상생 순서로 우선순위: 목 → 화 → 토 → 금 → 수
     const priority = ['목', '화', '토', '금', '수'];
     for (const element of priority) {
         if (elementList.includes(element)) {
@@ -96,10 +91,25 @@ function getDominantElementEffect(elements) {
 
     return ELEMENT_TO_EFFECT[elementList[0]];
 }
+
+/**
+ * 프롬프트 템플릿의 변수 치환
+ */
+function replaceVariables(template, variables) {
+    let result = template;
+
+    for (const [key, value] of Object.entries(variables)) {
+        const regex = new RegExp(`\\{${key}\\}`, 'g');
+        result = result.replace(regex, value);
+    }
+
+    return result;
+}
+
 /**
  * 무료 베이직 진단 프롬프트 생성
  */
-function generateFreePrompt(sajuData) {
+async function generateFreePrompt(sajuData) {
     const { user, saju, elements, dayMaster, fields, mbti } = sajuData;
 
     const personalityExpression = convertMBTIToExpression(mbti);
@@ -108,30 +118,34 @@ function generateFreePrompt(sajuData) {
     const character = generateCharacterInfo(saju, birthMonth, birthHour);
     const dominantEffect = getDominantElementEffect(elements);
 
-    const systemPrompt = `당신은 사주명리학 전문가입니다.
+    // DB에서 프롬프트 템플릿 가져오기
+    const promptTemplate = await Prompt.findOne({
+        where: {
+            category: 'free',
+            is_active: true
+        }
+    });
 
-**출력 구조:**
-1. 🎭 당신의 사주 캐릭터
+    if (!promptTemplate) {
+        throw new Error('무료 진단 프롬프트가 설정되지 않았습니다. 관리자 페이지에서 등록해주세요.');
+    }
 
-**[${character.color} ${character.animalName}띠] [${character.color} ${character.animalName}]**
+    // 변수 맵핑
+    const variables = {
+        color: character.color,
+        animalName: character.animalName,
+        animalEmoji: character.animalEmoji,
+        seasonBg: character.seasonBg,
+        timeBg: character.timeBg,
+        dominantEffect: dominantEffect,
+        fullDescription: character.fullDescription,
+        personalityExpression: personalityExpression
+    };
 
-${character.seasonBg} ${character.timeBg} 하늘 | ${dominantEffect}
+    // 템플릿의 변수 치환
+    const systemPrompt = replaceVariables(promptTemplate.content, variables);
 
-"[한 줄 설명]"
-${character.fullDescription}
-2. 📊 운명 성적표 (표 형식)
-3. ⚡ 2026년 키워드 1개
-4. 📄 진단 소견서 (정확히 300자)
-5. 🚨 위기 2가지 (각 월+상황, 질문으로 끝)
-
-**규칙:**
-- MBTI 용어 절대 금지
-- 성향 표현: "${personalityExpression}"
-- 키워드는 1개만
-- 진단 소견서는 정확히 300자
-- 위기는 해결책 없이 질문으로 끝
-- 출력 금지: 월별 지침, 귀인 특징, 투자 종목`;
-
+    // User Prompt는 그대로 유지
     const userPrompt = `## 입력 데이터
 
 **사용자:** ${user.name} (${user.gender === 'M' ? '남성' : '여성'})

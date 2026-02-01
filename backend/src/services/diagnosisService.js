@@ -1,5 +1,6 @@
-const { pool } = require('../config/database');
+const { DiagnosisResult } = require('../../models');
 const crypto = require('crypto');
+const { Op } = require('sequelize');
 
 /**
  * 입력 해시 생성
@@ -25,56 +26,47 @@ async function saveDiagnosisResult(data) {
             orderId
         } = data;
 
-        const connection = await pool.getConnection();
-
         // 기존 결과 확인
-        const [existing] = await connection.query(
-            'SELECT id, free_diagnosis, premium_diagnosis FROM diagnosis_results WHERE input_hash = ?',
-            [inputHash]
-        );
+        const existing = await DiagnosisResult.findOne({
+            where: { input_hash: inputHash }
+        });
 
-        if (existing.length > 0) {
+        if (existing) {
             // 업데이트
+            const updateData = {};
+
             if (diagnosisType === 'free') {
-                await connection.query(
-                    'UPDATE diagnosis_results SET free_diagnosis = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
-                    [freeDiagnosis, existing[0].id]
-                );
+                updateData.free_diagnosis = freeDiagnosis;
             } else {
-                await connection.query(
-                    'UPDATE diagnosis_results SET premium_diagnosis = ?, order_id = ?, diagnosis_type = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
-                    [premiumDiagnosis, orderId, diagnosisType, existing[0].id]
-                );
+                updateData.premium_diagnosis = premiumDiagnosis;
+                updateData.order_id = orderId;
+                updateData.diagnosis_type = diagnosisType;
             }
-            console.log(`💾 진단 결과 업데이트 완료 (ID: ${existing[0].id})`);
-            connection.release();
-            return existing[0].id;
+
+            await existing.update(updateData);
+
+            console.log(`💾 진단 결과 업데이트 완료 (ID: ${existing.id})`);
+            return existing.id;
         }
 
         // 신규 저장
-        const [result] = await connection.query(
-            `INSERT INTO diagnosis_results 
-            (user_id, input_hash, name, birth_date, birth_time, gender, mbti, saju_data, free_diagnosis, premium_diagnosis, diagnosis_type, order_id) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-            [
-                userId,
-                inputHash,
-                sajuData.user.name,
-                sajuData.user.birthDate,
-                sajuData.user.birthTime,
-                sajuData.user.gender,
-                sajuData.user.mbti || null,
-                JSON.stringify(sajuData),
-                freeDiagnosis || null,
-                premiumDiagnosis || null,
-                diagnosisType,
-                orderId || null
-            ]
-        );
+        const result = await DiagnosisResult.create({
+            user_id: userId,
+            input_hash: inputHash,
+            name: sajuData.user.name,
+            birth_date: sajuData.user.birthDate,
+            birth_time: sajuData.user.birthTime,
+            gender: sajuData.user.gender,
+            mbti: sajuData.user.mbti || null,
+            saju_data: sajuData,
+            free_diagnosis: freeDiagnosis || null,
+            premium_diagnosis: premiumDiagnosis || null,
+            diagnosis_type: diagnosisType,
+            order_id: orderId || null
+        });
 
-        connection.release();
-        console.log(`💾 진단 결과 저장 완료 (ID: ${result.insertId})`);
-        return result.insertId;
+        console.log(`💾 진단 결과 저장 완료 (ID: ${result.id})`);
+        return result.id;
 
     } catch (error) {
         console.error('❌ 진단 결과 저장 오류:', error);
@@ -87,15 +79,11 @@ async function saveDiagnosisResult(data) {
  */
 async function getDiagnosisResult(inputHash) {
     try {
-        const connection = await pool.getConnection();
+        const result = await DiagnosisResult.findOne({
+            where: { input_hash: inputHash }
+        });
 
-        const [rows] = await connection.query(
-            'SELECT * FROM diagnosis_results WHERE input_hash = ?',
-            [inputHash]
-        );
-
-        connection.release();
-        return rows.length > 0 ? rows[0] : null;
+        return result;
 
     } catch (error) {
         console.error('❌ 진단 결과 조회 오류:', error);

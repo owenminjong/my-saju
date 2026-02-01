@@ -1,5 +1,5 @@
 const PaymentService = require('../services/paymentService');
-const { pool } = require('../config/database');
+const { Product, Order } = require('../../models');
 
 // 결제 준비 (주문 생성)
 exports.preparePayment = async (req, res) => {
@@ -8,21 +8,14 @@ exports.preparePayment = async (req, res) => {
         const userId = req.body.user_id; // 나중에 JWT에서 추출
 
         // 상품 정보 조회
-        const connection = await pool.getConnection();
-        const [products] = await connection.query(
-            'SELECT * FROM products WHERE id = ?',
-            [product_id]
-        );
-        connection.release();
+        const product = await Product.findByPk(product_id);
 
-        if (products.length === 0) {
+        if (!product) {
             return res.status(404).json({
                 success: false,
                 message: '상품을 찾을 수 없습니다.',
             });
         }
-
-        const product = products[0];
 
         // 주문 생성
         const order = await PaymentService.createOrder(
@@ -56,21 +49,16 @@ exports.verifyPayment = async (req, res) => {
         const { imp_uid, merchant_uid } = req.body;
 
         // DB에서 주문 정보 조회
-        const connection = await pool.getConnection();
-        const [orders] = await connection.query(
-            'SELECT * FROM orders WHERE merchant_uid = ?',
-            [merchant_uid]
-        );
-        connection.release();
+        const order = await Order.findOne({
+            where: { merchant_uid }
+        });
 
-        if (orders.length === 0) {
+        if (!order) {
             return res.status(404).json({
                 success: false,
                 message: '주문을 찾을 수 없습니다.',
             });
         }
-
-        const order = orders[0];
 
         // 아임포트 결제 검증
         const payment = await PaymentService.verifyPayment(

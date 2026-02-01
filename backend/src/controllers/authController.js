@@ -1,7 +1,6 @@
-// backend/src/controllers/authController.js
 const axios = require('axios');
 const jwt = require('jsonwebtoken');
-const { pool } = require('../config/database');
+const { User, ApiKey } = require('../../models');
 const { decrypt } = require('../utils/encryption');
 const qs = require('qs');
 
@@ -111,24 +110,26 @@ class AuthController {
         try {
             console.log('🔍 카카오 API 키 조회 시작...');
 
-            const [rows] = await pool.query(
-                'SELECT api_key FROM api_keys WHERE service_name = ? AND category = ? AND is_active = true',
-                ['kakao', 'social']
-            );
+            const apiKey = await ApiKey.findOne({
+                where: {
+                    service_name: 'kakao',
+                    category: 'social',
+                    is_active: true
+                }
+            });
 
-            console.log('📊 쿼리 결과:', rows);
+            console.log('📊 쿼리 결과:', apiKey);
 
-            if (rows.length === 0) {
+            if (!apiKey) {
                 throw new Error('카카오 API 키가 설정되지 않았습니다.');
             }
 
             // 복호화
-            const encryptedKey = rows[0].api_key;
-            const apiKey = decrypt(encryptedKey);  // ← 복호화!
+            const decryptedKey = decrypt(apiKey.api_key);
 
-            console.log('✅ 복호화된 키:', apiKey.substring(0, 10) + '...');
+            console.log('✅ 복호화된 키:', decryptedKey.substring(0, 10) + '...');
 
-            return apiKey;
+            return decryptedKey;
         } catch (error) {
             console.error('💥 카카오 API 키 조회 오류:', error);
             throw new Error('카카오 API 키 조회 실패: ' + error.message);
@@ -140,16 +141,19 @@ class AuthController {
      */
     getNaverCredentials = async () => {
         try {
-            const [rows] = await pool.query(
-                'SELECT api_key FROM api_keys WHERE service_name = ? AND category = ? AND is_active = true',
-                ['naver', 'social']
-            );
+            const apiKey = await ApiKey.findOne({
+                where: {
+                    service_name: 'naver',
+                    category: 'social',
+                    is_active: true
+                }
+            });
 
-            if (rows.length === 0) {
+            if (!apiKey) {
                 throw new Error('네이버 API 키가 설정되지 않았습니다.');
             }
 
-            const decrypted = decrypt(rows[0].api_key);
+            const decrypted = decrypt(apiKey.api_key);
             const credentials = JSON.parse(decrypted);
 
             return {
@@ -267,33 +271,38 @@ class AuthController {
 
         try {
             // 기존 사용자 확인
-            const [existingUsers] = await pool.query(
-                'SELECT * FROM users WHERE provider = ? AND provider_id = ?',
-                [provider, providerId]
-            );
+            const existingUser = await User.findOne({
+                where: {
+                    provider,
+                    provider_id: providerId
+                }
+            });
 
-            if (existingUsers.length > 0) {
+            if (existingUser) {
                 // 기존 사용자 업데이트
-                const user = existingUsers[0];
-                await pool.query(
-                    'UPDATE users SET name = ?, email = ?, last_login_at = NOW() WHERE id = ?',
-                    [name, email, user.id]
-                );
+                await existingUser.update({
+                    name,
+                    email,
+                    last_login_at: new Date()
+                });
 
                 return {
-                    id: user.id,
-                    email: email || user.email,
-                    name: name
+                    id: existingUser.id,
+                    email: email || existingUser.email,
+                    name
                 };
             } else {
                 // 새 사용자 생성
-                const [result] = await pool.query(
-                    'INSERT INTO users (provider, provider_id, email, name, created_at, last_login_at) VALUES (?, ?, ?, ?, NOW(), NOW())',
-                    [provider, providerId, email, name]
-                );
+                const newUser = await User.create({
+                    provider,
+                    provider_id: providerId,
+                    email,
+                    name,
+                    last_login_at: new Date()
+                });
 
                 return {
-                    id: result.insertId,
+                    id: newUser.id,
                     email,
                     name
                 };
@@ -303,21 +312,25 @@ class AuthController {
             throw new Error('사용자 정보 저장 실패');
         }
     }
+
     /**
      * 활성화된 소셜 로그인 목록 조회
      */
     getActiveSocialLogins = async (req, res) => {
         try {
-            const [rows] = await pool.query(
-                'SELECT service_name FROM api_keys WHERE category = ? AND is_active = true',
-                ['social']
-            );
+            const apiKeys = await ApiKey.findAll({
+                where: {
+                    category: 'social',
+                    is_active: true
+                },
+                attributes: ['service_name']
+            });
 
-            const activeLogins = rows.map(row => row.service_name);
+            const activeLogins = apiKeys.map(key => key.service_name);
 
             res.json({
                 success: true,
-                data: activeLogins  // ['kakao', 'naver']
+                data: activeLogins
             });
         } catch (error) {
             console.error('소셜 로그인 목록 조회 오류:', error);
@@ -327,7 +340,6 @@ class AuthController {
             });
         }
     }
-
 }
 
 module.exports = new AuthController();

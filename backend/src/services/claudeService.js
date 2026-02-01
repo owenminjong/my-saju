@@ -1,4 +1,4 @@
-const { pool } = require('../config/database');
+const { ApiKey, TokenUsage } = require('../../models');
 const { decrypt } = require('../utils/encryption');
 
 /**
@@ -6,20 +6,22 @@ const { decrypt } = require('../utils/encryption');
  */
 async function getClaudeApiKey() {
     try {
-        const [rows] = await pool.query(
-            'SELECT api_key FROM api_keys WHERE service_name = ? AND category = ? AND is_active = true',
-            ['claude', 'ai']
-        );
+        const apiKey = await ApiKey.findOne({
+            where: {
+                service_name: 'claude',
+                category: 'ai',
+                is_active: true
+            }
+        });
 
-        if (rows.length === 0) {
+        if (!apiKey) {
             throw new Error('Claude API 키가 설정되지 않았습니다. 관리자 페이지에서 등록해주세요.');
         }
 
         // 복호화
-        const encryptedKey = rows[0].api_key;
-        const apiKey = decrypt(encryptedKey);
+        const decryptedKey = decrypt(apiKey.api_key);
 
-        return apiKey;
+        return decryptedKey;
     } catch (error) {
         console.error('❌ Claude API 키 조회 오류:', error);
         throw error;
@@ -44,7 +46,7 @@ async function callClaudeAPIFree(systemPrompt, userPrompt, userId) {
             },
             body: JSON.stringify({
                 model: 'claude-sonnet-4-20250514',
-                max_tokens: 1000,  // ⬅️ 무료 버전 고정
+                max_tokens: 1000,  // 무료 버전 고정
                 system: systemPrompt,
                 messages: [
                     {
@@ -101,7 +103,7 @@ async function callClaudeAPIPremium(systemPrompt, userPrompt, userId, maxTokens 
             },
             body: JSON.stringify({
                 model: 'claude-sonnet-4-20250514',
-                max_tokens: maxTokens,  // ⬅️ 유료 버전 가변
+                max_tokens: maxTokens,  // 유료 버전 가변
                 system: systemPrompt,
                 messages: [
                     {
@@ -123,9 +125,9 @@ async function callClaudeAPIPremium(systemPrompt, userPrompt, userId, maxTokens 
         console.log(`📊 토큰 사용: input=${data.usage.input_tokens}, output=${data.usage.output_tokens}`);
 
         await saveTokenUsage(
-            userId,  // null 또는 실제 userId
+            userId,
             data.usage.input_tokens + data.usage.output_tokens,
-            'claude-free'
+            'claude-premium'
         );
 
         return {
@@ -139,16 +141,17 @@ async function callClaudeAPIPremium(systemPrompt, userPrompt, userId, maxTokens 
     }
 }
 
+/**
+ * 토큰 사용량 저장
+ */
 async function saveTokenUsage(userId, tokensUsed, apiType) {
     try {
-        const connection = await pool.getConnection();
+        await TokenUsage.create({
+            user_id: userId,
+            tokens_used: tokensUsed,
+            api_type: apiType
+        });
 
-        await connection.query(
-            'INSERT INTO token_usage (user_id, tokens_used, api_type) VALUES (?, ?, ?)',
-            [userId, tokensUsed, apiType]
-        );
-
-        connection.release();
         console.log(`💾 토큰 저장: ${tokensUsed} (${apiType})`);
 
     } catch (error) {
@@ -157,10 +160,9 @@ async function saveTokenUsage(userId, tokensUsed, apiType) {
     }
 }
 
-
 module.exports = {
     getClaudeApiKey,
-    callClaudeAPIFree,      // ⬅️ 무료 버전
-    callClaudeAPIPremium,    // ⬅️ 유료 버전
+    callClaudeAPIFree,
+    callClaudeAPIPremium,
     saveTokenUsage
 };

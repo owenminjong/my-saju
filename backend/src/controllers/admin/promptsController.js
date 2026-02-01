@@ -1,25 +1,19 @@
-const { pool } = require('../../config/database');
+const { Prompt } = require('../../../models');
 
 // 프롬프트 목록 조회
 exports.getPrompts = async (req, res) => {
     try {
         const { category = '' } = req.query;
-        const connection = await pool.getConnection();
 
-        let whereClause = 'WHERE 1=1';
-        const params = [];
-
+        const whereClause = {};
         if (category) {
-            whereClause += ' AND category = ?';
-            params.push(category);
+            whereClause.category = category;
         }
 
-        const [prompts] = await connection.query(
-            `SELECT * FROM prompts ${whereClause} ORDER BY created_at DESC`,
-            params
-        );
-
-        connection.release();
+        const prompts = await Prompt.findAll({
+            where: whereClause,
+            order: [['created_at', 'DESC']]
+        });
 
         res.json({
             success: true,
@@ -39,16 +33,10 @@ exports.getPrompts = async (req, res) => {
 exports.getPromptDetail = async (req, res) => {
     try {
         const { id } = req.params;
-        const connection = await pool.getConnection();
 
-        const [prompts] = await connection.query(
-            'SELECT * FROM prompts WHERE id = ?',
-            [id]
-        );
+        const prompt = await Prompt.findByPk(id);
 
-        connection.release();
-
-        if (prompts.length === 0) {
+        if (!prompt) {
             return res.status(404).json({
                 success: false,
                 message: '프롬프트를 찾을 수 없습니다.'
@@ -57,7 +45,7 @@ exports.getPromptDetail = async (req, res) => {
 
         res.json({
             success: true,
-            data: prompts[0]
+            data: prompt
         });
 
     } catch (error) {
@@ -81,19 +69,17 @@ exports.createPrompt = async (req, res) => {
             });
         }
 
-        const connection = await pool.getConnection();
-
-        const [result] = await connection.query(
-            'INSERT INTO prompts (name, content, category, is_active) VALUES (?, ?, ?, ?)',
-            [name, content, category, is_active]
-        );
-
-        connection.release();
+        const prompt = await Prompt.create({
+            name,
+            content,
+            category,
+            is_active
+        });
 
         res.status(201).json({
             success: true,
             message: '프롬프트가 생성되었습니다.',
-            data: { id: result.insertId }
+            data: { id: prompt.id }
         });
 
     } catch (error) {
@@ -111,21 +97,17 @@ exports.updatePrompt = async (req, res) => {
         const { id } = req.params;
         const { name, content, category, is_active } = req.body;
 
-        const connection = await pool.getConnection();
+        const updateData = {};
+        if (name !== undefined) updateData.name = name;
+        if (content !== undefined) updateData.content = content;
+        if (category !== undefined) updateData.category = category;
+        if (is_active !== undefined) updateData.is_active = is_active;
 
-        const [result] = await connection.query(
-            `UPDATE prompts 
-       SET name = COALESCE(?, name),
-           content = COALESCE(?, content),
-           category = COALESCE(?, category),
-           is_active = COALESCE(?, is_active)
-       WHERE id = ?`,
-            [name, content, category, is_active, id]
-        );
+        const [updated] = await Prompt.update(updateData, {
+            where: { id }
+        });
 
-        connection.release();
-
-        if (result.affectedRows === 0) {
+        if (updated === 0) {
             return res.status(404).json({
                 success: false,
                 message: '프롬프트를 찾을 수 없습니다.'
@@ -150,16 +132,12 @@ exports.updatePrompt = async (req, res) => {
 exports.deletePrompt = async (req, res) => {
     try {
         const { id } = req.params;
-        const connection = await pool.getConnection();
 
-        const [result] = await connection.query(
-            'DELETE FROM prompts WHERE id = ?',
-            [id]
-        );
+        const deleted = await Prompt.destroy({
+            where: { id }
+        });
 
-        connection.release();
-
-        if (result.affectedRows === 0) {
+        if (deleted === 0) {
             return res.status(404).json({
                 success: false,
                 message: '프롬프트를 찾을 수 없습니다.'

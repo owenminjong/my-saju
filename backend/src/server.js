@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const { testConnection } = require('./config/database');
+const { sequelize } = require('../models');
 require('dotenv').config();
 
 const app = express();
@@ -8,9 +8,6 @@ const app = express();
 // 미들웨어
 app.use(cors());
 app.use(express.json());
-
-// DB 연결 테스트
-testConnection();
 
 // 관리자 라우트
 const adminDashboardRoutes = require('./routes/admin/dashboard');

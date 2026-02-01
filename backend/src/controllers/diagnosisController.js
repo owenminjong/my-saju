@@ -1,7 +1,13 @@
-const sajuService = require('../services/sajuService');  // ⬅️ 추가
+const sajuService = require('../services/sajuService');
 const { generateFreePrompt } = require('../services/promptService');
-const { callClaudeAPIFree } = require('../services/claudeService');
+const { callClaudeAPIFree, callClaudeAPIPremium } = require('../services/claudeService');
+const { User, Order } = require('../../models');
+const crypto = require('crypto');
 
+/**
+ * POST /api/diagnosis/free
+ * 무료 베이직 진단
+ */
 const generateFreeDiagnosis = async (req, res) => {
     try {
         const { name, year, month, day, hour, minute, isLunar, gender, mbti } = req.body;
@@ -44,7 +50,7 @@ const generateFreeDiagnosis = async (req, res) => {
             mbti
         };
 
-        const prompt = generateFreePrompt(promptData);
+        const prompt = await generateFreePrompt(promptData);
 
         console.log('🤖 SYSTEM PROMPT');
         console.log('─'.repeat(80));
@@ -60,7 +66,7 @@ const generateFreeDiagnosis = async (req, res) => {
         console.log('─'.repeat(80));
         console.log(JSON.stringify(prompt.metadata, null, 2));
         console.log('\n');
-        console.log(prompt);
+
         // 3️⃣ Claude API 호출
         console.log('='.repeat(80));
         console.log('🤖 Claude API 호출 중...');
@@ -70,7 +76,7 @@ const generateFreeDiagnosis = async (req, res) => {
         const diagnosis = await callClaudeAPIFree(
             prompt.systemPrompt,
             prompt.userPrompt,
-            null  // 0 → null (비회원)
+            null  // 비회원
         );
 
         console.log('✅ 무료 진단 완료!\n');
@@ -79,7 +85,7 @@ const generateFreeDiagnosis = async (req, res) => {
         res.json({
             success: true,
             message: '무료 베이직 진단이 완료되었습니다.',
-            sajuData: sajuResult,      // ⬅️ 사주 데이터도 포함
+            sajuData: sajuResult,
             diagnosis: diagnosis.text,
             usage: diagnosis.usage,
             metadata: prompt.metadata
@@ -110,18 +116,36 @@ const generatePremiumDiagnosis = async (req, res) => {
             });
         }
 
-        // TODO: 결제 확인 로직 추가
-        // const paymentVerified = await verifyPayment(orderId);
-        // if (!paymentVerified) { throw new Error('결제 확인 실패'); }
+        // 사용자 확인
+        const user = await User.findByPk(userId);
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: '사용자를 찾을 수 없습니다.'
+            });
+        }
+
+        // 주문 확인
+        const order = await Order.findOne({
+            where: {
+                id: orderId,
+                user_id: userId,
+                status: 'completed'
+            }
+        });
+
+        if (!order) {
+            return res.status(403).json({
+                success: false,
+                message: '결제 확인에 실패했습니다.'
+            });
+        }
 
         console.log('\n' + '='.repeat(80));
         console.log('💎 프리미엄 풀코스 진단');
         console.log('='.repeat(80) + '\n');
 
         // TODO: 프리미엄 프롬프트 생성
-        // const prompt = generatePremiumPrompt({ ...sajuData, mbti });
-
-        // Claude API 호출 (일단 무료 프롬프트로 테스트)
         const prompt = generateFreePrompt({ ...sajuData, mbti });
 
         const diagnosis = await callClaudeAPIPremium(
@@ -131,15 +155,15 @@ const generatePremiumDiagnosis = async (req, res) => {
             3000  // 프리미엄은 3000 토큰
         );
 
-        // ⬇️ DB 저장 추가
-        await saveDiagnosisResult({
-            userId,
-            inputHash: generateInputHash(sajuData, mbti),
-            sajuData,
-            premiumDiagnosis: diagnosis.text,
-            diagnosisType: 'premium',
-            orderId
-        });
+        // DB 저장 (Analysis 모델 사용)
+        // TODO: Analysis 모델 만들고 저장 로직 추가
+        // await Analysis.create({
+        //     user_id: userId,
+        //     analysis_type: 'premium',
+        //     input_hash: generateInputHash(sajuData, mbti),
+        //     saju_data: sajuData,
+        //     ai_result: diagnosis.text
+        // });
 
         console.log('✅ 프리미엄 진단 완료!\n');
 
@@ -158,6 +182,14 @@ const generatePremiumDiagnosis = async (req, res) => {
         });
     }
 };
+
+/**
+ * 입력 해시 생성 헬퍼 함수
+ */
+function generateInputHash(sajuData, mbti) {
+    const input = JSON.stringify({ sajuData, mbti });
+    return crypto.createHash('sha256').update(input).digest('hex');
+}
 
 module.exports = {
     generateFreeDiagnosis,

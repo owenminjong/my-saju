@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const diagnosisController = require('../controllers/diagnosis-controller');
+const diagnosisController = require('../controllers/diagnosisController');
 
 /**
  * POST /api/diagnosis/free
