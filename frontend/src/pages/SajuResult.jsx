@@ -1,14 +1,17 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import SajuTable from '../components/SajuTable';
 import ElementChart from '../components/ElementChart';
+import ShareModal from '../components/ShareModal';
+import { Share2 } from 'lucide-react';
 
 function SajuResult() {
     const location = useLocation();
     const navigate = useNavigate();
     const { result } = location.state || {};
+    const [showShareModal, setShowShareModal] = useState(false);
 
     if (!result) {
         navigate('/');
@@ -25,6 +28,20 @@ function SajuResult() {
     return (
         <div className="min-h-screen bg-gradient-to-b from-[#0f172a] via-[#1e293b] to-[#334155] py-12 px-4">
             <div className="max-w-4xl mx-auto">
+
+                <button
+                    onClick={() => setShowShareModal(true)}
+                    className="bg-white/10 hover:bg-white/20 text-white px-6 py-3 rounded-2xl"
+                >
+                    <Share2 size={20}/> {/* 또는 그냥 텍스트만 */}
+                    공유하기
+                </button>
+
+                <ShareModal
+                    isOpen={showShareModal}
+                    onClose={() => setShowShareModal(false)}
+                    resultData={result}
+                />
 
                 {/* 헤더 */}
                 <div className="text-center mb-8">
@@ -63,12 +80,13 @@ function SajuResult() {
                     <h2 className="text-2xl font-bold text-white mb-6">
                         📋 사주팔자
                     </h2>
-                    <SajuTable saju={saju} />
+                    <SajuTable saju={saju}/>
                 </div>
 
                 {/* 나머지 AI 진단 (운명 성적표 ~ 끝) */}
                 {afterCharacter && (
-                    <div className="bg-white/10 backdrop-blur-lg rounded-3xl p-8 shadow-2xl border border-white/20 mb-6">
+                    <div
+                        className="bg-white/10 backdrop-blur-lg rounded-3xl p-8 shadow-2xl border border-white/20 mb-6">
                         <div className="prose prose-invert max-w-none">
                             <ReactMarkdown
                                 remarkPlugins={[remarkGfm]}
@@ -112,7 +130,8 @@ function SajuResult() {
                                         <td className="px-6 py-4 text-white/90 text-lg" {...props} />
                                     ),
                                     blockquote: ({node, ...props}) => (
-                                        <blockquote className="border-l-4 border-[#d4af37] pl-4 italic text-white/80 my-4 text-lg" {...props} />
+                                        <blockquote
+                                            className="border-l-4 border-[#d4af37] pl-4 italic text-white/80 my-4 text-lg" {...props} />
                                     )
                                 }}
                             >
@@ -124,11 +143,12 @@ function SajuResult() {
 
                 {/* 오행 분석 */}
                 {elements && (
-                    <div className="bg-white/10 backdrop-blur-lg rounded-3xl p-8 shadow-2xl border border-white/20 mb-6">
+                    <div
+                        className="bg-white/10 backdrop-blur-lg rounded-3xl p-8 shadow-2xl border border-white/20 mb-6">
                         <h2 className="text-2xl font-bold text-white mb-6">
                             🔮 오행 분석
                         </h2>
-                        <ElementChart elements={elements} />
+                        <ElementChart elements={elements}/>
 
                         <div className="mt-6 space-y-3">
                             {elements?.chart?.map((element) => (
@@ -139,7 +159,7 @@ function SajuResult() {
                                     <div className="flex items-center gap-3">
                                         <div
                                             className="w-4 h-4 rounded-full"
-                                            style={{ backgroundColor: element.color }}
+                                            style={{backgroundColor: element.color}}
                                         ></div>
                                         <span className="font-medium text-white">
                                             {element.element} ({element.name})
@@ -171,12 +191,14 @@ function SajuResult() {
                 {/* 토큰 사용량 */}
                 {usage && (
                     <div className="bg-white/5 backdrop-blur-lg rounded-2xl p-4 mb-6 text-white/60 text-sm">
-                        <p>📊 분석 토큰: Input {usage.input_tokens} + Output {usage.output_tokens} = {usage.input_tokens + usage.output_tokens} tokens</p>
+                        <p>📊 분석 토큰: Input {usage.input_tokens} +
+                            Output {usage.output_tokens} = {usage.input_tokens + usage.output_tokens} tokens</p>
                     </div>
                 )}
 
                 {/* 유료 업그레이드 CTA */}
-                <div className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 backdrop-blur-lg rounded-3xl p-8 border border-purple-500/30 text-center mb-6">
+                <div
+                    className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 backdrop-blur-lg rounded-3xl p-8 border border-purple-500/30 text-center mb-6">
                     <h3 className="text-2xl font-bold text-white mb-3">
                         💎 더 자세한 풀이가 궁금하신가요?
                     </h3>
@@ -185,7 +207,8 @@ function SajuResult() {
                         <br/>
                         프리미엄 풀코스로 업그레이드하세요
                     </p>
-                    <button className="bg-gradient-to-r from-[#d4af37] to-[#f59e0b] text-white px-8 py-4 rounded-2xl text-lg font-bold hover:scale-105 transition-transform">
+                    <button
+                        className="bg-gradient-to-r from-[#d4af37] to-[#f59e0b] text-white px-8 py-4 rounded-2xl text-lg font-bold hover:scale-105 transition-transform">
                         프리미엄으로 업그레이드 →
                     </button>
                 </div>

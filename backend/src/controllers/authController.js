@@ -113,7 +113,6 @@ class AuthController {
             const apiKey = await ApiKey.findOne({
                 where: {
                     service_name: 'kakao',
-                    category: 'social',
                     is_active: true
                 }
             });
@@ -127,9 +126,13 @@ class AuthController {
             // 복호화
             const decryptedKey = decrypt(apiKey.api_key);
 
-            console.log('✅ 복호화된 키:', decryptedKey.substring(0, 10) + '...');
+            // 🆕 JSON 파싱
+            const keyObject = JSON.parse(decryptedKey);
 
-            return decryptedKey;
+            // 🆕 REST API 키 반환 (로그인용)
+            console.log('✅ 복호화된 키:', keyObject.rest_api.substring(0, 10) + '...');
+
+            return keyObject.rest_api;
         } catch (error) {
             console.error('💥 카카오 API 키 조회 오류:', error);
             throw new Error('카카오 API 키 조회 실패: ' + error.message);

@@ -16,6 +16,7 @@ import AuthFail from './pages/AuthFail';
 import SajuInput from './pages/SajuInput';
 import SajuResult from './pages/SajuResult';
 import SampleResult from './pages/SampleResult';
+import SharedResult from './pages/SharedResult';
 
 // 관리자 네비게이션 컴포넌트
 function AdminNav() {
@@ -82,6 +83,7 @@ function App() {
             {/* 🔮 사주 서비스 */}
             <Route path="/saju-input" element={<SajuInput />} />
             <Route path="/result" element={<SajuResult />} />
+            <Route path="/result/:uniqueId" element={<SharedResult />} />
             <Route path="/ex-result" element={<SampleResult />} />
 
             {/* 🔧 관리자 페이지 */}

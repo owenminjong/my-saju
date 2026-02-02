@@ -2,6 +2,7 @@ import axios from 'axios';
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
+axios.defaults.withCredentials = true;
 /**
  * 사주 분석 API 호출
  */
@@ -37,7 +38,6 @@ export const getFreeDiagnosis = async (userData) => {
         throw new Error(error.response?.data?.message || '진단에 실패했습니다.');
     }
 }
-
 export default {
     analyzeSaju,
     getTimeInfo,

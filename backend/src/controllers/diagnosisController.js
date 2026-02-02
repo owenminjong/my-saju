@@ -52,27 +52,6 @@ const generateFreeDiagnosis = async (req, res) => {
 
         const prompt = await generateFreePrompt(promptData);
 
-        console.log('🤖 SYSTEM PROMPT');
-        console.log('─'.repeat(80));
-        console.log(prompt.systemPrompt);
-        console.log('\n');
-
-        console.log('👤 USER PROMPT');
-        console.log('─'.repeat(80));
-        console.log(prompt.userPrompt);
-        console.log('\n');
-
-        console.log('📌 메타데이터');
-        console.log('─'.repeat(80));
-        console.log(JSON.stringify(prompt.metadata, null, 2));
-        console.log('\n');
-
-        // 3️⃣ Claude API 호출
-        console.log('='.repeat(80));
-        console.log('🤖 Claude API 호출 중...');
-        console.log('='.repeat(80));
-        console.log('\n');
-
         const diagnosis = await callClaudeAPIFree(
             prompt.systemPrompt,
             prompt.userPrompt,
@@ -81,10 +60,46 @@ const generateFreeDiagnosis = async (req, res) => {
 
         console.log('✅ 무료 진단 완료!\n');
 
+        // 🆕 unique_id 생성
+        const { v4: uuidv4 } = require('uuid');
+        console.log('🔑 생성된 UUID:', uuidv4());
+        const uniqueId = uuidv4();
+        console.log('🔑 고유 ID 생성:', uniqueId);
+
+        // 🆕 세션에 결과 저장
+        const resultData = {
+            uniqueId,
+            name,           // 실명 그대로 저장
+            sajuData: sajuResult,
+            diagnosis: diagnosis.text,
+            usage: diagnosis.usage,
+            metadata: prompt.metadata,
+            createdAt: new Date(),
+            isPaid: false,
+            mbti
+        };
+
+        // 세션에 저장 (81번째 줄 앞에 추가)
+        console.log('🔍 세션 확인:', req.session);
+        console.log('🔍 세션 ID:', req.sessionID);
+
+        // 세션에 저장
+        req.session.freeResult = resultData;
+
+        // 세션 저장 완료 대기
+        await new Promise((resolve, reject) => {
+            req.session.save((err) => {
+                if (err) reject(err);
+                else resolve();
+            });
+        });
+
+
         // 4️⃣ 응답
         res.json({
             success: true,
             message: '무료 베이직 진단이 완료되었습니다.',
+            uniqueId,
             sajuData: sajuResult,
             diagnosis: diagnosis.text,
             usage: diagnosis.usage,

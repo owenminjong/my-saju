@@ -38,10 +38,14 @@ const Order = sequelize.define('orders', {
         type: DataTypes.STRING(100),
         allowNull: true
     },
-    merchant_uid: {
+    order_id: {  // ✅ merchant_uid → order_id로 변경
         type: DataTypes.STRING(100),
         allowNull: true,
         unique: true
+    },
+    payment_key: {  // ✅ 토스페이먼츠 payment_key 추가
+        type: DataTypes.STRING(200),
+        allowNull: true
     },
     payment_method: {
         type: DataTypes.STRING(50),

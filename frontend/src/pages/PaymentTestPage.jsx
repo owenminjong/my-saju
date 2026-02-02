@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { paymentAPI, adminAPI } from '../services/api';
+import { loadTossPayments } from '@tosspayments/payment-sdk';
 
 function PaymentTestPage() {
     const [products, setProducts] = useState([]);
-    const [selectedProduct, setSelectedProduct] = useState(null);
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
@@ -19,60 +19,72 @@ function PaymentTestPage() {
         }
     };
 
+    const getPaymentAmount = (product) => {
+        return product.discount_price || product.price;
+    };
+
     const handlePayment = async (product) => {
         try {
             setLoading(true);
+            const paymentAmount = getPaymentAmount(product);
 
-            // 1. 결제 준비 (주문 생성)
+            console.log('결제 시작:', { product, paymentAmount });
+
+            // 1. 결제 준비
             const prepareResponse = await paymentAPI.prepare({
                 product_id: product.id,
-                user_id: 1, // 테스트용
+                user_id: 1,
             });
 
-            const { merchantUid, productName, amount, impCode } = prepareResponse.data.data;
+            console.log('결제 준비 응답 (전체):', prepareResponse);
+            console.log('결제 준비 응답 (data):', prepareResponse.data);
 
-            // 2. 아임포트 결제 요청
-            const IMP = window.IMP;
-            IMP.init(impCode);
+            const responseData = prepareResponse.data.data;
+            console.log('응답 데이터:', responseData);
 
-            IMP.request_pay(
-                {
-                    channelKey: 'channel-key-bd980fd9-1085-4a03-a7db-086a8cc3724d', // 나이스페이 채널키
-                    pay_method: 'card',
-                    merchant_uid: merchantUid,
-                    name: productName,
-                    amount: amount,
-                    buyer_email: 'test@test.com',
-                    buyer_name: '테스트유저',
-                    buyer_tel: '010-1234-5678',
-                    buyer_addr: '서울특별시 강남구',
-                    buyer_postcode: '06000',
-                },
-                async (response) => {
-                    if (response.success) {
-                        // 3. 결제 검증
-                        try {
-                            const verifyResponse = await paymentAPI.verify({
-                                imp_uid: response.imp_uid,
-                                merchant_uid: response.merchant_uid,
-                            });
+            if (!responseData) {
+                throw new Error('결제 준비 응답이 올바르지 않습니다.');
+            }
 
-                            alert(`✅ 결제 성공!\n주문번호: ${verifyResponse.data.data.orderId}\n결제금액: ${amount.toLocaleString()}원`);
-                            setLoading(false);
-                        } catch (error) {
-                            console.error('결제 검증 실패:', error);
-                            alert('❌ 결제 검증에 실패했습니다.');
-                            setLoading(false);
-                        }
-                    } else {
-                        alert(`❌ 결제 실패: ${response.error_msg}`);
-                        setLoading(false);
-                    }
-                }
-            );
+            const { orderId, productName, clientKey } = responseData;
+
+            console.log('추출된 값들:', { orderId, productName, clientKey });
+
+            if (!clientKey) {
+                throw new Error('클라이언트 키를 찾을 수 없습니다. DB의 api_keys 테이블을 확인해주세요.');
+            }
+
+            // 2. 토스페이먼츠 로드
+            console.log('토스페이먼츠 SDK 로딩 시작...');
+            const tossPayments = await loadTossPayments(clientKey);
+            console.log('토스페이먼츠 SDK 로딩 완료:', tossPayments);
+
+            // 3. 결제 요청
+            console.log('결제 요청 파라미터:', {
+                amount: paymentAmount,
+                orderId,
+                orderName: productName,
+            });
+
+            await tossPayments.requestPayment('카드', {
+                amount: paymentAmount,
+                orderId: orderId,
+                orderName: productName,
+                customerName: '테스트유저',
+                successUrl: `${window.location.origin}/payment/success`,
+                failUrl: `${window.location.origin}/payment/fail`,
+            });
+
         } catch (error) {
-            console.error('결제 오류:', error);
-            alert('결제 준비에 실패했습니다.');
+            console.error('결제 오류 (상세):', error);
+            console.error('에러 스택:', error.stack);
+
+            if (error.code === 'USER_CANCEL') {
+                alert('결제를 취소하셨습니다.');
+            } else {
+                alert(`결제 오류: ${error.message || '알 수 없는 오류'}`);
+            }
+
             setLoading(false);
         }
     };
@@ -80,37 +92,67 @@ function PaymentTestPage() {
     return (
         <div className="min-h-screen bg-gray-100 p-8">
             <div className="max-w-4xl mx-auto">
-                <h1 className="text-3xl font-bold mb-8">결제 테스트 (나이스페이)</h1>
+                <h1 className="text-3xl font-bold mb-8">결제 테스트 (토스페이먼츠)</h1>
 
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-8">
                     <p className="text-sm text-blue-800">
-                        ℹ️ <strong>나이스페이 테스트 모드입니다.</strong>
+                        ℹ️ <strong>토스페이먼츠 테스트 모드입니다.</strong>
                     </p>
                 </div>
 
                 {/* 상품 목록 */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {products.map((product) => (
-                        <div key={product.id} className="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition-shadow">
-                            <h3 className="text-xl font-bold mb-2">{product.name}</h3>
-                            <p className="text-gray-600 mb-4 text-sm min-h-[40px]">{product.description}</p>
-                            <div className="text-3xl font-bold text-blue-600 mb-6">
-                                {parseInt(product.price).toLocaleString()}
-                                <span className="text-lg">원</span>
+                    {products.map((product) => {
+                        const originalPrice = parseInt(product.price);
+                        const paymentPrice = getPaymentAmount(product);
+                        const hasDiscount = product.discount_price && product.discount_price < originalPrice;
+
+                        return (
+                            <div key={product.id} className="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition-shadow">
+                                <h3 className="text-xl font-bold mb-2">{product.name}</h3>
+                                <p className="text-gray-600 mb-4 text-sm min-h-[40px]">{product.description}</p>
+
+                                {/* 가격 표시 */}
+                                <div className="mb-6">
+                                    {hasDiscount ? (
+                                        <>
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <span className="text-lg text-gray-400 line-through">
+                                                    {originalPrice.toLocaleString()}원
+                                                </span>
+                                                {product.discount_rate > 0 && (
+                                                    <span className="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded">
+                                                        {product.discount_rate}% 할인
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <div className="text-3xl font-bold text-red-600">
+                                                {parseInt(paymentPrice).toLocaleString()}
+                                                <span className="text-lg">원</span>
+                                            </div>
+                                        </>
+                                    ) : (
+                                        <div className="text-3xl font-bold text-blue-600">
+                                            {originalPrice.toLocaleString()}
+                                            <span className="text-lg">원</span>
+                                        </div>
+                                    )}
+                                </div>
+
+                                <button
+                                    onClick={() => handlePayment(product)}
+                                    disabled={loading}
+                                    className={`w-full py-3 rounded-lg font-semibold transition-colors ${
+                                        loading
+                                            ? 'bg-gray-300 cursor-not-allowed'
+                                            : 'bg-blue-500 hover:bg-blue-600 text-white'
+                                    }`}
+                                >
+                                    {loading ? '처리중...' : '결제하기'}
+                                </button>
                             </div>
-                            <button
-                                onClick={() => handlePayment(product)}
-                                disabled={loading}
-                                className={`w-full py-3 rounded-lg font-semibold transition-colors ${
-                                    loading
-                                        ? 'bg-gray-300 cursor-not-allowed'
-                                        : 'bg-blue-500 hover:bg-blue-600 text-white'
-                                }`}
-                            >
-                                {loading ? '처리중...' : '결제하기'}
-                            </button>
-                        </div>
-                    ))}
+                        );
+                    })}
                 </div>
 
                 {products.length === 0 && (

@@ -42,22 +42,32 @@ const MainPage = () => {
                 <nav>
                     <button
                         className="menu-link"
-                        onClick={(e) => { e.preventDefault(); handleLoginAlert(); }}
-                        style={{ background: 'none', border: 'none', width: '100%', textAlign: 'left' }}
+                        onClick={(e) => {
+                            e.preventDefault();
+                            handleLoginAlert();
+                        }}
+                        style={{background: 'none', border: 'none', width: '100%', textAlign: 'left'}}
                     >
                         내 사주 기록 보기
                     </button>
                     <button
                         className="menu-link"
-                        style={{ background: 'none', border: 'none', width: '100%', textAlign: 'left' }}
+                        style={{background: 'none', border: 'none', width: '100%', textAlign: 'left'}}
                     >
-                        로그인하기
+                        <a href={'/login'}>로그인하기</a>
                     </button>
                     <button
                         className="menu-link"
-                        style={{ background: 'none', border: 'none', width: '100%', textAlign: 'left' }}
+                        style={{background: 'none', border: 'none', width: '100%', textAlign: 'left'}}
                     >
                         가입하기
+                    </button>
+                    <button
+                        onClick={() => navigate('/saju-input', { state: { mode: 'premium' } })}
+                        className="menu-link"
+                        style={{background: 'none', border: 'none', width: '100%', textAlign: 'left'}}
+                    >
+                        유료 사주 보러 가기
                     </button>
                 </nav>
             </div>

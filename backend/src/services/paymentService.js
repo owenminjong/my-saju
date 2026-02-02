@@ -1,32 +1,52 @@
-const Iamport = require('iamport');
-const { Order } = require('../../models');
-
-// 아임포트 클라이언트 초기화
-const iamport = new Iamport({
-    impKey: process.env.IAMPORT_API_KEY,
-    impSecret: process.env.IAMPORT_API_SECRET,
-});
+const axios = require('axios');
+const { Order, ApiKey } = require('../../models');
+const { decrypt } = require('../utils/encryption');  // 이미 있는 유틸 사용!
 
 class PaymentService {
+    /**
+     * 토스페이먼츠 API 키 조회 (DB에서)
+     */
+    static async getPaymentKeys() {
+        const apiKey = await ApiKey.findOne({
+            where: {
+                service_name: 'tosspayments',
+                is_active: true
+            }
+        });
+
+        if (!apiKey) {
+            throw new Error('토스페이먼츠 API 키를 찾을 수 없습니다.');
+        }
+
+        // 복호화
+        const decryptedData = decrypt(apiKey.api_key);
+        const keys = JSON.parse(decryptedData);
+
+        return {
+            clientKey: keys.clientKey,
+            secretKey: keys.secretKey,
+            webhookKey: keys.webhookKey
+        };
+    }
+
     /**
      * 주문 생성 (결제 전)
      */
     static async createOrder(userId, productId, amount) {
         try {
-            // 주문번호 생성 (merchant_uid)
-            const merchantUid = `order_${Date.now()}_${userId}`;
+            const orderId = `order_${Date.now()}_${userId}`;
 
             const order = await Order.create({
                 user_id: userId,
                 product_id: productId,
                 amount,
-                merchant_uid: merchantUid,
+                order_id: orderId,
                 status: 'pending'
             });
 
             return {
                 orderId: order.id,
-                merchantUid: order.merchant_uid
+                orderIdStr: order.order_id
             };
         } catch (error) {
             console.error('주문 생성 오류:', error);
@@ -35,49 +55,48 @@ class PaymentService {
     }
 
     /**
-     * 결제 검증 (아임포트)
+     * 토스페이먼츠 결제 승인
      */
-    static async verifyPayment(impUid, merchantUid, amount) {
+    static async confirmPayment(paymentKey, orderId, amount) {
         try {
-            // 아임포트에서 결제 정보 조회
-            const payment = await iamport.payment.getByImpUid({ imp_uid: impUid });
+            const keys = await this.getPaymentKeys();
 
-            // 검증 1: 결제 금액 일치
-            if (payment.amount !== amount) {
-                throw new Error('결제 금액이 일치하지 않습니다.');
-            }
+            const response = await axios.post(
+                'https://api.tosspayments.com/v1/payments/confirm',
+                {
+                    paymentKey,
+                    orderId,
+                    amount
+                },
+                {
+                    headers: {
+                        'Authorization': `Basic ${Buffer.from(keys.secretKey + ':').toString('base64')}`,
+                        'Content-Type': 'application/json'
+                    }
+                }
+            );
 
-            // 검증 2: 주문번호 일치
-            if (payment.merchant_uid !== merchantUid) {
-                throw new Error('주문번호가 일치하지 않습니다.');
-            }
-
-            // 검증 3: 결제 상태
-            if (payment.status !== 'paid') {
-                throw new Error('결제가 완료되지 않았습니다.');
-            }
-
-            return payment;
+            return response.data;
         } catch (error) {
-            console.error('결제 검증 오류:', error);
-            throw error;
+            console.error('토스페이먼츠 승인 오류:', error.response?.data);
+            throw new Error(error.response?.data?.message || '결제 승인에 실패했습니다.');
         }
     }
 
     /**
      * 결제 완료 처리
      */
-    static async completePayment(merchantUid, impUid, paymentMethod) {
+    static async completePayment(orderId, paymentKey, paymentData) {
         try {
             const [updated] = await Order.update(
                 {
-                    imp_uid: impUid,
-                    payment_method: paymentMethod,
+                    payment_key: paymentKey,
+                    payment_method: paymentData.method,
                     status: 'completed',
                     paid_at: new Date()
                 },
                 {
-                    where: { merchant_uid: merchantUid }
+                    where: { order_id: orderId }
                 }
             );
 
@@ -95,21 +114,29 @@ class PaymentService {
     /**
      * 결제 취소
      */
-    static async cancelPayment(impUid, reason) {
+    static async cancelPayment(paymentKey, cancelReason) {
         try {
-            const cancel = await iamport.payment.cancelByImpUid({
-                imp_uid: impUid,
-                reason,
-            });
+            const keys = await this.getPaymentKeys();
+
+            const response = await axios.post(
+                `https://api.tosspayments.com/v1/payments/${paymentKey}/cancel`,
+                { cancelReason },
+                {
+                    headers: {
+                        'Authorization': `Basic ${Buffer.from(keys.secretKey + ':').toString('base64')}`,
+                        'Content-Type': 'application/json'
+                    }
+                }
+            );
 
             await Order.update(
                 { status: 'cancelled' },
-                { where: { imp_uid: impUid } }
+                { where: { payment_key: paymentKey } }
             );
 
-            return cancel;
+            return response.data;
         } catch (error) {
-            console.error('결제 취소 오류:', error);
+            console.error('결제 취소 오류:', error.response?.data);
             throw error;
         }
     }

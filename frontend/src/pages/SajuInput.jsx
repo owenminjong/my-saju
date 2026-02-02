@@ -148,7 +148,8 @@ const SajuInput = () => {
                         ...response.sajuData,
                         summary: response.sajuData.summary,
                         diagnosis: response.diagnosis,
-                        usage: response.usage
+                        usage: response.usage,
+                        uniqueId: response.uniqueId
                     }
                 }
             });
