@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom'; // ✅ 추가
 import './MainPage.css';
 import SajuInput from "./SajuInput";
 
 const MainPage = () => {
+    const navigate = useNavigate(); // ✅ 추가
     const [menuActive, setMenuActive] = useState(false);
 
     const toggleMenu = () => {
@@ -52,9 +54,10 @@ const MainPage = () => {
                     </button>
                     <button
                         className="menu-link"
+                        onClick={() => navigate('/login')}
                         style={{background: 'none', border: 'none', width: '100%', textAlign: 'left'}}
                     >
-                        <a href={'/login'}>로그인하기</a>
+                        로그인하기
                     </button>
                     <button
                         className="menu-link"

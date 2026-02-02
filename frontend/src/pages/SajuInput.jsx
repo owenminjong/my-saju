@@ -1,11 +1,17 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { getFreeDiagnosis } from '../services/sajuApi';
+import { adminAPI } from '../services/api';
+import PremiumPromoCard from '../components/PremiumPromoCard';
 import './SajuInput.css';
 
 const SajuInput = () => {
     const navigate = useNavigate();
+    const location = useLocation();
+    const mode = location.state?.mode || 'free';
+
     const [loading, setLoading] = useState(false);
+    const [product, setProduct] = useState(null);
     const [formData, setFormData] = useState({
         name: '',
         birthDate: '',
@@ -17,7 +23,6 @@ const SajuInput = () => {
         minute: '0'
     });
 
-    // MBTI 16가지 옵션
     const mbtiOptions = [
         'ISTJ', 'ISFJ', 'INFJ', 'INTJ',
         'ISTP', 'ISFP', 'INFP', 'INTP',
@@ -25,7 +30,6 @@ const SajuInput = () => {
         'ESTJ', 'ESFJ', 'ENFJ', 'ENTJ'
     ];
 
-    // 십이지 시간대 옵션
     const timeOptions = [
         { label: '시간 모름', hour: 0, isUnknown: true },
         { label: '子시 (자시) - 쥐 (23:30~01:29)', hour: 0 },
@@ -42,13 +46,42 @@ const SajuInput = () => {
         { label: '亥시 (해시) - 돼지 (21:30~23:29)', hour: 21 }
     ];
 
-    // 입력 핸들러
+    useEffect(() => {
+        if (mode === 'premium') {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                alert('로그인이 필요합니다.');
+                navigate('/login', {
+                    state: {
+                        redirectTo: '/saju-input',
+                        mode: 'premium'
+                    }
+                });
+                return;
+            }
+            fetchPremiumProduct();
+        }
+    }, [mode, navigate]);
+
+    const fetchPremiumProduct = async () => {
+        try {
+            const response = await adminAPI.getProducts();
+            const premiumProduct = response.data.data.find(
+                p => p.name.includes('프리미엄') && p.is_active
+            );
+            if (premiumProduct) {
+                setProduct(premiumProduct);
+            }
+        } catch (error) {
+            console.error('상품 조회 실패:', error);
+        }
+    };
+
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
     };
 
-    // 생년월일 입력 처리
     const handleBirthDateChange = (e) => {
         let value = e.target.value;
         const numbers = value.replace(/\D/g, '');
@@ -65,7 +98,6 @@ const SajuInput = () => {
         setFormData(prev => ({ ...prev, birthDate: formatted }));
     };
 
-    // 십이지 시간 선택
     const handleTimeSelect = (e) => {
         const value = e.target.value;
         const selected = timeOptions.find(opt => opt.label === value);
@@ -88,18 +120,35 @@ const SajuInput = () => {
         }
     };
 
-    // 폼 제출
-    const handleSubmit = async (e) => {
-        e.preventDefault();
+    // ✅ Validation 체크 함수
+    const validateForm = () => {
+        if (!formData.name) {
+            alert('성함을 입력해주세요.');
+            return false;
+        }
+        if (!formData.gender) {
+            alert('성별을 선택해주세요.');
+            return false;
+        }
+        if (!formData.birthDate) {
+            alert('생년월일을 입력해주세요.');
+            return false;
+        }
+        if (!formData.mbti) {
+            alert('MBTI를 선택해주세요.');
+            return false;
+        }
+        return true;
+    };
 
-        console.log('🔵 [1단계] 폼 제출 버튼 클릭됨');
-        console.log('현재 formData:', formData);
+    // ✅ 프리미엄 결제 처리
+    const handlePremiumPayment = () => {
+        if (!validateForm()) {
+            return;
+        }
 
         const dateParts = formData.birthDate.split('.');
-        console.log('🔵 [2단계] 생년월일 파싱:', dateParts);
-
         if (dateParts.length !== 3) {
-            console.error('❌ 생년월일 형식 오류');
             alert('생년월일을 올바른 형식(YYYY.MM.DD)으로 입력해주세요.');
             return;
         }
@@ -108,40 +157,70 @@ const SajuInput = () => {
         const month = parseInt(dateParts[1]);
         const day = parseInt(dateParts[2]);
 
-        console.log('🔵 [3단계] 날짜 변환:', { year, month, day });
-
         if (!year || !month || !day) {
-            console.error('❌ 날짜 변환 실패');
             alert('올바른 생년월일을 입력해주세요.');
             return;
         }
 
+        const requestData = {
+            name: formData.name,
+            year,
+            month,
+            day,
+            hour: parseInt(formData.hour),
+            minute: parseInt(formData.minute),
+            isLunar: formData.isLunar,
+            gender: formData.gender,
+            mbti: formData.mbti
+        };
+
+        console.log('💎 유료 사주 - 결제 진행');
+        navigate('/payment/premium', {
+            state: {
+                sajuData: requestData,
+                product: product
+            }
+        });
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+
+        const dateParts = formData.birthDate.split('.');
+        if (dateParts.length !== 3) {
+            alert('생년월일을 올바른 형식(YYYY.MM.DD)으로 입력해주세요.');
+            return;
+        }
+
+        const year = parseInt(dateParts[0]);
+        const month = parseInt(dateParts[1]);
+        const day = parseInt(dateParts[2]);
+
+        if (!year || !month || !day) {
+            alert('올바른 생년월일을 입력해주세요.');
+            return;
+        }
+
+        const requestData = {
+            name: formData.name,
+            year,
+            month,
+            day,
+            hour: parseInt(formData.hour),
+            minute: parseInt(formData.minute),
+            isLunar: formData.isLunar,
+            gender: formData.gender,
+            mbti: formData.mbti
+        };
+
+        // 무료 모드만 처리
         try {
             setLoading(true);
-            console.log('🔵 [4단계] 로딩 시작');
-
-            const requestData = {
-                name: formData.name,
-                year,
-                month,
-                day,
-                hour: parseInt(formData.hour),
-                minute: parseInt(formData.minute),
-                isLunar: formData.isLunar,
-                gender: formData.gender,
-                mbti: formData.mbti
-            };
-
-            console.log('🔵 [5단계] API 요청 데이터 준비:');
-            console.log(JSON.stringify(requestData, null, 2));
-            console.log('🔵 [6단계] getFreeDiagnosis 호출 시작...');
+            console.log('🔵 무료 사주 요청:', requestData);
 
             const response = await getFreeDiagnosis(requestData);
+            console.log('✅ 무료 사주 응답:', response);
 
-            console.log('✅ [7단계] API 응답 성공:');
-            console.log(response);
-
-            console.log('🔵 [8단계] 네비게이션 시작...');
             navigate('/result', {
                 state: {
                     result: {
@@ -153,166 +232,172 @@ const SajuInput = () => {
                     }
                 }
             });
-            console.log('✅ [9단계] 네비게이션 완료');
 
         } catch (error) {
-            console.error('❌ [에러 발생]');
-            console.error('에러 객체:', error);
-            console.error('에러 메시지:', error.message);
-            console.error('에러 응답:', error.response);
+            console.error('❌ 무료 사주 오류:', error);
             alert(error.message);
         } finally {
             setLoading(false);
-            console.log('🔵 [최종] 로딩 종료');
         }
     };
 
     return (
-        <section className="form-section-wrapper" id="saju-form">
-            <div className="container">
-                <div className="corner-deco top-left"></div>
-                <div className="corner-deco top-right"></div>
-                <div className="corner-deco bottom-left"></div>
-                <div className="corner-deco bottom-right"></div>
+        <>
+            <section className="form-section-wrapper" id="saju-form">
+                <div className="container">
+                    <div className="corner-deco top-left"></div>
+                    <div className="corner-deco top-right"></div>
+                    <div className="corner-deco bottom-left"></div>
+                    <div className="corner-deco bottom-right"></div>
 
-                <header className="header">
-                    <h2>사주 정보 입력</h2>
-                    <p>정확한 풀이를 위해 생년월시를 입력해주세요.</p>
-                </header>
+                    <header className="header">
+                        <h2>사주 정보 입력 {mode === 'premium' && '(프리미엄)'}</h2>
+                        <p>정확한 풀이를 위해 생년월시를 입력해주세요.</p>
+                    </header>
 
-                <form onSubmit={handleSubmit}>
-                    {/* 성함 */}
-                    <div className="form-group">
-                        <label className="form-label">성함</label>
-                        <input
-                            type="text"
-                            name="name"
-                            value={formData.name}
-                            onChange={handleChange}
-                            placeholder="성함을 입력해주세요"
-                            required
-                        />
-                    </div>
+                    <form onSubmit={handleSubmit}>
+                        <div className="form-group">
+                            <label className="form-label">성함</label>
+                            <input
+                                type="text"
+                                name="name"
+                                value={formData.name}
+                                onChange={handleChange}
+                                placeholder="성함을 입력해주세요"
+                                required
+                            />
+                        </div>
 
-                    {/* 성별 */}
-                    <div className="form-group">
-                        <label className="form-label">성별</label>
-                        <div className="radio-group">
-                            <div className="radio-item">
-                                <input
-                                    type="radio"
-                                    id="male"
-                                    name="gender"
-                                    value="M"
-                                    checked={formData.gender === 'M'}
-                                    onChange={handleChange}
-                                />
-                                <label htmlFor="male">남성 (乾)</label>
-                            </div>
-                            <div className="radio-item">
-                                <input
-                                    type="radio"
-                                    id="female"
-                                    name="gender"
-                                    value="F"
-                                    checked={formData.gender === 'F'}
-                                    onChange={handleChange}
-                                />
-                                <label htmlFor="female">여성 (坤)</label>
+                        <div className="form-group">
+                            <label className="form-label">성별</label>
+                            <div className="radio-group">
+                                <div className="radio-item">
+                                    <input
+                                        type="radio"
+                                        id="male"
+                                        name="gender"
+                                        value="M"
+                                        checked={formData.gender === 'M'}
+                                        onChange={handleChange}
+                                    />
+                                    <label htmlFor="male">남성 (乾)</label>
+                                </div>
+                                <div className="radio-item">
+                                    <input
+                                        type="radio"
+                                        id="female"
+                                        name="gender"
+                                        value="F"
+                                        checked={formData.gender === 'F'}
+                                        onChange={handleChange}
+                                    />
+                                    <label htmlFor="female">여성 (坤)</label>
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    {/* 생년월일 */}
-                    <div className="form-group">
-                        <label className="form-label">생년월일</label>
-                        <input
-                            type="text"
-                            name="birthDate"
-                            value={formData.birthDate}
-                            onChange={handleBirthDateChange}
-                            placeholder="1990.01.01"
-                            maxLength="10"
-                            required
-                        />
-                        <p style={{ fontSize: '0.8rem', color: '#666', marginTop: '5px' }}>
-                            * 형식: YYYY.MM.DD
-                        </p>
+                        <div className="form-group">
+                            <label className="form-label">생년월일</label>
+                            <input
+                                type="text"
+                                name="birthDate"
+                                value={formData.birthDate}
+                                onChange={handleBirthDateChange}
+                                placeholder="1990.01.01"
+                                maxLength="10"
+                                required
+                            />
+                            <p style={{ fontSize: '0.8rem', color: '#666', marginTop: '5px' }}>
+                                * 형식: YYYY.MM.DD
+                            </p>
 
-                        <div className="radio-group" style={{ marginTop: '10px' }}>
-                            <div className="radio-item">
-                                <input
-                                    type="radio"
-                                    id="solar"
-                                    name="calendar"
-                                    checked={!formData.isLunar}
-                                    onChange={() => setFormData(prev => ({ ...prev, isLunar: false }))}
-                                />
-                                <label htmlFor="solar">양력</label>
-                            </div>
-                            <div className="radio-item">
-                                <input
-                                    type="radio"
-                                    id="lunar"
-                                    name="calendar"
-                                    checked={formData.isLunar}
-                                    onChange={() => setFormData(prev => ({ ...prev, isLunar: true }))}
-                                />
-                                <label htmlFor="lunar">음력</label>
+                            <div className="radio-group" style={{ marginTop: '10px' }}>
+                                <div className="radio-item">
+                                    <input
+                                        type="radio"
+                                        id="solar"
+                                        name="calendar"
+                                        checked={!formData.isLunar}
+                                        onChange={() => setFormData(prev => ({ ...prev, isLunar: false }))}
+                                    />
+                                    <label htmlFor="solar">양력</label>
+                                </div>
+                                <div className="radio-item">
+                                    <input
+                                        type="radio"
+                                        id="lunar"
+                                        name="calendar"
+                                        checked={formData.isLunar}
+                                        onChange={() => setFormData(prev => ({ ...prev, isLunar: true }))}
+                                    />
+                                    <label htmlFor="lunar">음력</label>
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    {/* MBTI 선택 */}
-                    <div className="form-group">
-                        <label className="form-label">MBTI</label>
-                        <select
-                            name="mbti"
-                            value={formData.mbti}
-                            onChange={handleChange}
-                            className="select-input"
-                            required
-                        >
-                            <option value="">MBTI를 선택해주세요</option>
-                            {mbtiOptions.map(mbti => (
-                                <option key={mbti} value={mbti}>
-                                    {mbti}
-                                </option>
-                            ))}
-                        </select>
-                        <p style={{ fontSize: '0.8rem', color: '#666', marginTop: '5px' }}>
-                            * 모르실 경우 가장 가까운 유형을 선택해주세요.
-                        </p>
-                    </div>
+                        <div className="form-group">
+                            <label className="form-label">MBTI</label>
+                            <select
+                                name="mbti"
+                                value={formData.mbti}
+                                onChange={handleChange}
+                                className="select-input"
+                                required
+                            >
+                                <option value="">MBTI를 선택해주세요</option>
+                                {mbtiOptions.map(mbti => (
+                                    <option key={mbti} value={mbti}>
+                                        {mbti}
+                                    </option>
+                                ))}
+                            </select>
+                            <p style={{ fontSize: '0.8rem', color: '#666', marginTop: '5px' }}>
+                                * 모르실 경우 가장 가까운 유형을 선택해주세요.
+                            </p>
+                        </div>
 
-                    {/* 태어난 시간 */}
-                    <div className="form-group">
-                        <label className="form-label">태어난 시간</label>
-                        <select
-                            name="selectedTime"
-                            value={formData.selectedTime}
-                            onChange={handleTimeSelect}
-                            className="select-input"
-                        >
-                            <option value="">시간대를 선택해주세요</option>
-                            {timeOptions.map((option, index) => (
-                                <option key={index} value={option.label}>
-                                    {option.label}
-                                </option>
-                            ))}
-                        </select>
-                        <p style={{ fontSize: '0.8rem', color: '#666', marginTop: '5px' }}>
-                            * 시간을 모르실 경우 '시간 모름'을 선택해주세요.
-                        </p>
-                    </div>
+                        <div className="form-group">
+                            <label className="form-label">태어난 시간</label>
+                            <select
+                                name="selectedTime"
+                                value={formData.selectedTime}
+                                onChange={handleTimeSelect}
+                                className="select-input"
+                            >
+                                <option value="">시간대를 선택해주세요</option>
+                                {timeOptions.map((option, index) => (
+                                    <option key={index} value={option.label}>
+                                        {option.label}
+                                    </option>
+                                ))}
+                            </select>
+                            <p style={{ fontSize: '0.8rem', color: '#666', marginTop: '5px' }}>
+                                * 시간을 모르실 경우 '시간 모름'을 선택해주세요.
+                            </p>
+                        </div>
 
-                    {/* 제출 버튼 */}
-                    <button type="submit" className="submit-btn" disabled={loading}>
-                        {loading ? '분석 중...' : '내 운명 확인하기'}
-                    </button>
-                </form>
-            </div>
-        </section>
+                        {/* ✅ 유료 모드일 때 하단 여백 (카드 공간 확보) */}
+                        {mode === 'premium' && <div style={{ height: '300px' }}></div>}
+
+                        {/* 무료 모드일 때만 제출 버튼 표시 */}
+                        {mode === 'free' && (
+                            <button type="submit" className="submit-btn" disabled={loading}>
+                                {loading ? '분석 중...' : '내 운명 확인하기'}
+                            </button>
+                        )}
+                    </form>
+                </div>
+            </section>
+
+            {/* ✅ 유료 모드일 때 Fixed 카드 */}
+            {mode === 'premium' && product && (
+                <PremiumPromoCard
+                    sajuData={formData}
+                    productInfo={product}
+                    onPaymentClick={handlePremiumPayment}
+                />
+            )}
+        </>
     );
 };
 

@@ -243,3 +243,51 @@ input[type="date"]::-webkit-calendar-picker-indicator {
         font-size: 0.9rem;
     }
 }
+
+/* 프리미엄 가격 박스 */
+.premium-price-box {
+    background: linear-gradient(135deg, rgba(197, 160, 89, 0.1) 0%, rgba(20, 25, 35, 0.3) 100%);
+    padding: 25px 20px;
+    border-radius: 12px;
+    margin-bottom: 25px;
+    text-align: center;
+    border: 1px solid rgba(197, 160, 89, 0.2);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.price-info {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+}
+
+.price-old {
+    font-size: 1rem;
+    color: #94a3b8;
+    text-decoration: line-through;
+}
+
+.price-new {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #c5a059;
+    font-family: 'Noto Serif KR', serif;
+}
+
+.discount-badge {
+    font-size: 0.9rem;
+    color: #fff;
+    background-color: #ff5e57;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-weight: 700;
+}
+
+.premium-desc {
+    font-size: 0.85rem;
+    color: #cbd5e1;
+    line-height: 1.5;
+}
