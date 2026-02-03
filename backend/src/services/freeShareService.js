@@ -3,16 +3,12 @@
 /**
  * 세션에서 무료 버전 결과 조회
  */
-const getFreeResult = (session, uniqueId) => {
+const getFreeResult = (session) => {
     try {
         const freeResult = session.freeResult;
 
         if (!freeResult) {
-            throw new Error('결과를 찾을 수 없습니다. 세션이 만료되었을 수 있습니다.');
-        }
-
-        if (freeResult.uniqueId !== uniqueId) {
-            throw new Error('일치하는 결과를 찾을 수 없습니다.');
+            throw new Error('공유할 사주 데이터가 없습니다. 먼저 사주를 조회해주세요.');
         }
 
         return freeResult;

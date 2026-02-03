@@ -1,3 +1,5 @@
+// frontend/src/App.js
+
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
 import DashboardPage from './pages/admin/DashboardPage';
@@ -11,7 +13,6 @@ import PremiumPaymentPage from './pages/PremiumPaymentPage';
 import PremiumPaymentSuccess from './pages/PremiumPaymentSuccess';
 import PaymentFail from './pages/PaymentFail';
 import PremiumGeneratePage from './pages/PremiumGeneratePage';
-
 
 // 🏠 메인 & 사주 서비스 페이지
 import MainPage from './pages/MainPage';
@@ -62,7 +63,7 @@ function AdminNav() {
 function Layout({ children }) {
   const location = useLocation();
   const isAdminPage = location.pathname.startsWith('/admin');
-  const isMainPage = location.pathname === '/';  // ⬅️ 추가
+  const isMainPage = location.pathname === '/';
 
   return (
       <div className={`min-h-screen ${isMainPage ? '' : 'bg-gray-100'}`}>
@@ -88,7 +89,11 @@ function App() {
             {/* 🔮 사주 서비스 */}
             <Route path="/saju-input" element={<SajuInput />} />
             <Route path="/result" element={<SajuResult />} />
-            <Route path="/result/:uniqueId" element={<SharedResult />} />
+
+            {/* 🔗 공유 링크 */}
+            <Route path="/r/:encodedData" element={<SharedResult />} /> {/* ✅ 짧은 URL (gzip + Base64) */}
+            <Route path="/result/:encodedData" element={<SharedResult />} /> {/* 기존 URL (호환성) */}
+
             <Route path="/ex-result" element={<SampleResult />} />
 
             {/* 🔧 관리자 페이지 */}

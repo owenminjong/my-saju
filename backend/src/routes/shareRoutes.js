@@ -1,4 +1,5 @@
 // backend/src/routes/shareRoutes.js
+
 const express = require('express');
 const router = express.Router();
 const shareController = require('../controllers/shareController');
@@ -10,9 +11,27 @@ const shareController = require('../controllers/shareController');
 router.get('/kakao-key', shareController.getKakaoKey);
 
 /**
- * GET /api/share/free/:uniqueId
- * 무료 버전 공유 링크 조회
+ * POST /api/share/encode
+ * 세션 데이터를 인코딩해서 공유 URL 생성 (gzip)
  */
-router.get('/free/:uniqueId', shareController.getFreeResult);
+router.post('/encode', shareController.encodeShareData);
+
+/**
+ * ✅ POST /api/share/encode-hash
+ * Base64 인코딩 (더 짧은 URL)
+ */
+router.post('/encode-hash', shareController.encodeShareDataHash);
+
+/**
+ * GET /api/share/decode/:encodedData
+ * 인코딩된 데이터를 디코딩해서 사주 결과 반환 (gzip)
+ */
+router.get('/decode/:encodedData', shareController.decodeShareData);
+
+/**
+ * ✅ POST /api/share/decode-hash
+ * Base64 디코딩
+ */
+router.post('/decode-hash', shareController.decodeShareDataHash);
 
 module.exports = router;
