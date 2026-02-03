@@ -43,7 +43,6 @@ function PremiumPaymentPage() {
 
             const prepareResponse = await paymentAPI.prepare({
                 product_id: product.id,
-                user_id: 1,
             });
 
             console.log('결제 준비 완료:', prepareResponse.data);

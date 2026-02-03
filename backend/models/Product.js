@@ -57,4 +57,13 @@ const Product = sequelize.define('products', {
     updatedAt: 'updated_at'
 });
 
+// ✅ 관계 설정 추가
+Product.associate = function(models) {
+    // Product는 여러 개의 Order를 가질 수 있음
+    Product.hasMany(models.Order, {
+        foreignKey: 'product_id',
+        as: 'orders'
+    });
+};
+
 module.exports = Product;

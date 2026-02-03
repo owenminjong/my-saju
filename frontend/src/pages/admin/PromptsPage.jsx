@@ -84,13 +84,13 @@ function PromptsPage() {
     };
 
     if (loading) {
-        return <div className="p-8">로딩중...</div>;
+        return <div className="p-8 text-gray-900">로딩중...</div>;
     }
 
     return (
         <div className="p-8">
             <div className="flex justify-between items-center mb-8">
-                <h1 className="text-3xl font-bold">프롬프트 관리</h1>
+                <h1 className="text-3xl font-bold text-gray-900">프롬프트 관리</h1>
                 <button
                     onClick={handleAdd}
                     className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
@@ -98,6 +98,7 @@ function PromptsPage() {
                     + 새 프롬프트
                 </button>
             </div>
+
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
                 <h3 className="font-bold text-blue-800 mb-2">📌 사용 가능한 변수</h3>
                 <div className="text-sm text-blue-700 space-y-1">
@@ -111,19 +112,20 @@ function PromptsPage() {
                     <p><code className="bg-blue-100 px-2 py-1 rounded">{`{personalityExpression}`}</code> - MBTI 기반 성향 표현</p>
                 </div>
             </div>
+
             {/* 프롬프트 목록 */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {prompts.map((prompt) => (
                     <div key={prompt.id} className="bg-white p-6 rounded-lg shadow">
                         <div className="flex justify-between items-start mb-4">
-                            <h3 className="text-lg font-bold">{prompt.name}</h3>
+                            <h3 className="text-lg font-bold text-gray-900">{prompt.name}</h3>
                             <span
                                 className={`px-2 py-1 text-xs rounded-full ${
                                     prompt.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
                                 }`}
                             >
-                {prompt.is_active ? '활성' : '비활성'}
-              </span>
+                                {prompt.is_active ? '활성' : '비활성'}
+                            </span>
                         </div>
 
                         {prompt.category && (
@@ -156,40 +158,40 @@ function PromptsPage() {
             {showModal && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
                     <div className="bg-white rounded-lg p-8 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-                        <h2 className="text-2xl font-bold mb-6">
+                        <h2 className="text-2xl font-bold mb-6 text-gray-900">
                             {editingPrompt ? '프롬프트 수정' : '새 프롬프트'}
                         </h2>
 
                         <form onSubmit={handleSubmit}>
                             <div className="mb-4">
-                                <label className="block text-sm font-medium mb-2">이름 *</label>
+                                <label className="block text-sm font-medium mb-2 text-gray-700">이름 *</label>
                                 <input
                                     type="text"
                                     value={formData.name}
-                                    onChange={(e) => setFormData({...formData, name: e.target.value})}
-                                    className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
                                     required
                                 />
                             </div>
 
                             <div className="mb-4">
-                                <label className="block text-sm font-medium mb-2">카테고리</label>
+                                <label className="block text-sm font-medium mb-2 text-gray-700">카테고리</label>
                                 <input
                                     type="text"
                                     value={formData.category}
-                                    onChange={(e) => setFormData({...formData, category: e.target.value})}
-                                    className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
                                     placeholder="예: saju, love, wealth"
                                 />
                             </div>
 
                             <div className="mb-4">
-                                <label className="block text-sm font-medium mb-2">내용 *</label>
+                                <label className="block text-sm font-medium mb-2 text-gray-700">내용 *</label>
                                 <textarea
                                     value={formData.content}
-                                    onChange={(e) => setFormData({...formData, content: e.target.value})}
+                                    onChange={(e) => setFormData({ ...formData, content: e.target.value })}
                                     rows="10"
-                                    className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
                                     required
                                 />
                             </div>
@@ -199,10 +201,10 @@ function PromptsPage() {
                                     <input
                                         type="checkbox"
                                         checked={formData.is_active}
-                                        onChange={(e) => setFormData({...formData, is_active: e.target.checked})}
+                                        onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
                                         className="mr-2"
                                     />
-                                    <span className="text-sm">활성화</span>
+                                    <span className="text-sm text-gray-700">활성화</span>
                                 </label>
                             </div>
 
@@ -210,7 +212,7 @@ function PromptsPage() {
                                 <button
                                     type="button"
                                     onClick={() => setShowModal(false)}
-                                    className="flex-1 px-4 py-2 border rounded-lg hover:bg-gray-100"
+                                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100 text-gray-700"
                                 >
                                     취소
                                 </button>

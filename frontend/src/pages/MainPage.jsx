@@ -60,12 +60,6 @@ const MainPage = () => {
                         로그인하기
                     </button>
                     <button
-                        className="menu-link"
-                        style={{background: 'none', border: 'none', width: '100%', textAlign: 'left'}}
-                    >
-                        가입하기
-                    </button>
-                    <button
                         onClick={() => navigate('/saju-input', { state: { mode: 'premium' } })}
                         className="menu-link"
                         style={{background: 'none', border: 'none', width: '100%', textAlign: 'left'}}

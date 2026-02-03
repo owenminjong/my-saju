@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { getFreeDiagnosis } from '../services/sajuApi';
 import { adminAPI } from '../services/api';
@@ -9,6 +9,7 @@ const SajuInput = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const mode = location.state?.mode || 'free';
+    const hasAlerted = useRef(false)
 
     const [loading, setLoading] = useState(false);
     const [product, setProduct] = useState(null);
@@ -50,7 +51,10 @@ const SajuInput = () => {
         if (mode === 'premium') {
             const token = localStorage.getItem('token');
             if (!token) {
-                alert('로그인이 필요합니다.');
+                if (!hasAlerted.current) {  // ✅ 한 번만 실행
+                    hasAlerted.current = true;
+                    alert('로그인이 필요합니다.');
+                }
                 navigate('/login', {
                     state: {
                         redirectTo: '/saju-input',
@@ -61,7 +65,7 @@ const SajuInput = () => {
             }
             fetchPremiumProduct();
         }
-    }, [mode, navigate]);
+    }, [mode]);
 
     const fetchPremiumProduct = async () => {
         try {

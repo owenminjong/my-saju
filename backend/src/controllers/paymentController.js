@@ -1,11 +1,26 @@
 const PaymentService = require('../services/paymentService');
 const { Product, Order } = require('../../models');
-
+const jwt = require('jsonwebtoken');
 // 결제 준비 (주문 생성)
 exports.preparePayment = async (req, res) => {
     try {
         const { product_id } = req.body;
-        const userId = req.body.user_id;
+
+        // ✅ JWT 토큰에서 userId 추출
+        const token = req.headers.authorization?.split(' ')[1];
+
+        if (!token) {
+            return res.status(401).json({
+                success: false,
+                message: '로그인이 필요합니다.'
+            });
+        }
+
+        const jwtSecret = process.env.JWT_SECRET || 'mylifecode-secret-key-2026';
+        const decoded = jwt.verify(token, jwtSecret);
+        const userId = decoded.userId;  // ✅ authController에서 userId로 저장했음
+
+        console.log('현재 로그인 유저:', userId);
 
         const product = await Product.findByPk(product_id);
 
@@ -16,7 +31,6 @@ exports.preparePayment = async (req, res) => {
             });
         }
 
-        // ✅ promotion_active 체크해서 금액 결정
         const paymentAmount = (product.promotion_active === 1 && product.discount_price)
             ? product.discount_price
             : product.price;

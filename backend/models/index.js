@@ -9,7 +9,25 @@ const ApiKey = require('./ApiKey');
 const Prompt = require('./Prompt');
 const DiagnosisResult = require('./DiagnosisResult');
 
-// 관계 설정 추가
+// ✅ 모든 모델을 객체로 묶기
+const models = {
+  User,
+  Product,
+  Order,
+  TokenUsage,
+  ApiKey,
+  Prompt,
+  DiagnosisResult
+};
+
+// ✅ 각 모델의 associate 함수 실행 (모델 파일에 정의된 관계 초기화)
+Object.keys(models).forEach(modelName => {
+  if (models[modelName].associate) {
+    models[modelName].associate(models);
+  }
+});
+
+// ✅ 추가 관계 설정 (모델 파일에 정의되지 않은 관계)
 User.hasMany(DiagnosisResult, {
   foreignKey: 'user_id',
   as: 'diagnosisResults'
@@ -28,7 +46,7 @@ DiagnosisResult.belongsTo(Order, {
   as: 'order'
 });
 
-// export에 추가
+// export
 module.exports = {
   sequelize,
   User,
@@ -37,5 +55,5 @@ module.exports = {
   TokenUsage,
   ApiKey,
   Prompt,
-  DiagnosisResult  // 추가
+  DiagnosisResult
 };

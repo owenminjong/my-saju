@@ -60,4 +60,19 @@ const User = sequelize.define('users', {
     updatedAt: 'updated_at'
 });
 
+// ✅ 관계 설정 추가
+User.associate = function(models) {
+    // User는 여러 개의 Order를 가질 수 있음
+    User.hasMany(models.Order, {
+        foreignKey: 'user_id',
+        as: 'orders'
+    });
+
+    // User는 여러 개의 TokenUsage를 가질 수 있음
+    User.hasMany(models.TokenUsage, {
+        foreignKey: 'user_id',
+        as: 'tokenUsages'
+    });
+};
+
 module.exports = User;

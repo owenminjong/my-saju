@@ -40,13 +40,15 @@ function UserDetailPage() {
         return <div className="p-8">데이터를 불러올 수 없습니다.</div>;
     }
 
+    console.log(data);
+
     const { user, orders, tokens } = data;
 
     return (
         <div className="p-8">
             <div className="mb-6">
                 <button
-                    onClick={() => navigate('/users')}
+                    onClick={() => navigate('/admin/users')}
                     className="text-blue-600 hover:text-blue-800"
                 >
                     ← 목록으로

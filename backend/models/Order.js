@@ -38,12 +38,12 @@ const Order = sequelize.define('orders', {
         type: DataTypes.STRING(100),
         allowNull: true
     },
-    order_id: {  // ✅ merchant_uid → order_id로 변경
+    order_id: {
         type: DataTypes.STRING(100),
         allowNull: true,
         unique: true
     },
-    payment_key: {  // ✅ 토스페이먼츠 payment_key 추가
+    payment_key: {
         type: DataTypes.STRING(200),
         allowNull: true
     },
@@ -61,5 +61,20 @@ const Order = sequelize.define('orders', {
     createdAt: 'created_at',
     updatedAt: 'updated_at'
 });
+
+// ✅ 관계 설정 추가
+Order.associate = function(models) {
+    // Order는 한 명의 User에게 속함
+    Order.belongsTo(models.User, {
+        foreignKey: 'user_id',
+        as: 'user'
+    });
+
+    // Order는 한 개의 Product에 속함
+    Order.belongsTo(models.Product, {
+        foreignKey: 'product_id',
+        as: 'product'
+    });
+};
 
 module.exports = Order;

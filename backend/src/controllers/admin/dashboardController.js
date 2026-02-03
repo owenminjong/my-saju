@@ -1,52 +1,72 @@
-const { User, Order, TokenUsage } = require('../../../models');
-const { sequelize } = require('../../../models');
-const { QueryTypes } = require('sequelize');
+const { User, Order, TokenUsage, sequelize } = require('../../../models');
+const { Op } = require('sequelize');
 
 // 대시보드 통계 조회
 exports.getDashboardStats = async (req, res) => {
     try {
+        const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+
         // 1. 일별 가입자 수 (최근 7일)
-        const dailyUsers = await sequelize.query(`
-            SELECT 
-                DATE(created_at) as date,
-                COUNT(*) as count
-            FROM users
-            WHERE created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)
-            GROUP BY DATE(created_at)
-            ORDER BY date DESC
-        `, { type: QueryTypes.SELECT });
+        const dailyUsers = await User.findAll({
+            attributes: [
+                [sequelize.fn('DATE', sequelize.col('created_at')), 'date'],
+                [sequelize.fn('COUNT', '*'), 'count']
+            ],
+            where: {
+                created_at: {
+                    [Op.gte]: sevenDaysAgo
+                }
+            },
+            group: [sequelize.fn('DATE', sequelize.col('created_at'))],
+            order: [[sequelize.fn('DATE', sequelize.col('created_at')), 'DESC']],
+            raw: true
+        });
 
         // 2. 일별 매출액 (최근 7일)
-        const dailyRevenue = await sequelize.query(`
-            SELECT 
-                DATE(created_at) as date,
-                SUM(amount) as total
-            FROM orders
-            WHERE status = 'completed'
-                AND created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)
-            GROUP BY DATE(created_at)
-            ORDER BY date DESC
-        `, { type: QueryTypes.SELECT });
+        const dailyRevenue = await Order.findAll({
+            attributes: [
+                [sequelize.fn('DATE', sequelize.col('created_at')), 'date'],
+                [sequelize.fn('SUM', sequelize.col('amount')), 'total']
+            ],
+            where: {
+                status: 'completed',
+                created_at: {
+                    [Op.gte]: sevenDaysAgo
+                }
+            },
+            group: [sequelize.fn('DATE', sequelize.col('created_at'))],
+            order: [[sequelize.fn('DATE', sequelize.col('created_at')), 'DESC']],
+            raw: true
+        });
 
         // 3. AI 토큰 사용량 (최근 7일)
-        const dailyTokens = await sequelize.query(`
-            SELECT 
-                DATE(created_at) as date,
-                SUM(tokens_used) as total
-            FROM token_usage
-            WHERE created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)
-            GROUP BY DATE(created_at)
-            ORDER BY date DESC
-        `, { type: QueryTypes.SELECT });
+        const dailyTokens = await TokenUsage.findAll({
+            attributes: [
+                [sequelize.fn('DATE', sequelize.col('created_at')), 'date'],
+                [sequelize.fn('SUM', sequelize.col('tokens_used')), 'total']
+            ],
+            where: {
+                created_at: {
+                    [Op.gte]: sevenDaysAgo
+                }
+            },
+            group: [sequelize.fn('DATE', sequelize.col('created_at'))],
+            order: [[sequelize.fn('DATE', sequelize.col('created_at')), 'DESC']],
+            raw: true
+        });
 
         // 4. 전체 통계
-        const [totalStats] = await sequelize.query(`
-            SELECT 
-                (SELECT COUNT(*) FROM users) as total_users,
-                (SELECT COUNT(*) FROM users WHERE status = 'active') as active_users,
-                (SELECT SUM(amount) FROM orders WHERE status = 'completed') as total_revenue,
-                (SELECT COUNT(*) FROM orders WHERE status = 'completed') as total_orders
-        `, { type: QueryTypes.SELECT });
+        const totalUsers = await User.count();
+        const activeUsers = await User.count({ where: { status: 'active' } });
+        const totalRevenueResult = await Order.sum('amount', { where: { status: 'completed' } });
+        const totalOrders = await Order.count({ where: { status: 'completed' } });
+
+        const totalStats = {
+            total_users: totalUsers || 0,
+            active_users: activeUsers || 0,
+            total_revenue: totalRevenueResult || 0,
+            total_orders: totalOrders || 0
+        };
 
         res.json({
             success: true,

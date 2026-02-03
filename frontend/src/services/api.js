@@ -9,6 +9,20 @@ const api = axios.create({
     },
 });
 
+// ✅ 요청 인터셉터 추가 (토큰 자동 추가)
+api.interceptors.request.use(
+    (config) => {
+        const token = localStorage.getItem('token');
+        if (token) {
+            config.headers.Authorization = `Bearer ${token}`;
+        }
+        return config;
+    },
+    (error) => {
+        return Promise.reject(error);
+    }
+);
+
 // 관리자 API
 export const adminAPI = {
     // 대시보드
@@ -40,8 +54,6 @@ export const adminAPI = {
     upsertApiKey: (data) => api.post('/admin/api-keys', data),
     toggleApiKey: (id, is_active) => api.patch(`/admin/api-keys/${id}/toggle`, { is_active }),
     deleteApiKey: (id) => api.delete(`/admin/api-keys/${id}`),
-
-
 };
 
 // 결제 API 추가

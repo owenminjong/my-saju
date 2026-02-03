@@ -4,13 +4,12 @@ import { useNavigate } from 'react-router-dom';
 
 function UsersPage() {
     const [users, setUsers] = useState([]);
-    const [initialLoading, setInitialLoading] = useState(true); // 초기 로딩만
+    const [initialLoading, setInitialLoading] = useState(true);
     const [pagination, setPagination] = useState({});
     const [search, setSearch] = useState('');
     const [status, setStatus] = useState('');
     const navigate = useNavigate();
 
-    // 디바운스
     useEffect(() => {
         const timer = setTimeout(() => {
             fetchUsers();
@@ -29,7 +28,7 @@ function UsersPage() {
             });
             setUsers(response.data.data.users);
             setPagination(response.data.data.pagination);
-            setInitialLoading(false); // 초기 로딩만 false
+            setInitialLoading(false);
         } catch (error) {
             console.error('회원 목록 조회 실패:', error);
             setInitialLoading(false);
@@ -70,33 +69,33 @@ function UsersPage() {
         return new Date(dateString).toLocaleDateString('ko-KR');
     };
 
-    if (initialLoading) { // 초기 로딩일 때만 표시
-        return <div className="p-8">로딩중...</div>;
+    if (initialLoading) {
+        return <div className="p-8 text-gray-900">로딩중...</div>;
     }
 
     return (
         <div className="p-8">
-            <h1 className="text-3xl font-bold mb-8">회원 관리</h1>
+            <h1 className="text-3xl font-bold mb-8 text-gray-900">회원 관리</h1>
 
             {/* 검색 및 필터 */}
             <div className="bg-white p-6 rounded-lg shadow mb-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <label className="block text-sm font-medium mb-2">검색</label>
+                        <label className="block text-sm font-medium mb-2 text-gray-700">검색</label>
                         <input
                             type="text"
                             placeholder="이름, 이메일, 전화번호"
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
-                            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
                         />
                     </div>
                     <div>
-                        <label className="block text-sm font-medium mb-2">상태</label>
+                        <label className="block text-sm font-medium mb-2 text-gray-700">상태</label>
                         <select
                             value={status}
                             onChange={(e) => setStatus(e.target.value)}
-                            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
                         >
                             <option value="">전체</option>
                             <option value="active">활성</option>
@@ -127,15 +126,15 @@ function UsersPage() {
                         <tbody className="bg-white divide-y divide-gray-200">
                         {users.map((user) => (
                             <tr key={user.id}>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm">{user.id}</td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">{user.name}</td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm">{user.email}</td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm">{user.phone}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{user.id}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{user.name}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{user.email}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{user.phone || '-'}</td>
                                 <td className="px-6 py-4 whitespace-nowrap">
                                     <select
                                         value={user.status}
                                         onChange={(e) => handleStatusChange(user.id, e.target.value)}
-                                        className={`px-2 py-1 text-xs rounded-full ${
+                                        className={`px-2 py-1 text-xs rounded-full border-0 ${
                                             user.status === 'active' ? 'bg-green-100 text-green-800' :
                                                 user.status === 'inactive' ? 'bg-gray-100 text-gray-800' :
                                                     'bg-red-100 text-red-800'
@@ -146,10 +145,10 @@ function UsersPage() {
                                         <option value="banned">차단</option>
                                     </select>
                                 </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm">{formatDate(user.created_at)}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{formatDate(user.created_at)}</td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm">
                                     <button
-                                        onClick={() => navigate(`/users/${user.id}`)}
+                                        onClick={() => navigate(`/admin/users/${user.id}`)}
                                         className="text-blue-600 hover:text-blue-900 mr-3"
                                     >
                                         상세
@@ -179,7 +178,7 @@ function UsersPage() {
                                 className={`px-4 py-2 rounded ${
                                     page === pagination.page
                                         ? 'bg-blue-500 text-white'
-                                        : 'bg-white text-gray-700 hover:bg-gray-100'
+                                        : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300'
                                 }`}
                             >
                                 {page}

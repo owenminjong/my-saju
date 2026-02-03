@@ -31,4 +31,13 @@ const TokenUsage = sequelize.define('token_usage', {
     updatedAt: false
 });
 
+// ✅ 관계 설정 추가
+TokenUsage.associate = function(models) {
+    // TokenUsage는 한 명의 User에게 속함
+    TokenUsage.belongsTo(models.User, {
+        foreignKey: 'user_id',
+        as: 'user'
+    });
+};
+
 module.exports = TokenUsage;
