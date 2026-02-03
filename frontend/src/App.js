@@ -7,6 +7,11 @@ import ProductsPage from './pages/admin/ProductsPage';
 import UserDetailPage from './pages/admin/UserDetailPage';
 import ApiKeysPage from './pages/admin/ApiKeysPage';
 import PaymentTestPage from './pages/PaymentTestPage';
+import PremiumPaymentPage from './pages/PremiumPaymentPage';
+import PremiumPaymentSuccess from './pages/PremiumPaymentSuccess';
+import PaymentFail from './pages/PaymentFail';
+import PremiumGeneratePage from './pages/PremiumGeneratePage';
+
 
 // 🏠 메인 & 사주 서비스 페이지
 import MainPage from './pages/MainPage';
@@ -94,6 +99,11 @@ function App() {
             <Route path="/admin/products" element={<ProductsPage />} />
             <Route path="/admin/api-keys" element={<ApiKeysPage />} />
             <Route path="/admin/payment-test" element={<PaymentTestPage />} />
+
+            <Route path="/payment/premium" element={<PremiumPaymentPage />} />
+            <Route path="/payment/premium/success" element={<PremiumPaymentSuccess />} />
+            <Route path="/payment/fail" element={<PaymentFail />} />
+            <Route path="/premium/generate" element={<PremiumGeneratePage />} />
           </Routes>
         </Layout>
       </Router>

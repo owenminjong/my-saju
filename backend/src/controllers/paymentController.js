@@ -16,16 +16,27 @@ exports.preparePayment = async (req, res) => {
             });
         }
 
-        const paymentAmount = product.discount_price || product.price;
+        // ✅ promotion_active 체크해서 금액 결정
+        const paymentAmount = (product.promotion_active === 1 && product.discount_price)
+            ? product.discount_price
+            : product.price;
+
+        console.log('결제 금액 결정:', {
+            promotion_active: product.promotion_active,
+            discount_price: product.discount_price,
+            price: product.price,
+            finalAmount: paymentAmount
+        });
+
         const keys = await PaymentService.getPaymentKeys();
         const order = await PaymentService.createOrder(userId, product_id, paymentAmount);
 
-        console.log('생성된 주문:', order);  // 디버깅
+        console.log('생성된 주문:', order);
 
         res.json({
             success: true,
             data: {
-                orderId: order.orderIdStr,  // ✅ 이게 문자열이어야 함!
+                orderId: order.orderIdStr,
                 productName: product.name,
                 amount: paymentAmount,
                 clientKey: keys.clientKey,
@@ -43,11 +54,10 @@ exports.preparePayment = async (req, res) => {
 // 결제 승인 (토스페이먼츠)
 exports.confirmPayment = async (req, res) => {
     try {
-        const { paymentKey, orderId, amount } = req.body;
+        const { paymentKey, orderId } = req.body;
 
-        console.log('결제 승인 요청:', { paymentKey, orderId, amount });
+        console.log('결제 승인 요청:', { paymentKey, orderId });
 
-        // DB에서 주문 확인
         const order = await Order.findOne({
             where: { order_id: orderId }
         });
@@ -59,20 +69,16 @@ exports.confirmPayment = async (req, res) => {
             });
         }
 
-        // 금액 검증
-        if (order.amount !== amount) {
-            console.error('금액 불일치:', { orderAmount: order.amount, requestAmount: amount });
-            return res.status(400).json({
-                success: false,
-                message: '결제 금액이 일치하지 않습니다.',
-            });
-        }
+        // ✅ DB에 저장된 금액 사용 (URL 파라미터 무시)
+        const actualAmount = order.amount;
+
+        console.log('DB 저장 금액으로 승인:', actualAmount);
 
         // 토스페이먼츠 결제 승인
         const paymentData = await PaymentService.confirmPayment(
             paymentKey,
             orderId,
-            amount
+            actualAmount
         );
 
         // 결제 완료 처리
@@ -83,7 +89,8 @@ exports.confirmPayment = async (req, res) => {
             message: '결제가 완료되었습니다.',
             data: {
                 orderId: order.id,
-                amount: paymentData.totalAmount,
+                orderIdStr: order.order_id,
+                amount: actualAmount,
             },
         });
     } catch (error) {

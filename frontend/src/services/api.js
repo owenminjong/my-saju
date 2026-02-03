@@ -47,6 +47,7 @@ export const adminAPI = {
 // 결제 API 추가
 export const paymentAPI = {
     prepare: (data) => api.post('/payment/prepare', data),
+    confirm: (data) => api.post('/payment/confirm', data),
     verify: (data) => api.post('/payment/verify', data),
     cancel: (data) => api.post('/payment/cancel', data),
 };
