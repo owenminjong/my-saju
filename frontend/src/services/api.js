@@ -54,6 +54,12 @@ export const adminAPI = {
     upsertApiKey: (data) => api.post('/admin/api-keys', data),
     toggleApiKey: (id, is_active) => api.patch(`/admin/api-keys/${id}/toggle`, { is_active }),
     deleteApiKey: (id) => api.delete(`/admin/api-keys/${id}`),
+
+    // 주문 관리
+    getOrders: (params) => api.get('/admin/orders', { params }),
+    getOrderDetail: (id) => api.get(`/admin/orders/${id}`),
+    cancelOrder: (id) => api.post(`/admin/orders/${id}/cancel`),
+    refundOrder: (id, amount, reason) => api.post(`/admin/orders/${id}/refund`, { amount, reason }),
 };
 
 // 결제 API 추가

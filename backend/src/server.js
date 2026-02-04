@@ -43,7 +43,7 @@ const adminPromptsRoutes = require('./routes/admin/prompts');
 const adminApiKeysRoutes = require('./routes/admin/apiKeys');
 const adminDashboardRoutes = require('./routes/admin/dashboard');
 const shareRoutes = require('./routes/shareRoutes');
-
+const adminPay = require('./routes/admin/adminPay');
 app.use('/api/auth', authRoutes);
 app.use('/api/saju', sajuRoutes);
 app.use('/api/diagnosis', diagnosisRoutes);
@@ -54,6 +54,7 @@ app.use('/api/admin/prompts', adminPromptsRoutes);
 app.use('/api/admin/api-keys', adminApiKeysRoutes);
 app.use('/api/admin/dashboard', adminDashboardRoutes);
 app.use('/api/share', shareRoutes);
+app.use('/api/admin', adminPay);
 
 app.get('/', (req, res) => {
     res.json({ message: 'MyLifeCode Backend API' });

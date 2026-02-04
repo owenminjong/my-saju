@@ -140,6 +140,35 @@ class PaymentService {
             throw error;
         }
     }
+
+    /**
+     * 부분 환불
+     */
+    static async partialCancelPayment(paymentKey, cancelAmount, cancelReason) {
+        try {
+            const keys = await this.getPaymentKeys();
+
+            const response = await axios.post(
+                `https://api.tosspayments.com/v1/payments/${paymentKey}/cancel`,
+                {
+                    cancelAmount,
+                    cancelReason
+                },
+                {
+                    headers: {
+                        'Authorization': `Basic ${Buffer.from(keys.secretKey + ':').toString('base64')}`,
+                        'Content-Type': 'application/json'
+                    }
+                }
+            );
+
+            return response.data;
+        } catch (error) {
+            console.error('부분 환불 오류:', error.response?.data);
+            throw new Error(error.response?.data?.message || '부분 환불에 실패했습니다.');
+        }
+    }
 }
+
 
 module.exports = PaymentService;
