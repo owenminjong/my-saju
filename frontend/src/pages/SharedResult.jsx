@@ -14,16 +14,8 @@ function SharedResult() {
     // ✅ 이름 마스킹 함수
     const maskName = (name) => {
         if (!name || name.length === 0) return '익명';
-
-        // 1글자: 그대로 표시
         if (name.length === 1) return name;
-
-        // 2글자: 첫글자 + O (예: 김철 -> 김O)
-        if (name.length === 2) {
-            return name[0] + 'O';
-        }
-
-        // 3글자 이상: 첫글자 + OO (예: 신재규 -> 신OO, 김철수 -> 김OO)
+        if (name.length === 2) return name[0] + 'O';
         return name[0] + 'O'.repeat(name.length - 1);
     };
 
@@ -56,7 +48,7 @@ function SharedResult() {
                 if (data.success) {
                     setResultData(data.data);
                     console.log('전체 데이터', data);
-                    console.log('✅ 데이터 로드 완료:', data.data.user?.name);
+                    console.log('✅ 데이터 로드 완료:', data.data);
                 } else {
                     setError(data.message || '결과를 불러올 수 없습니다.');
                 }
@@ -107,30 +99,23 @@ function SharedResult() {
         );
     }
 
-    // ✅ 데이터 파싱 - 마스킹된 이름 사용
+    // ✅ 데이터 파싱 - API 응답 구조에 맞게 수정
     const originalName = resultData?.user?.name || '익명';
     const maskedName = maskName(originalName);
-    const animal = resultData?.saju?.year?.branch?.animal || '용';
+
+    // ✅ metadata.character에서 띠 정보 추출 (예: "흰 호랑이띠 · 여름 · 아침")
+    const characterString = resultData?.metadata?.character || '';
+    const animalMatch = characterString.match(/([가-힣]+)띠/);
+    const animal = animalMatch ? animalMatch[1] : (resultData?.imageMetadata?.zodiac || '용');
+
+    // ✅ fields에서 등급 가져오기
     const grades = resultData?.fields || {};
 
-    // 계절 계산
-    const birthDate = resultData?.user?.birthDate || '';
-    const monthMatch = birthDate.match(/(\d+)월/);
-    const month = monthMatch ? parseInt(monthMatch[1]) : 9;
-    const season = month >= 3 && month <= 5 ? '봄' :
-        month >= 6 && month <= 8 ? '여름' :
-            month >= 9 && month <= 11 ? '가을' : '겨울';
-
-    // 시간대 계산
-    const birthTime = resultData?.user?.birthTime || '';
-    let timeOfDay = '낮';
-    if (birthTime.includes('자시') || birthTime.includes('축시') || birthTime.includes('인시')) {
-        timeOfDay = '새벽';
-    } else if (birthTime.includes('오시') || birthTime.includes('미시') || birthTime.includes('신시')) {
-        timeOfDay = '오후';
-    } else if (birthTime.includes('술시') || birthTime.includes('해시')) {
-        timeOfDay = '저녁';
-    }
+    // ✅ metadata.character에서 계절과 시간대 추출
+    const seasonMatch = characterString.match(/띠\s*·\s*([가-힣]+)\s*·/);
+    const timeMatch = characterString.match(/·\s*([가-힣]+)$/);
+    const season = seasonMatch ? seasonMatch[1] : (resultData?.imageMetadata?.season || '봄');
+    const timeOfDay = timeMatch ? timeMatch[1] : (resultData?.imageMetadata?.timeOfDay || '낮');
 
     // 등급별 색상
     const getGradeColor = (grade) => {
@@ -154,6 +139,25 @@ function SharedResult() {
         }
     };
 
+    // ✅ 띠별 이모지 매핑
+    const getAnimalEmoji = (animalName) => {
+        const emojiMap = {
+            '용': '🐉',
+            '뱀': '🐍',
+            '말': '🐴',
+            '양': '🐑',
+            '원숭이': '🐵',
+            '닭': '🐓',
+            '개': '🐕',
+            '돼지': '🐖',
+            '쥐': '🐭',
+            '소': '🐮',
+            '호랑이': '🐯',
+            '토끼': '🐰'
+        };
+        return emojiMap[animalName] || '🐉';
+    };
+
     // 결과 화면
     return (
         <div className="min-h-screen bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#334155] py-4 sm:py-8 md:py-12 px-3 sm:px-4">
@@ -170,7 +174,7 @@ function SharedResult() {
                 {/* 메인 카드 */}
                 <div className="bg-white/10 backdrop-blur-lg rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8 shadow-2xl border border-white/20 mb-4 sm:mb-6">
 
-                    {/* ✅ 이름 & 기본정보 - 마스킹된 이름 표시 */}
+                    {/* 이름 & 기본정보 */}
                     <div className="text-center mb-6 sm:mb-8">
                         <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-2 sm:mb-3 leading-tight">
                             {maskedName}님의 2026년
@@ -201,23 +205,12 @@ function SharedResult() {
                         {/* 폴백 이모지 */}
                         <div style={{ display: resultData?.characterImage ? 'none' : 'block' }}>
                             <div className="text-7xl sm:text-8xl md:text-9xl mb-3 sm:mb-4">
-                                {animal === '용' ? '🐉' :
-                                    animal === '뱀' ? '🐍' :
-                                        animal === '말' ? '🐴' :
-                                            animal === '양' ? '🐑' :
-                                                animal === '원숭이' ? '🐵' :
-                                                    animal === '닭' ? '🐓' :
-                                                        animal === '개' ? '🐕' :
-                                                            animal === '돼지' ? '🐖' :
-                                                                animal === '쥐' ? '🐭' :
-                                                                    animal === '소' ? '🐮' :
-                                                                        animal === '호랑이' ? '🐯' :
-                                                                            animal === '토끼' ? '🐰' : '🐉'}
+                                {getAnimalEmoji(animal)}
                             </div>
                         </div>
 
                         <p className="text-white text-lg sm:text-xl md:text-2xl font-bold mt-3 sm:mt-4">
-                            {resultData?.imageMetadata?.season || season} {resultData?.imageMetadata?.timeOfDay || timeOfDay}의 {animal}
+                            {season} {timeOfDay}의 {animal}
                         </p>
                     </div>
 
@@ -236,7 +229,7 @@ function SharedResult() {
                             <div className={`${getGradeBg(grades.wealth)} rounded-xl sm:rounded-2xl p-3 sm:p-4 text-center border transition-all hover:scale-105 active:scale-95`}>
                                 <div className="text-white/70 text-xs sm:text-sm mb-1 sm:mb-2">재물운</div>
                                 <div className={`text-3xl sm:text-4xl font-bold ${getGradeColor(grades.wealth)}`}>
-                                    {grades.wealth}
+                                    {grades.wealth || 'C'}
                                 </div>
                             </div>
 
@@ -244,7 +237,7 @@ function SharedResult() {
                             <div className={`${getGradeBg(grades.career)} rounded-xl sm:rounded-2xl p-3 sm:p-4 text-center border transition-all hover:scale-105 active:scale-95`}>
                                 <div className="text-white/70 text-xs sm:text-sm mb-1 sm:mb-2">직업운</div>
                                 <div className={`text-3xl sm:text-4xl font-bold ${getGradeColor(grades.career)}`}>
-                                    {grades.career}
+                                    {grades.career || 'C'}
                                 </div>
                             </div>
 
@@ -252,7 +245,7 @@ function SharedResult() {
                             <div className={`${getGradeBg(grades.love)} rounded-xl sm:rounded-2xl p-3 sm:p-4 text-center border transition-all hover:scale-105 active:scale-95`}>
                                 <div className="text-white/70 text-xs sm:text-sm mb-1 sm:mb-2">연애운</div>
                                 <div className={`text-3xl sm:text-4xl font-bold ${getGradeColor(grades.love)}`}>
-                                    {grades.love}
+                                    {grades.love || 'C'}
                                 </div>
                             </div>
 
@@ -260,7 +253,7 @@ function SharedResult() {
                             <div className={`${getGradeBg(grades.health)} rounded-xl sm:rounded-2xl p-3 sm:p-4 text-center border transition-all hover:scale-105 active:scale-95`}>
                                 <div className="text-white/70 text-xs sm:text-sm mb-1 sm:mb-2">건강운</div>
                                 <div className={`text-3xl sm:text-4xl font-bold ${getGradeColor(grades.health)}`}>
-                                    {grades.health}
+                                    {grades.health || 'C'}
                                 </div>
                             </div>
                         </div>
