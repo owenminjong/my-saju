@@ -1,0 +1,132 @@
+/* SajuTable.css */
+
+.saju-table-wrapper {
+    width: 100%;
+}
+
+/* ========== 모바일 세로 레이아웃 ========== */
+.saju-mobile-layout {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+}
+
+.saju-pillar-card {
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.pillar-header {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 10px;
+    text-align: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.pillar-name {
+    color: #ffffff;
+    font-weight: 700;
+    font-size: 0.9rem;
+    letter-spacing: 0.5px;
+}
+
+.pillar-content {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 12px;
+}
+
+.pillar-item {
+    border-radius: 10px;
+    padding: 12px 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    position: relative;
+}
+
+.item-label {
+    font-size: 0.7rem;
+    color: rgba(255, 255, 255, 0.5);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 2px;
+}
+
+.item-char {
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.item-hanja {
+    font-size: 0.7rem;
+    color: rgba(255, 255, 255, 0.4);
+    margin-top: 2px;
+}
+
+.item-element {
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-top: 4px;
+}
+
+.item-animal {
+    font-size: 0.7rem;
+    color: rgba(255, 255, 255, 0.35);
+    margin-top: 2px;
+}
+
+/* ========== 작은 모바일 (1열) ========== */
+@media (max-width: 360px) {
+    .saju-mobile-layout {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+    .pillar-content {
+        flex-direction: row;
+        gap: 8px;
+    }
+
+    .pillar-item {
+        flex: 1;
+        padding: 10px 6px;
+    }
+
+    .item-char {
+        font-size: 1.6rem;
+    }
+
+    .item-label {
+        font-size: 0.65rem;
+    }
+
+    .item-element {
+        font-size: 0.75rem;
+    }
+}
+
+/* ========== 중형 모바일 ========== */
+@media (min-width: 361px) and (max-width: 480px) {
+    .saju-mobile-layout {
+        gap: 10px;
+    }
+
+    .item-char {
+        font-size: 2.2rem;
+    }
+}
+
+/* ========== 태블릿 최적화 ========== */
+@media (min-width: 768px) and (max-width: 1024px) {
+    .saju-table-wrapper {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+}

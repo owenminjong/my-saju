@@ -1,0 +1,249 @@
+/* ShareModal.css - 수정된 부분 */
+
+/* ========== 오버레이 ========== */
+.share-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 9998;
+    animation: fadeIn 0.2s ease;
+}
+
+/* ========== 드롭다운 모달 ========== */
+.share-dropdown {
+    position: fixed;
+    top: 60px;
+    right: 16px;
+    width: 300px;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    z-index: 9999;
+    animation: dropDown 0.3s ease;
+    overflow: hidden;
+}
+
+/* ========== 헤더 ========== */
+.share-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.share-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #1f2937;
+    margin: 0;
+}
+
+.share-close {
+    background: none;
+    border: none;
+    color: #9ca3af;
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    border-radius: 6px;
+}
+
+.share-close:hover {
+    background: #f3f4f6;
+    color: #4b5563;
+}
+
+.share-close:disabled {
+    opacity: 0.5;
+}
+
+/* ========== 로딩 ========== */
+.share-loading {
+    padding: 12px 16px;
+    text-align: center;
+    font-size: 0.875rem;
+    color: #6b7280;
+    background: #fef3c7;
+}
+
+/* ========== 공유 버튼 그리드 (2x2) ========== */
+.share-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    padding: 16px;
+}
+
+.share-item {
+    background: none;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 8px;
+    border-radius: 12px;
+    transition: background 0.2s;
+}
+
+.share-item:hover {
+    background: #f9fafb;
+}
+
+.share-item:active {
+    transform: scale(0.95);
+}
+
+.share-item:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.share-item span {
+    font-size: 0.8125rem;
+    color: #4b5563;
+    font-weight: 600;
+}
+
+/* ========== 공유 아이콘 ========== */
+.share-icon-box {
+    width: 56px;
+    height: 56px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.75rem;
+    transition: transform 0.2s;
+}
+
+.share-item:hover .share-icon-box {
+    transform: scale(1.1);
+}
+
+.share-icon-box.kakao {
+    background: #FEE500;
+}
+
+.share-icon-box.twitter {
+    background: #000000;
+    color: white;
+}
+
+.share-icon-box.instagram {
+    background: linear-gradient(135deg, #833ab4 0%, #fd1d1d 50%, #fcb045 100%);
+}
+
+.share-icon-box.copy {
+    background: #e5e7eb;
+}
+
+/* ========== 애니메이션 ========== */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes dropDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ========== 반응형: 작은 모바일 ========== */
+@media (max-width: 360px) {
+    .share-dropdown {
+        right: 12px;
+        width: calc(100vw - 24px);
+        max-width: 300px;
+    }
+
+    .share-grid {
+        gap: 10px;
+        padding: 12px;
+    }
+
+    .share-icon-box {
+        width: 50px;
+        height: 50px;
+        font-size: 1.5rem;
+    }
+
+    .share-item {
+        padding: 10px 6px;
+        gap: 6px;
+    }
+
+    .share-item span {
+        font-size: 0.75rem;
+    }
+}
+
+/* ========== 반응형: 모바일 가로 스크롤 방지 ========== */
+@media (max-width: 320px) {
+    .share-dropdown {
+        left: 12px;
+        right: 12px;
+        width: auto;
+    }
+
+    .share-icon-box {
+        width: 48px;
+        height: 48px;
+        font-size: 1.4rem;
+    }
+}
+
+/* ========== 반응형: 태블릿+ ========== */
+@media (min-width: 640px) {
+    .share-dropdown {
+        width: 320px;
+        top: 70px;
+        right: 24px;
+    }
+
+    .share-grid {
+        gap: 14px;
+        padding: 20px;
+    }
+
+    .share-icon-box {
+        width: 60px;
+        height: 60px;
+        font-size: 1.875rem;
+    }
+
+    .share-item span {
+        font-size: 0.875rem;
+    }
+}
+
+/* ========== 반응형: 데스크톱 ========== */
+@media (min-width: 1024px) {
+    .share-dropdown {
+        width: 340px;
+    }
+
+    .share-icon-box {
+        width: 64px;
+        height: 64px;
+        font-size: 2rem;
+    }
+}

@@ -232,7 +232,9 @@ const SajuInput = () => {
                         summary: response.sajuData.summary,
                         diagnosis: response.diagnosis,
                         usage: response.usage,
-                        uniqueId: response.uniqueId
+                        uniqueId: response.uniqueId,
+                        characterImage: response.characterImage,  // ✅ 추가
+                        imageMetadata: response.imageMetadata
                     }
                 }
             });

@@ -12,7 +12,7 @@ class AuthController {
         try {
             const apiKey = await this.getKakaoApiKey();
 
-            const REDIRECT_URI = process.env.KAKAO_REDIRECT_URI || 'http://localhost:5000/api/auth/kakao/callback';
+            const REDIRECT_URI = process.env.KAKAO_REDIRECT_URI;
             const KAKAO_AUTH_URL = `https://kauth.kakao.com/oauth/authorize?client_id=${apiKey}&redirect_uri=${REDIRECT_URI}&response_type=code`;
 
             res.redirect(KAKAO_AUTH_URL);
@@ -33,7 +33,7 @@ class AuthController {
 
         try {
             const apiKey = await this.getKakaoApiKey();
-            const REDIRECT_URI = 'http://localhost:5000/api/auth/kakao/callback';
+            const REDIRECT_URI = process.env.KAKAO_REDIRECT_URI;
 
             console.log('🔑 API Key:', apiKey);
             console.log('🔗 Redirect URI:', REDIRECT_URI);
@@ -81,7 +81,7 @@ class AuthController {
             });
 
             // 5. JWT 토큰 발급
-            const jwtSecret = process.env.JWT_SECRET || 'mylifecode-secret-key-2026';
+            const jwtSecret = process.env.JWT_SECRET;
             const jwtToken = jwt.sign(
                 {
                     userId: user.id,
@@ -93,12 +93,12 @@ class AuthController {
             );
 
             // 6. 프론트엔드로 리다이렉트
-            const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+            const frontendUrl = process.env.FRONTEND_URL;
             res.redirect(`${frontendUrl}/auth/success?token=${jwtToken}`);
 
         } catch (error) {
             console.error('카카오 콜백 오류:', error.response?.data || error.message);
-            const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+            const frontendUrl = process.env.FRONTEND_URL;
             res.redirect(`${frontendUrl}/auth/fail?error=${encodeURIComponent(error.message)}`);
         }
     }
@@ -175,7 +175,7 @@ class AuthController {
     naverLogin = async (req, res) => {
         try {
             const { clientId } = await this.getNaverCredentials();
-            const REDIRECT_URI = process.env.NAVER_REDIRECT_URI || 'http://localhost:5000/api/auth/naver/callback';
+            const REDIRECT_URI = process.env.NAVER_REDIRECT_URI;
             const STATE = Math.random().toString(36).substring(7);
 
             const NAVER_AUTH_URL = `https://nid.naver.com/oauth2.0/authorize?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&state=${STATE}`;
@@ -202,7 +202,7 @@ class AuthController {
 
         try {
             const { clientId, clientSecret } = await this.getNaverCredentials();
-            const REDIRECT_URI = 'http://localhost:5000/api/auth/naver/callback';
+            const REDIRECT_URI = process.env.NAVER_REDIRECT_URI;
 
             // 1. 액세스 토큰 받기
             const tokenResponse = await axios.post(
@@ -244,7 +244,7 @@ class AuthController {
             });
 
             // 4. JWT 토큰 발급
-            const jwtSecret = process.env.JWT_SECRET || 'mylifecode-secret-key-2026';
+            const jwtSecret = process.env.JWT_SECRET;
             const jwtToken = jwt.sign(
                 {
                     userId: user.id,
@@ -256,12 +256,12 @@ class AuthController {
             );
 
             // 5. 프론트엔드로 리다이렉트
-            const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+            const frontendUrl = process.env.FRONTEND_URL;
             res.redirect(`${frontendUrl}/auth/success?token=${jwtToken}`);
 
         } catch (error) {
             console.error('네이버 콜백 오류:', error.response?.data || error.message);
-            const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+            const frontendUrl = process.env.FRONTEND_URL;
             res.redirect(`${frontendUrl}/auth/fail?error=${encodeURIComponent(error.message)}`);
         }
     }

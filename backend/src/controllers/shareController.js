@@ -94,7 +94,9 @@ exports.encodeShareDataHash = async (req, res) => {
             },
             saju: sajuData.saju || {},
             fields: sajuData.fields || sajuData.metadata?.grades || {},
-            metadata: sajuData.metadata || {}
+            metadata: sajuData.metadata || {},
+            characterImage: sajuData.characterImage || null,  // ✅ 추가 필요
+            imageMetadata: sajuData.imageMetadata || {}
         };
 
         console.log('📦 압축 인코딩 시작:', {

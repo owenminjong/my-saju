@@ -16,9 +16,9 @@ import PremiumGeneratePage from './pages/PremiumGeneratePage';
 
 // 🏠 메인 & 사주 서비스 페이지
 import MainPage from './pages/MainPage';
-import LoginPage from './pages/LoginPage';
-import AuthSuccess from './pages/AuthSuccess';
-import AuthFail from './pages/AuthFail';
+import LoginPage from './pages/login/LoginPage';
+import AuthSuccess from './pages/login/AuthSuccess';
+import AuthFail from './pages/login/AuthFail';
 import SajuInput from './pages/SajuInput';
 import SajuResult from './pages/SajuResult';
 import SampleResult from './pages/SampleResult';

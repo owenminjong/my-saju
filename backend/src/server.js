@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const session = require('express-session');
+const path = require('path'); // ✅ 추가
 const { sequelize } = require('../models');
 
 // 환경변수 로드
@@ -26,9 +27,10 @@ app.use(session({
     cookie: {
         maxAge: 1000 * 60 * 60 * 24, // 24시간
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production' // 개발: false, 운영: true
+        secure: process.env.NODE_ENV === 'production'
     }
 }));
+app.use('/generated-images', express.static(path.join(__dirname, '../public/generated-images'))); // ✅ 경로 수정
 
 // 라우트
 const authRoutes = require('./routes/auth');
@@ -42,7 +44,6 @@ const adminApiKeysRoutes = require('./routes/admin/apiKeys');
 const adminDashboardRoutes = require('./routes/admin/dashboard');
 const shareRoutes = require('./routes/shareRoutes');
 
-// API 라우트 등록
 app.use('/api/auth', authRoutes);
 app.use('/api/saju', sajuRoutes);
 app.use('/api/diagnosis', diagnosisRoutes);
@@ -54,12 +55,10 @@ app.use('/api/admin/api-keys', adminApiKeysRoutes);
 app.use('/api/admin/dashboard', adminDashboardRoutes);
 app.use('/api/share', shareRoutes);
 
-// 루트 경로
 app.get('/', (req, res) => {
     res.json({ message: 'MyLifeCode Backend API' });
 });
 
-// 서버 시작 + Sequelize 연결
 app.listen(PORT, async () => {
     try {
         await sequelize.authenticate();

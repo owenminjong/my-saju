@@ -69,6 +69,8 @@ export const createShareUrl = async () => {
 /**
  * 카카오톡 공유 (모바일 최적화)
  */
+// frontend/src/utils/kakao.js
+
 export const shareKakao = async (resultData) => {
     await initKakao();
 
@@ -82,7 +84,6 @@ export const shareKakao = async (resultData) => {
 
         const name = resultData.user?.name || resultData.metadata?.userName || '익명';
         const animal = resultData.saju?.year?.branch?.animal || '용';
-
         const birthDate = resultData.user?.birthDate || '';
         const monthMatch = birthDate.match(/(\d+)월/);
         const month = monthMatch ? parseInt(monthMatch[1]) : 9;
@@ -100,7 +101,6 @@ export const shareKakao = async (resultData) => {
             timeOfDay = '저녁';
         }
 
-        // 등급 데이터 추출
         const grades = resultData.fields || resultData.metadata?.grades || {};
         const wealthGrade = typeof grades.wealth === 'object' ? grades.wealth.grade : grades.wealth || 'A';
         const careerGrade = typeof grades.career === 'object' ? grades.career.grade : grades.career || 'B';
@@ -109,10 +109,16 @@ export const shareKakao = async (resultData) => {
 
         const gradeText = `재물 ${wealthGrade} | 직업 ${careerGrade} | 연애 ${loveGrade} | 건강 ${healthGrade}`;
 
+        // ✅ 생성된 캐릭터 이미지 사용 (절대 경로)
+        const imageUrl = resultData.characterImage
+            ? `http://localhost:5000${resultData.characterImage}`  // ✅ 실제 이미지
+            : 'https://mud-kage.kakao.com/dn/Q2iNx/btqgeRgV54P/VLdBs9cvyn8BJXB3o7N8UK/kakaolink40_original.png';
+
         console.log('📤 카카오 공유 데이터:', {
             이름: name,
             띠: animal,
             등급: gradeText,
+            이미지: imageUrl, // ✅ 확인
             공유URL: shareUrl
         });
 
@@ -121,7 +127,7 @@ export const shareKakao = async (resultData) => {
             content: {
                 title: `${name}님의 ${season} ${timeOfDay}에 태어난 ${animal}띠 운세`,
                 description: gradeText,
-                imageUrl: 'https://mud-kage.kakao.com/dn/Q2iNx/btqgeRgV54P/VLdBs9cvyn8BJXB3o7N8UK/kakaolink40_original.png',
+                imageUrl: imageUrl, // ✅ 실제 생성된 이미지
                 link: {
                     mobileWebUrl: shareUrl,
                     webUrl: shareUrl,
@@ -129,7 +135,7 @@ export const shareKakao = async (resultData) => {
             },
             buttons: [
                 {
-                    title: '내 운세 보기',
+                    title: `${name}님의 운세 보러가기`,
                     link: {
                         mobileWebUrl: shareUrl,
                         webUrl: shareUrl,
