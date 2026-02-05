@@ -9,6 +9,9 @@ const CHARACTER_PATH = path.join(BASE_PATH, '남녀캐릭터');
 const BACKGROUND_PATH = path.join(BASE_PATH, '배경');
 const OUTPUT_PATH = path.join(__dirname, '../../public/generated-images');
 
+// ✅ 생성 중인 이미지 추적 (동시 요청 방지)
+const generatingImages = new Map();
+
 // Output 폴더가 없으면 생성
 async function ensureOutputDir() {
     try {
@@ -19,11 +22,32 @@ async function ensureOutputDir() {
 }
 
 /**
- * 띠 매핑 (12지지)
+ * 띠 매핑 (12지지) - 사주에서 가져오므로 백업용
  */
 function getZodiacAnimal(year) {
     const animals = ['원숭이', '닭', '개', '돼지', '쥐', '소', '호랑이', '토끼', '용', '뱀', '말', '양'];
     return animals[year % 12];
+}
+
+/**
+ * 12시진 → 4시간대 매핑
+ */
+function mapTimeOfDay(timeOfDay) {
+    const timeMap = {
+        '자시': '밤',    // 23-01
+        '축시': '밤',    // 01-03
+        '인시': '아침',  // 03-05
+        '묘시': '아침',  // 05-07
+        '진시': '아침',  // 07-09
+        '사시': '낮',    // 09-11
+        '오시': '낮',    // 11-13
+        '미시': '낮',    // 13-15
+        '신시': '낮',    // 15-17
+        '유시': '저녁',  // 17-19
+        '술시': '저녁',  // 19-21
+        '해시': '밤'     // 21-23
+    };
+    return timeMap[timeOfDay] || '낮';
 }
 
 /**
@@ -50,7 +74,11 @@ function getTimeOfDay(hour) {
             return time.name;
         }
     }
-    return '';
+
+    // 자시 예외처리 (23시)
+    if (hour === 23) return '자시';
+
+    return '오시'; // 기본값
 }
 
 /**
@@ -65,32 +93,64 @@ function getSeason(month) {
 
 /**
  * 캐릭터 이미지 경로 생성
- * 예: "캐더 남.png"
  */
 function getCharacterImagePath(gender, zodiac) {
     const genderStr = gender === 'M' ? '남' : '여';
-    const filename = `${zodiac}띠 ${genderStr}.png`;
-
-    console.log(`   - 파일명: ${filename}`);
-
+    const filename = `${zodiac}띠 ${genderStr}.png`;  // ✅ 언더스코어(_) → 공백( )
     return path.join(CHARACTER_PATH, filename);
 }
 
 /**
  * 배경 이미지 경로 생성
- * 예: "가을 낮.png"
  */
-function getBackgroundImagePath(season, timeOfDay) {
-    // 시간대를 낮/밤으로 변환
-    const isDaytime = ['진시', '사시', '오시', '미시', '신시'].includes(timeOfDay);
-    const timeStr = isDaytime ? '낮' : '밤';
-
-    const filename = `${season} ${timeStr}.png`;
+function getBackgroundImagePath(season, timeOfDay4) {
+    const filename = `${season} ${timeOfDay4}.png`;  // ✅ 언더스코어(_) → 공백( )으로 변경
     return path.join(BACKGROUND_PATH, filename);
 }
 
 /**
- * 캐릭터 이미지 생성
+ * ✅ 실제 이미지 생성 로직
+ */
+async function createImage(bgPath, charPath, outputPath) {
+    console.log('   🎨 이미지 합성 시작...');
+
+    // ✅ 1. 배경 먼저 리사이징
+    const resizedBg = await sharp(bgPath)
+        .resize(800, 800, {
+            fit: 'cover',
+            position: 'center'
+        })
+        .toBuffer();
+
+    // ✅ 2. 캐릭터 리사이징 (800x800에 맞춤)
+    const characterBuffer = await sharp(charPath)
+        .resize(800, 800, {
+            fit: 'contain',
+            position: 'center',
+            background: { r: 0, g: 0, b: 0, alpha: 0 }
+        })
+        .toBuffer();
+
+    // ✅ 3. 합성
+    await sharp(resizedBg)
+        .composite([
+            {
+                input: characterBuffer,
+                gravity: 'center',
+                blend: 'over'
+            }
+        ])
+        .jpeg({
+            quality: 85,
+            progressive: true
+        })
+        .toFile(outputPath);
+
+    console.log('   ✅ 이미지 합성 완료');
+}
+
+/**
+ * ✅ 캐릭터 이미지 생성 (캐싱 + 동시 요청 처리)
  */
 async function generateCharacterImage(sajuData) {
     try {
@@ -98,77 +158,111 @@ async function generateCharacterImage(sajuData) {
 
         const { user, year, month, hour, saju } = sajuData;
         const gender = user?.gender || 'M';
+        const genderStr = gender === 'M' ? '남' : '여';
 
-        // ✅ 띠는 사주의 년지(year branch)에서 가져오기
+        // 1️⃣ 데이터 계산
         const zodiac = saju?.year?.branch?.animal || getZodiacAnimal(year);
         const season = getSeason(month);
-        const timeOfDay = getTimeOfDay(hour || 0);
+        const timeOfDay12 = getTimeOfDay(hour || 0);
+        const timeOfDay4 = mapTimeOfDay(timeOfDay12);
 
         console.log('🎨 이미지 생성 정보:');
         console.log(`   - 연도: ${year}`);
         console.log(`   - 띠: ${zodiac}`);
         console.log(`   - 계절: ${season}`);
-        console.log(`   - 시간: ${timeOfDay}`);
-        console.log(`   - 성별: ${gender}`);
+        console.log(`   - 시간(12시진): ${timeOfDay12}`);
+        console.log(`   - 시간(4단계): ${timeOfDay4}`);
+        console.log(`   - 성별: ${genderStr}`);
 
-        // 2. 이미지 경로 확인
-        const bgPath = getBackgroundImagePath(season, timeOfDay);
-        const charPath = getCharacterImagePath(gender, zodiac);
+        // 2️⃣ 파일명 생성 (캐시 키)
+        const outputFilename = `${season}_${timeOfDay4}_${genderStr}_${zodiac}.jpg`
+        const outputPath = path.join(OUTPUT_PATH, outputFilename);
+        const webPath = `/generated-images/${outputFilename}`;
 
-        console.log(`   - 배경: ${bgPath}`);
-        console.log(`   - 캐릭터: ${charPath}`);
+        console.log(`   - 파일명: ${outputFilename}`);
 
-        // 파일 존재 확인
+        // 3️⃣ 파일 존재 확인 (캐시 히트)
         try {
-            await fs.access(bgPath);
-            await fs.access(charPath);
-        } catch (error) {
-            console.error('❌ 이미지 파일을 찾을 수 없습니다:', error.message);
+            await fs.access(outputPath);
+            console.log('   ✅ 캐시된 이미지 사용');
             return {
-                success: false,
-                message: '이미지를 찾을 수 없습니다.',
-                defaultImage: true
+                success: true,
+                imagePath: webPath,
+                localPath: outputPath,
+                cached: true,
+                metadata: {
+                    zodiac,
+                    season,
+                    timeOfDay: timeOfDay4,
+                    gender: genderStr
+                }
+            };
+        } catch {
+            // 파일 없음 - 생성 필요
+        }
+
+        // 4️⃣ 동시 요청 확인 (이미 생성 중인지)
+        if (generatingImages.has(outputFilename)) {
+            console.log('   ⏳ 다른 요청이 생성 중 - 대기...');
+            await generatingImages.get(outputFilename);
+
+            return {
+                success: true,
+                imagePath: webPath,
+                localPath: outputPath,
+                cached: true,
+                metadata: {
+                    zodiac,
+                    season,
+                    timeOfDay: timeOfDay4,
+                    gender: genderStr
+                }
             };
         }
 
-        // 3. Sharp로 이미지 합성
-        const outputFilename = `${Date.now()}_${gender}_${zodiac}.png`;
-        const outputPath = path.join(OUTPUT_PATH, outputFilename);
+        // 5️⃣ 이미지 생성 시작
+        const generatePromise = (async () => {
+            try {
+                // 이미지 경로 확인
+                const bgPath = getBackgroundImagePath(season, timeOfDay4);
+                const charPath = getCharacterImagePath(gender, zodiac);
 
-        const background = sharp(bgPath);
-        const bgMetadata = await background.metadata();
+                console.log(`   - 배경: ${bgPath}`);
+                console.log(`   - 캐릭터: ${charPath}`);
 
-        const character = await sharp(charPath)
-            .resize(bgMetadata.width, bgMetadata.height, {
-                fit: 'contain',
-                position: 'center'
-            })
-            .toBuffer();
+                // 파일 존재 확인
+                await fs.access(bgPath);
+                await fs.access(charPath);
 
-        await background
-            .composite([
-                {
-                    input: character,
-                    gravity: 'center'
-                }
-            ])
-            .toFile(outputPath);
+                // 이미지 생성
+                await createImage(bgPath, charPath, outputPath);
 
-        console.log('✅ 이미지 합성 완료:', outputPath);
+                return {
+                    success: true,
+                    imagePath: webPath,
+                    localPath: outputPath,
+                    cached: false,
+                    metadata: {
+                        zodiac,
+                        season,
+                        timeOfDay: timeOfDay4,
+                        gender: genderStr
+                    }
+                };
 
-        const webPath = `/generated-images/${outputFilename}`;
-
-        return {
-            success: true,
-            imagePath: webPath,
-            localPath: outputPath,
-            metadata: {
-                zodiac,
-                season,
-                timeOfDay,
-                gender
+            } catch (error) {
+                console.error('   ❌ 이미지 생성 실패:', error.message);
+                throw error;
+            } finally {
+                // 생성 완료 - Map에서 제거
+                generatingImages.delete(outputFilename);
             }
-        };
+        })();
+
+        // 생성 중 표시
+        generatingImages.set(outputFilename, generatePromise);
+
+        return await generatePromise;
 
     } catch (error) {
         console.error('❌ 이미지 생성 오류:', error);
@@ -196,7 +290,7 @@ async function generateCharacterImageBase64(sajuData) {
 
         return {
             success: true,
-            imageBase64: `data:image/png;base64,${base64}`,
+            imageBase64: `data:image/jpeg;base64,${base64}`,
             metadata: result.metadata
         };
 

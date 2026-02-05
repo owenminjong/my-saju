@@ -127,7 +127,8 @@ export const shareKakao = async (resultData) => {
             content: {
                 title: `${name}님의 ${season} ${timeOfDay}에 태어난 ${animal}띠 운세`,
                 description: gradeText,
-                imageUrl: imageUrl, // ✅ 실제 생성된 이미지
+                //imageUrl: 'imageUrl', // ✅ 실제 생성된 이미지
+                imageUrl: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRTgCywlqiWA_6TsPwaWr4rPccdjjCUH-Y9UQ&s',
                 link: {
                     mobileWebUrl: shareUrl,
                     webUrl: shareUrl,
