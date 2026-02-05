@@ -1,6 +1,8 @@
+// src/routes/admin/users.js
+
 const express = require('express');
 const router = express.Router();
-const usersController = require('../../controllers/admin/usersController');
+const usersController = require('../../controllers/admin/usersController');  // ⭐ userController로 수정
 
 // GET /api/admin/users - 회원 목록
 router.get('/', usersController.getUsers);

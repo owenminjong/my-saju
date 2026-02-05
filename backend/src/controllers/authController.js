@@ -1,3 +1,5 @@
+// src/controllers/auth/AuthController.js
+
 const axios = require('axios');
 const jwt = require('jsonwebtoken');
 const { User, ApiKey } = require('../../models');
@@ -11,9 +13,12 @@ class AuthController {
     kakaoLogin = async (req, res) => {
         try {
             const apiKey = await this.getKakaoApiKey();
-
             const REDIRECT_URI = process.env.KAKAO_REDIRECT_URI;
-            const KAKAO_AUTH_URL = `https://kauth.kakao.com/oauth/authorize?client_id=${apiKey}&redirect_uri=${REDIRECT_URI}&response_type=code`;
+
+            // ✅ scope 제거 (비즈니스 인증 없이는 account_email 사용 불가)
+            const KAKAO_AUTH_URL = `https://kauth.kakao.com/oauth/authorize?client_id=${apiKey}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=code`;
+
+            console.log('🔗 카카오 로그인 URL:', KAKAO_AUTH_URL);
 
             res.redirect(KAKAO_AUTH_URL);
         } catch (error) {
@@ -35,10 +40,9 @@ class AuthController {
             const apiKey = await this.getKakaoApiKey();
             const REDIRECT_URI = process.env.KAKAO_REDIRECT_URI;
 
-            console.log('🔑 API Key:', apiKey);
-            console.log('🔗 Redirect URI:', REDIRECT_URI);
             console.log('🎫 Code:', code);
 
+            // 1. 토큰 받기
             const params = {
                 grant_type: 'authorization_code',
                 client_id: apiKey,
@@ -46,7 +50,7 @@ class AuthController {
                 code: code
             };
 
-            console.log('📤 요청 파라미터:', params);
+            console.log('📤 토큰 요청 파라미터:', params);
 
             const tokenResponse = await axios.post(
                 'https://kauth.kakao.com/oauth/token',
@@ -59,8 +63,9 @@ class AuthController {
             );
 
             const accessToken = tokenResponse.data.access_token;
+            console.log('✅ Access Token 받음');
 
-            // 3. 사용자 정보 받기
+            // 2. 사용자 정보 받기
             const userResponse = await axios.get(
                 'https://kapi.kakao.com/v2/user/me',
                 {
@@ -72,27 +77,46 @@ class AuthController {
 
             const kakaoUser = userResponse.data;
 
-            // 4. DB에 사용자 저장 또는 업데이트
+            // ⭐ 이메일은 null일 수 있음 (권한 없음)
+            const email = kakaoUser.kakao_account?.email || null;
+
+            console.log('👤 카카오 사용자 정보:', {
+                id: kakaoUser.id,
+                nickname: kakaoUser.properties?.nickname,
+                email: email || '이메일 미제공 (권한 없음)',
+                has_email: kakaoUser.kakao_account?.has_email || false
+            });
+
+            // 3. DB에 사용자 저장 (이메일 없어도 OK)
             const user = await this.saveOrUpdateUser({
                 provider: 'kakao',
                 providerId: String(kakaoUser.id),
-                email: kakaoUser.kakao_account?.email || null,
+                email: email,
                 name: kakaoUser.properties?.nickname || '카카오 사용자'
             });
 
-            // 5. JWT 토큰 발급
+            console.log('✅ 로그인 성공:', {
+                userId: user.id,
+                uuid: user.uuid,
+                name: user.name,
+                email: user.email || 'N/A'
+            });
+
+            // 4. JWT 토큰 발급
             const jwtSecret = process.env.JWT_SECRET;
             const jwtToken = jwt.sign(
                 {
                     userId: user.id,
+                    uuid: user.uuid,
                     email: user.email,
-                    name: user.name
+                    name: user.name,
+                    provider: 'kakao'
                 },
                 jwtSecret,
                 { expiresIn: '7d' }
             );
 
-            // 6. 프론트엔드로 리다이렉트
+            // 5. 프론트엔드로 리다이렉트
             const frontendUrl = process.env.FRONTEND_URL;
             res.redirect(`${frontendUrl}/auth/success?token=${jwtToken}`);
 
@@ -117,19 +141,13 @@ class AuthController {
                 }
             });
 
-            console.log('📊 쿼리 결과:', apiKey);
-
             if (!apiKey) {
                 throw new Error('카카오 API 키가 설정되지 않았습니다.');
             }
 
-            // 복호화
             const decryptedKey = decrypt(apiKey.api_key);
-
-            // 🆕 JSON 파싱
             const keyObject = JSON.parse(decryptedKey);
 
-            // 🆕 REST API 키 반환 (로그인용)
             console.log('✅ 복호화된 키:', keyObject.rest_api.substring(0, 10) + '...');
 
             return keyObject.rest_api;
@@ -180,6 +198,8 @@ class AuthController {
 
             const NAVER_AUTH_URL = `https://nid.naver.com/oauth2.0/authorize?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&state=${STATE}`;
 
+            console.log('🔗 네이버 로그인 URL:', NAVER_AUTH_URL);
+
             res.redirect(NAVER_AUTH_URL);
         } catch (error) {
             console.error('네이버 로그인 시작 오류:', error);
@@ -197,12 +217,15 @@ class AuthController {
         const { code, state } = req.query;
 
         if (!code) {
-            return res.redirect('http://localhost:3000/auth/fail?error=no_code');
+            const frontendUrl = process.env.FRONTEND_URL;
+            return res.redirect(`${frontendUrl}/auth/fail?error=no_code`);
         }
 
         try {
             const { clientId, clientSecret } = await this.getNaverCredentials();
             const REDIRECT_URI = process.env.NAVER_REDIRECT_URI;
+
+            console.log('🎫 네이버 Code:', code);
 
             // 1. 액세스 토큰 받기
             const tokenResponse = await axios.post(
@@ -222,6 +245,7 @@ class AuthController {
             );
 
             const accessToken = tokenResponse.data.access_token;
+            console.log('✅ 네이버 Access Token 받음');
 
             // 2. 사용자 정보 받기
             const userResponse = await axios.get(
@@ -235,6 +259,13 @@ class AuthController {
 
             const naverUser = userResponse.data.response;
 
+            console.log('👤 네이버 사용자 정보:', {
+                id: naverUser.id,
+                name: naverUser.name,
+                email: naverUser.email,
+                nickname: naverUser.nickname
+            });
+
             // 3. DB에 사용자 저장 또는 업데이트
             const user = await this.saveOrUpdateUser({
                 provider: 'naver',
@@ -243,13 +274,22 @@ class AuthController {
                 name: naverUser.name || naverUser.nickname || '네이버 사용자'
             });
 
+            console.log('✅ 네이버 로그인 성공:', {
+                userId: user.id,
+                uuid: user.uuid,
+                name: user.name,
+                email: user.email
+            });
+
             // 4. JWT 토큰 발급
             const jwtSecret = process.env.JWT_SECRET;
             const jwtToken = jwt.sign(
                 {
                     userId: user.id,
+                    uuid: user.uuid,
                     email: user.email,
-                    name: user.name
+                    name: user.name,
+                    provider: 'naver'
                 },
                 jwtSecret,
                 { expiresIn: '7d' }
@@ -273,7 +313,6 @@ class AuthController {
         const { provider, providerId, email, name } = userData;
 
         try {
-            // 기존 사용자 확인
             const existingUser = await User.findOne({
                 where: {
                     provider,
@@ -283,15 +322,22 @@ class AuthController {
 
             if (existingUser) {
                 // 기존 사용자 업데이트
-                await existingUser.update({
+                const updateData = {
                     name,
-                    email,
                     last_login_at: new Date()
-                });
+                };
+
+                // 이메일이 없었는데 새로 받아온 경우만 업데이트
+                if (email && !existingUser.email) {
+                    updateData.email = email;
+                }
+
+                await existingUser.update(updateData);
 
                 return {
                     id: existingUser.id,
-                    email: email || existingUser.email,
+                    uuid: existingUser.uuid,
+                    email: existingUser.email || email,
                     name
                 };
             } else {
@@ -299,14 +345,15 @@ class AuthController {
                 const newUser = await User.create({
                     provider,
                     provider_id: providerId,
-                    email,
+                    email: email || null,
                     name,
                     last_login_at: new Date()
                 });
 
                 return {
                     id: newUser.id,
-                    email,
+                    uuid: newUser.uuid,
+                    email: newUser.email,
                     name
                 };
             }

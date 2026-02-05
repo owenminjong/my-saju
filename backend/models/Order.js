@@ -3,7 +3,7 @@
 const { DataTypes } = require('sequelize');
 const { sequelize } = require('./sequelize');
 
-const Order = sequelize.define('Order', {  // ⭐ 모델명 'Order'로 변경
+const Order = sequelize.define('Order', {
     id: {
         type: DataTypes.INTEGER(11),
         primaryKey: true,
@@ -78,20 +78,20 @@ Order.associate = function(models) {
     // Order는 한 명의 User에게 속함
     Order.belongsTo(models.User, {
         foreignKey: 'user_id',
-        as: 'User'  // ⭐ 대문자 유지
+        as: 'User'
     });
 
     // Order는 한 개의 Product에 속함
     Order.belongsTo(models.Product, {
         foreignKey: 'product_id',
-        as: 'Product'  // ⭐ 대문자 유지
+        as: 'Product'
     });
 
-    // ⭐ DiagnosisResult와의 관계는 index.js에서 이미 설정되므로 주석 처리
-    // Order.hasOne(models.DiagnosisResult, {
-    //     foreignKey: 'order_id',
-    //     as: 'diagnosisResult'
-    // });
+    // ⭐ DiagnosisResult와의 관계 추가
+    Order.hasOne(models.DiagnosisResult, {
+        foreignKey: 'order_id',
+        as: 'diagnosisResult'
+    });
 };
 
 module.exports = Order;

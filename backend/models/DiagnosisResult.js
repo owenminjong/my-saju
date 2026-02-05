@@ -73,4 +73,18 @@ const DiagnosisResult = sequelize.define('diagnosis_results', {
     updatedAt: 'updated_at'
 });
 
+DiagnosisResult.associate = function(models) {
+    // DiagnosisResult는 한 명의 User에게 속함
+    DiagnosisResult.belongsTo(models.User, {
+        foreignKey: 'user_id',
+        as: 'user'
+    });
+
+    // DiagnosisResult는 한 개의 Order에 속함
+    DiagnosisResult.belongsTo(models.Order, {
+        foreignKey: 'order_id',
+        as: 'order'
+    });
+};
+
 module.exports = DiagnosisResult;

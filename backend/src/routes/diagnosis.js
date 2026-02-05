@@ -1,83 +1,36 @@
-// 무료 베이직 진단 API 엔드포인트
+// backend/src/routes/diagnosis.js
 
 const express = require('express');
 const router = express.Router();
-const { generateFreePrompt } = require('../services/promptService');
-const { callClaudeAPIFree } = require('../services/claudeService');  // ⬅️ 무료 버전
+const diagnosisController = require('../controllers/diagnosisController');
+const { authMiddleware, optionalAuthMiddleware } = require('../middleware/authMiddleware');
 
 /**
- * POST /api/diagnosis/free
  * 무료 베이직 진단 생성
+ * POST /api/diagnosis/free
+ * 인증 선택 (로그인/비로그인 모두 가능)
  */
-router.post('/free', async (req, res) => {
-    try {
-        const { sajuData, mbti } = req.body;
+router.post('/free', optionalAuthMiddleware, diagnosisController.generateFreeDiagnosis);
 
-        if (!sajuData || !mbti) {
-            return res.status(400).json({
-                success: false,
-                message: '사주 데이터와 MBTI가 필요합니다.'
-            });
-        }
+/**
+ * 프리미엄 진단 생성
+ * POST /api/diagnosis/premium
+ * 인증 필수
+ */
+router.post('/premium', authMiddleware, diagnosisController.generatePremiumDiagnosis);
 
-        // 프롬프트 생성
-        const prompt = generateFreePrompt({ ...sajuData, mbti });
+/**
+ * 프리미엄 진단 결과 조회
+ * GET /api/diagnosis/premium/:diagnosisId
+ * 인증 필수 + 소유자 검증
+ */
+router.get('/premium/:diagnosisId', authMiddleware, diagnosisController.getPremiumResult);
 
-        // 콘솔에 프롬프트 출력 (디버깅용)
-        console.log('\n');
-        console.log('='.repeat(80));
-        console.log('📋 무료 베이직 진단 프롬프트');
-        console.log('='.repeat(80));
-        console.log('\n');
-
-        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-        console.log('🤖 SYSTEM PROMPT');
-        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-        console.log(prompt.systemPrompt);
-        console.log('\n');
-
-        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-        console.log('👤 USER PROMPT');
-        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-        console.log(prompt.userPrompt);
-        console.log('\n');
-
-        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-        console.log('📌 메타데이터');
-        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-        console.log(JSON.stringify(prompt.metadata, null, 2));
-        console.log('\n');
-
-        console.log('='.repeat(80));
-        console.log('🤖 Claude API 호출 중...');
-        console.log('='.repeat(80));
-        console.log('\n');
-
-        // Claude API 호출 (무료 버전)
-        const result = await callClaudeAPIFree(
-            prompt.systemPrompt,
-            prompt.userPrompt,
-            sajuData.user.id  // userId 추가
-        );
-
-        console.log('✅ 진단 완료!\n');
-
-        // 응답
-        res.json({
-            success: true,
-            message: '무료 베이직 진단이 완료되었습니다.',
-            diagnosis: result.text,
-            usage: result.usage,
-            metadata: prompt.metadata
-        });
-
-    } catch (error) {
-        console.error('진단 생성 오류:', error);
-        res.status(500).json({
-            success: false,
-            message: error.message || '진단 생성 중 오류가 발생했습니다.'
-        });
-    }
-});
+/**
+ * 나의 프리미엄 진단 목록 조회
+ * GET /api/diagnosis/my-results
+ * 인증 필수
+ */
+router.get('/my-results', authMiddleware, diagnosisController.getMyResults);
 
 module.exports = router;

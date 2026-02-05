@@ -35,21 +35,6 @@ function UsersPage() {
         }
     };
 
-    const handleStatusChange = async (userId, newStatus) => {
-        if (!window.confirm(`회원 상태를 "${newStatus}"로 변경하시겠습니까?`)) {
-            return;
-        }
-
-        try {
-            await adminAPI.updateUserStatus(userId, newStatus);
-            alert('상태가 변경되었습니다.');
-            fetchUsers();
-        } catch (error) {
-            console.error('상태 변경 실패:', error);
-            alert('상태 변경에 실패했습니다.');
-        }
-    };
-
     const handleDelete = async (userId) => {
         if (!window.confirm('정말 이 회원을 삭제하시겠습니까?')) {
             return;
@@ -84,24 +69,11 @@ function UsersPage() {
                         <label className="block text-sm font-medium mb-2 text-gray-700">검색</label>
                         <input
                             type="text"
-                            placeholder="이름, 이메일, 전화번호"
+                            placeholder="이름, 이메일"
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                             className="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white text-sm sm:text-base"
                         />
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium mb-2 text-gray-700">상태</label>
-                        <select
-                            value={status}
-                            onChange={(e) => setStatus(e.target.value)}
-                            className="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white text-sm sm:text-base"
-                        >
-                            <option value="">전체</option>
-                            <option value="active">활성</option>
-                            <option value="inactive">비활성</option>
-                            <option value="banned">차단</option>
-                        </select>
                     </div>
                 </div>
             </div>
@@ -123,25 +95,12 @@ function UsersPage() {
                                         <h3 className="font-bold text-base truncate">{user.name}</h3>
                                         <p className="text-sm text-gray-600 truncate">{user.email}</p>
                                     </div>
-                                    <select
-                                        value={user.status}
-                                        onChange={(e) => handleStatusChange(user.id, e.target.value)}
-                                        className={`ml-2 px-2 py-1 text-xs rounded-full border-0 flex-shrink-0 ${
-                                            user.status === 'active' ? 'bg-green-100 text-green-800' :
-                                                user.status === 'inactive' ? 'bg-gray-100 text-gray-800' :
-                                                    'bg-red-100 text-red-800'
-                                        }`}
-                                    >
-                                        <option value="active">활성</option>
-                                        <option value="inactive">비활성</option>
-                                        <option value="banned">차단</option>
-                                    </select>
                                 </div>
 
                                 <div className="grid grid-cols-2 gap-2 mb-3 text-sm">
                                     <div>
-                                        <span className="text-gray-500">전화:</span>
-                                        <span className="ml-1">{user.phone || '-'}</span>
+                                        <span className="text-gray-500">uuid</span>
+                                        <span className="ml-1">{user.uuid || '-'}</span>
                                     </div>
                                     <div>
                                         <span className="text-gray-500">가입:</span>
@@ -189,21 +148,6 @@ function UsersPage() {
                                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{user.name}</td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{user.email}</td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{user.phone || '-'}</td>
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <select
-                                                value={user.status}
-                                                onChange={(e) => handleStatusChange(user.id, e.target.value)}
-                                                className={`px-2 py-1 text-xs rounded-full border-0 ${
-                                                    user.status === 'active' ? 'bg-green-100 text-green-800' :
-                                                        user.status === 'inactive' ? 'bg-gray-100 text-gray-800' :
-                                                            'bg-red-100 text-red-800'
-                                                }`}
-                                            >
-                                                <option value="active">활성</option>
-                                                <option value="inactive">비활성</option>
-                                                <option value="banned">차단</option>
-                                            </select>
-                                        </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{formatDate(user.created_at)}</td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm">
                                             <button

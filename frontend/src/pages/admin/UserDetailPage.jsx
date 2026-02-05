@@ -64,17 +64,19 @@ function UserDetailPage() {
                         <div className="font-medium text-sm sm:text-base">{user.name}</div>
                     </div>
                     <div>
+                        <div className="text-xs sm:text-sm text-gray-500">UUID</div>
+                        <div className="font-medium text-sm sm:text-base">{user.uuid}</div>
+                    </div>
+                    <div>
                         <div className="text-xs sm:text-sm text-gray-500">이메일</div>
-                        <div className="font-medium text-sm sm:text-base break-all">{user.email}</div>
-                    </div>
-                    <div>
-                        <div className="text-xs sm:text-sm text-gray-500">전화번호</div>
-                        <div className="font-medium text-sm sm:text-base">{user.phone || '-'}</div>
-                    </div>
-                    <div>
-                        <div className="text-xs sm:text-sm text-gray-500">성별</div>
-                        <div className="font-medium text-sm sm:text-base">
-                            {user.gender === 'male' ? '남성' : '여성'}
+                        <div className="font-medium text-sm sm:text-base break-all">
+                            {user.email ? (
+                                user.email
+                            ) : (
+                                <span className="text-gray-400 italic">
+                                    {user.provider === 'kakao' ? '카카오: 이메일 미제공' : '이메일 없음'}
+                                </span>
+                            )}
                         </div>
                     </div>
                     <div>
@@ -116,7 +118,7 @@ function UserDetailPage() {
                     <>
                         {/* 모바일: 카드 레이아웃 */}
                         <div className="block lg:hidden space-y-3">
-                            {orders.map((order) => (
+                        {orders.map((order) => (
                                 <div key={order.id} className="border rounded-lg p-3">
                                     <div className="flex justify-between items-start mb-2">
                                         <div className="flex-1 min-w-0">

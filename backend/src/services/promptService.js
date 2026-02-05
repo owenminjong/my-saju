@@ -196,7 +196,42 @@ async function generateFreePrompt(sajuData) {
     };
 }
 
+/**
+ * 프리미엄 프롬프트 생성
+ */
+async function generatePremiumPrompt(promptData) {
+    const { Prompt } = require('../../models');
+
+    // DB에서 프리미엄 프롬프트 가져오기
+    const promptTemplate = await Prompt.findOne({
+        where: {
+            category: 'premium',
+            is_active: 1
+        }
+    });
+
+    if (!promptTemplate) {
+        throw new Error('프리미엄 프롬프트 템플릿을 찾을 수 없습니다.');
+    }
+
+    // 변수 치환 로직 (무료와 동일하게)
+    const systemPrompt = promptTemplate.content
+        .replace('{{NAME}}', promptData.user.name)
+        .replace('{{SAJU_DATA}}', JSON.stringify(promptData.saju))
+        .replace('{{MBTI}}', promptData.mbti);
+    // ... 추가 변수 치환
+
+    return {
+        systemPrompt,
+        userPrompt: '2026년 종합 운세를 상세하게 작성해주세요.',
+        metadata: {
+            promptId: promptTemplate.id,
+            category: 'premium'
+        }
+    };
+}
+
 module.exports = {
     generateFreePrompt,
-    convertMBTIToExpression
+    generatePremiumPrompt  // ⭐ 추가
 };
