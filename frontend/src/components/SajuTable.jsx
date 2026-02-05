@@ -41,10 +41,10 @@ function SajuTable({ saju }) {
                                 <div className={`pillar-item ${stemColors.bg} border-2 ${stemColors.border}`}>
                                     <div className="item-label">천간</div>
                                     <div className={`item-char ${stemColors.text}`}>
-                                        {pillar.data?.stem?.char}
+                                        {pillar.data?.stem?.hanja}
                                     </div>
                                     <div className="item-hanja">
-                                        {pillar.data?.stem?.hanja}
+                                        {pillar.data?.stem?.char}
                                     </div>
                                     <div className={`item-element ${stemColors.text}`}>
                                         {pillar.data?.stem?.element}
@@ -55,16 +55,13 @@ function SajuTable({ saju }) {
                                 <div className={`pillar-item ${branchColors.bg} border-2 ${branchColors.border}`}>
                                     <div className="item-label">지지</div>
                                     <div className={`item-char ${branchColors.text}`}>
-                                        {pillar.data?.branch?.char}
+                                        {pillar.data?.branch?.hanja}
                                     </div>
                                     <div className="item-hanja">
-                                        {pillar.data?.branch?.hanja}
+                                        {pillar.data?.branch?.char}
                                     </div>
                                     <div className={`item-element ${branchColors.text}`}>
                                         {pillar.data?.branch?.element}
-                                    </div>
-                                    <div className="item-animal">
-                                        {pillar.data?.branch?.animal}
                                     </div>
                                 </div>
                             </div>

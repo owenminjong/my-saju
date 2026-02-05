@@ -121,12 +121,6 @@ function ProductsPage() {
         <div className="p-4 sm:p-6 lg:p-8">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 sm:mb-8">
                 <h1 className="text-2xl sm:text-3xl font-bold">상품 관리</h1>
-                <button
-                    onClick={handleAdd}
-                    className="w-full sm:w-auto px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 text-sm sm:text-base"
-                >
-                    + 새 상품
-                </button>
             </div>
 
             {/* 모바일: 카드 레이아웃 */}
@@ -355,19 +349,6 @@ function ProductsPage() {
                                     </p>
                                 </div>
                             </div>
-
-                            <div className="mb-4 sm:mb-6">
-                                <label className="flex items-center">
-                                    <input
-                                        type="checkbox"
-                                        checked={formData.is_active}
-                                        onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
-                                        className="mr-2 w-4 h-4"
-                                    />
-                                    <span className="text-sm">판매 활성화</span>
-                                </label>
-                            </div>
-
                             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
                                 <button
                                     type="button"

@@ -7,7 +7,7 @@ import SajuTable from '../components/SajuTable';
 import ElementChart from '../components/ElementChart';
 import ShareModal from '../components/ShareModal';
 import PremiumPromoCard from '../components/PremiumPromoCard';
-import { Share2, Home } from 'lucide-react';
+import { Share2, Home, AlertTriangle } from 'lucide-react';
 import { adminAPI } from '../services/api';
 import './SajuResult.css';
 
@@ -54,23 +54,23 @@ function SajuResult() {
 
     const { user, saju, elements, diagnosis, usage } = result;
 
-    // 진단 결과를 "📊 운명 성적표" 기준으로 분리
+    // ✅ 진단 결과를 3개 섹션으로 분리
     const diagnosisParts = diagnosis ? diagnosis.split('## 📊 운명 성적표') : ['', ''];
     const characterSection = diagnosisParts[0];
-    const afterCharacter = diagnosisParts[1] ? `## 📊 운명 성적표${diagnosisParts[1]}` : '';
+
+    const remainingText = diagnosisParts[1] || '';
+    const crisisParts = remainingText.split('## 🚨 위기 상황');
+
+    const scoreTableSection = crisisParts[0] ? `## 📊 운명 성적표${crisisParts[0]}` : '';
+    const crisisSection = crisisParts[1] ? `## 🚨 위기 상황${crisisParts[1]}` : '';
 
     // ✅ 프리미엄 결제 버튼 클릭 핸들러
     const handlePremiumPayment = () => {
         const token = localStorage.getItem('token');
-
         if (!token) {
             alert('로그인이 필요합니다.');
             navigate('/login', {
-                state: {
-                    redirectTo: '/saju-input',
-                    mode: 'premium',
-                    sajuData: user
-                }
+                state: { redirectTo: '/saju-input', mode: 'premium', sajuData: user }
             });
             return;
         }
@@ -89,10 +89,7 @@ function SajuResult() {
         };
 
         navigate('/payment/premium', {
-            state: {
-                sajuData: requestData,
-                product: product
-            }
+            state: { sajuData: requestData, product: product }
         });
     };
 
@@ -104,7 +101,6 @@ function SajuResult() {
                     <div className="nav-bar">
                         <span className="nav-logo">月下</span>
                         <div className="nav-actions">
-                            {/* ✅ 공유 버튼을 상단으로 이동 */}
                             <button
                                 onClick={() => setShowShareModal(true)}
                                 className="share-btn-top"
@@ -189,7 +185,6 @@ function SajuResult() {
                             오행 분석
                         </div>
                         <ElementChart elements={elements}/>
-
                         <div className="element-list">
                             {elements?.chart?.map((element) => (
                                 <div key={element.element} className="element-item">
@@ -199,24 +194,25 @@ function SajuResult() {
                                             style={{backgroundColor: element.color}}
                                         ></div>
                                         <span className="element-name">
-                                            {element.element} <span className="element-subname">({element.name})</span>
-                                        </span>
+                      {element.element}
+                                            <span className="element-subname">({element.name})</span>
+                    </span>
                                     </div>
                                     <div className="element-stats">
-                                        <span className="element-count">
-                                            {elements.distribution[element.element]}개
-                                        </span>
+                    <span className="element-count">
+                      {elements.distribution[element.element]}개
+                    </span>
                                         <span className="element-percentage">
-                                            {element.percentage}%
-                                        </span>
+                      {element.percentage}%
+                    </span>
                                         <span className={`element-status status-${
                                             elements.status[element.element] === '과다' ? 'excess' :
                                                 elements.status[element.element] === '발달' ? 'develop' :
                                                     elements.status[element.element] === '적정' ? 'normal' :
                                                         elements.status[element.element] === '부족' ? 'lack' : 'none'
                                         }`}>
-                                            {elements.status[element.element]}
-                                        </span>
+                      {elements.status[element.element]}
+                    </span>
                                     </div>
                                 </div>
                             ))}
@@ -224,8 +220,8 @@ function SajuResult() {
                     </div>
                 )}
 
-                {/* 나머지 AI 진단 */}
-                {afterCharacter && (
+                {/* 📊 운명 성적표 + 기타 섹션 */}
+                {scoreTableSection && (
                     <div className="result-box">
                         <div className="text-content">
                             <ReactMarkdown
@@ -274,7 +270,36 @@ function SajuResult() {
                                     )
                                 }}
                             >
-                                {afterCharacter}
+                                {scoreTableSection}
+                            </ReactMarkdown>
+                        </div>
+                    </div>
+                )}
+
+                {/* 🚨 위기 상황 섹션 (특별 디자인) */}
+                {crisisSection && (
+                    <div className="crisis-box">
+                        <div className="crisis-header">
+                            <AlertTriangle size={24} className="crisis-icon"/>
+                            <span className="crisis-title">위기 상황</span>
+                        </div>
+                        <div className="crisis-content">
+                            <ReactMarkdown
+                                remarkPlugins={[remarkGfm]}
+                                components={{
+                                    h2: ({node, ...props}) => null, // 제목 숨김 (이미 헤더에 있음)
+                                    h3: ({node, ...props}) => (
+                                        <h3 className="crisis-subheading" {...props} />
+                                    ),
+                                    p: ({node, ...props}) => (
+                                        <p className="crisis-paragraph" {...props} />
+                                    ),
+                                    strong: ({node, ...props}) => (
+                                        <strong className="crisis-highlight" {...props} />
+                                    ),
+                                }}
+                            >
+                                {crisisSection}
                             </ReactMarkdown>
                         </div>
                     </div>
@@ -283,8 +308,7 @@ function SajuResult() {
                 {/* 토큰 사용량 */}
                 {usage && (
                     <div className="usage-info">
-                        <p>📊 분석 토큰: Input {usage.input_tokens} +
-                            Output {usage.output_tokens} = {usage.input_tokens + usage.output_tokens} tokens</p>
+                        <p>📊 분석 토큰: Input {usage.input_tokens} + Output {usage.output_tokens} = {usage.input_tokens + usage.output_tokens} tokens</p>
                     </div>
                 )}
 

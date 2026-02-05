@@ -40,17 +40,25 @@
 }
 
 .pillar-item {
+    /* ⭐ 정사각형 유지 */
+    aspect-ratio: 1 / 1;
+    width: 100%;
+
     border-radius: 10px;
-    padding: 12px 8px;
+    padding: 8px;
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: center;
     gap: 4px;
     position: relative;
+
+    /* ⭐ 내용이 넘치지 않도록 */
+    overflow: hidden;
 }
 
 .item-label {
-    font-size: 0.7rem;
+    font-size: 0.65rem;
     color: rgba(255, 255, 255, 0.5);
     font-weight: 600;
     text-transform: uppercase;
@@ -62,6 +70,7 @@
     font-size: 2rem;
     font-weight: 700;
     line-height: 1;
+    flex-shrink: 0;
 }
 
 .item-hanja {
@@ -71,7 +80,7 @@
 }
 
 .item-element {
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     font-weight: 600;
     margin-top: 4px;
 }
@@ -95,20 +104,26 @@
     }
 
     .pillar-item {
+        /* ⭐ 정사각형 유지 */
+        aspect-ratio: 1 / 1;
         flex: 1;
-        padding: 10px 6px;
+        padding: 6px;
     }
 
     .item-char {
-        font-size: 1.6rem;
+        font-size: 1.5rem;
     }
 
     .item-label {
-        font-size: 0.65rem;
+        font-size: 0.6rem;
     }
 
     .item-element {
-        font-size: 0.75rem;
+        font-size: 0.7rem;
+    }
+
+    .item-hanja {
+        font-size: 0.65rem;
     }
 }
 
@@ -118,8 +133,33 @@
         gap: 10px;
     }
 
+    .pillar-item {
+        /* ⭐ 정사각형 유지 */
+        aspect-ratio: 1 / 1;
+    }
+
     .item-char {
         font-size: 2.2rem;
+    }
+}
+
+/* ========== 중형+ 모바일 ========== */
+@media (min-width: 481px) and (max-width: 767px) {
+    .pillar-item {
+        /* ⭐ 정사각형 유지 */
+        aspect-ratio: 1 / 1;
+    }
+
+    .item-char {
+        font-size: 2.5rem;
+    }
+
+    .item-label {
+        font-size: 0.7rem;
+    }
+
+    .item-element {
+        font-size: 0.8rem;
     }
 }
 
@@ -128,5 +168,59 @@
     .saju-table-wrapper {
         overflow-x: auto;
         -webkit-overflow-scrolling: touch;
+    }
+
+    .saju-mobile-layout {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 12px;
+    }
+
+    .pillar-item {
+        /* ⭐ 정사각형 유지 */
+        aspect-ratio: 1 / 1;
+    }
+
+    .item-char {
+        font-size: 2.8rem;
+    }
+
+    .item-label {
+        font-size: 0.75rem;
+    }
+
+    .item-element {
+        font-size: 0.85rem;
+    }
+}
+
+/* ========== 데스크탑 ========== */
+@media (min-width: 1025px) {
+    .saju-mobile-layout {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .pillar-item {
+        /* ⭐ 정사각형 유지 */
+        aspect-ratio: 1 / 1;
+        padding: 12px;
+    }
+
+    .item-char {
+        font-size: 3rem;
+    }
+
+    .item-label {
+        font-size: 0.8rem;
+    }
+
+    .item-element {
+        font-size: 0.9rem;
+    }
+
+    .item-hanja {
+        font-size: 0.75rem;
     }
 }

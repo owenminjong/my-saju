@@ -513,3 +513,124 @@
         height: 320px;
     }
 }
+
+/* ========== 🚨 위기 상황 섹션 ========== */
+.crisis-box {
+    background: linear-gradient(135deg,
+    rgba(139, 0, 0, 0.3) 0%,
+    rgba(80, 0, 0, 0.4) 50%,
+    rgba(0, 0, 0, 0.6) 100%
+    );
+    border: 2px dashed #ff4444;
+    border-radius: 14px;
+    padding: 0;
+    margin-bottom: 20px;
+    box-shadow:
+            0 0 20px rgba(255, 68, 68, 0.3),
+            inset 0 0 30px rgba(255, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.crisis-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: linear-gradient(90deg,
+    rgba(255, 68, 68, 0.4) 0%,
+    rgba(139, 0, 0, 0.3) 100%
+    );
+    padding: 14px 16px;
+    border-bottom: 2px solid #ff4444;
+}
+
+.crisis-icon {
+    color: #ff6b6b;
+    flex-shrink: 0;
+    animation: pulse-warning 2s ease-in-out infinite;
+}
+
+@keyframes pulse-warning {
+    0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.7;
+        transform: scale(1.1);
+    }
+}
+
+.crisis-title {
+    font-family: var(--font-serif);
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #fff;
+    text-shadow: 0 2px 8px rgba(255, 68, 68, 0.5);
+}
+
+.crisis-content {
+    padding: 20px 16px;
+}
+
+.crisis-subheading {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #ffcccc;
+    margin: 16px 0 10px 0;
+    padding-left: 12px;
+    border-left: 3px solid #ff6b6b;
+}
+
+.crisis-paragraph {
+    color: #f0f0f0;
+    font-size: 0.9rem;
+    line-height: 1.7;
+    margin-bottom: 14px;
+    text-align: justify;
+    word-break: keep-all;
+}
+
+.crisis-highlight {
+    color: #ff6b6b;
+    font-weight: 700;
+    text-shadow: 0 0 10px rgba(255, 107, 107, 0.4);
+}
+
+/* ========== 반응형 (작은 모바일) ========== */
+@media (max-width: 360px) {
+    .crisis-header {
+        padding: 12px 14px;
+    }
+
+    .crisis-icon {
+        width: 20px;
+        height: 20px;
+    }
+
+    .crisis-title {
+        font-size: 1rem;
+    }
+
+    .crisis-content {
+        padding: 16px 14px;
+    }
+}
+
+/* ========== 반응형 (태블릿) ========== */
+@media (min-width: 601px) {
+    .crisis-box {
+        border-radius: 16px;
+    }
+
+    .crisis-header {
+        padding: 16px 20px;
+    }
+
+    .crisis-content {
+        padding: 24px 20px;
+    }
+
+    .crisis-paragraph {
+        font-size: 0.95rem;
+    }
+}
