@@ -22,11 +22,11 @@ function PremiumGeneratePage() {
     };
 
     useEffect(() => {
-        // if (!orderId || !sajuData) {
-        //     alert('잘못된 접근입니다.');
-        //     navigate('/');
-        //     return;
-        // }
+        if (!orderId || !sajuData) {
+            alert('잘못된 접근입니다.');
+            navigate('/');
+            return;
+        }
 
         console.log('🎨 프리미엄 사주 생성 시작:', { orderId, sajuData });
         generatePremiumSaju();
