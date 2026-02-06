@@ -22,11 +22,11 @@ function PremiumGeneratePage() {
     };
 
     useEffect(() => {
-        if (!orderId || !sajuData) {
-            alert('잘못된 접근입니다.');
-            navigate('/');
-            return;
-        }
+        // if (!orderId || !sajuData) {
+        //     alert('잘못된 접근입니다.');
+        //     navigate('/');
+        //     return;
+        // }
 
         console.log('🎨 프리미엄 사주 생성 시작:', { orderId, sajuData });
         generatePremiumSaju();
@@ -42,12 +42,10 @@ function PremiumGeneratePage() {
                 return;
             }
 
-            // 1️⃣ Step 1 시작
-            setStep(1);
-            setStepMessage(stepMessages[1]);
-            setProgress(10);
+            // 진행률 애니메이션 시작
+            animateProgress();
 
-            console.log('📝 Step 1: 인생 로드맵 생성 시작...');
+            console.log('📝 프리미엄 사주 생성 시작...');
 
             // ⭐ 실제 API 호출
             const response = await axios.post(
@@ -66,13 +64,10 @@ function PremiumGeneratePage() {
 
             console.log('✅ 프리미엄 진단 생성 완료:', response.data);
 
-            // 진행률 애니메이션 (백엔드 처리 시간 동안)
-            animateProgress();
-
-            // 완료 후 결과 페이지로 이동
+            // 100% 도달 후 결과 페이지로 이동
             setTimeout(() => {
                 navigate(`/premium/result/${response.data.diagnosisId}`);
-            }, 8000); // 8초 후 이동
+            }, 2000);
 
         } catch (error) {
             console.error('❌ 프리미엄 사주 생성 오류:', error);
@@ -92,16 +87,19 @@ function PremiumGeneratePage() {
 
     // 진행률 애니메이션
     const animateProgress = () => {
-        let currentProgress = 10;
+        let currentProgress = 0;
         const interval = setInterval(() => {
-            currentProgress += 10;
+            currentProgress = Math.min(currentProgress + 10, 100);  // ⭐ 100 제한
 
-            if (currentProgress === 40) {
+            if (currentProgress >= 30 && currentProgress < 50) {
                 setStep(2);
                 setStepMessage(stepMessages[2]);
-            } else if (currentProgress === 70) {
+            } else if (currentProgress >= 70 && currentProgress < 90) {
                 setStep(3);
                 setStepMessage(stepMessages[3]);
+            } else if (currentProgress < 30) {
+                setStep(1);
+                setStepMessage(stepMessages[1]);
             }
 
             setProgress(currentProgress);
@@ -115,7 +113,7 @@ function PremiumGeneratePage() {
     return (
         <div style={{
             minHeight: '100vh',
-            background: 'linear-gradient(135deg, #050810 0%, #0a1628 100%)',
+            background: 'linear-gradient(135deg, #1a1a2e 0%, #0f0f1e 50%, #16213e 100%)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -124,95 +122,134 @@ function PremiumGeneratePage() {
             position: 'relative',
             overflow: 'hidden'
         }}>
-            {/* 배경 별 효과 */}
+            {/* 🌟 별빛 배경 효과 */}
             <div style={{
                 position: 'absolute',
                 top: 0,
                 left: 0,
                 right: 0,
                 bottom: 0,
-                background: 'radial-gradient(circle at 20% 30%, rgba(197, 160, 89, 0.1) 0%, transparent 50%), radial-gradient(circle at 80% 70%, rgba(197, 160, 89, 0.08) 0%, transparent 50%)',
+                background: `
+                    radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 1%),
+                    radial-gradient(circle at 80% 30%, rgba(255, 255, 255, 0.08) 0%, transparent 1%),
+                    radial-gradient(circle at 40% 70%, rgba(255, 255, 255, 0.06) 0%, transparent 1%),
+                    radial-gradient(circle at 60% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 1%),
+                    radial-gradient(circle at 90% 60%, rgba(255, 255, 255, 0.05) 0%, transparent 1%)
+                `,
+                backgroundSize: '50px 50px, 80px 80px, 60px 60px, 70px 70px, 90px 90px',
+                animation: 'twinkle 3s ease-in-out infinite',
+                pointerEvents: 'none'
+            }}></div>
+
+            {/* 🌙 달빛 효과 */}
+            <div style={{
+                position: 'absolute',
+                top: '10%',
+                right: '10%',
+                width: '150px',
+                height: '150px',
+                borderRadius: '50%',
+                background: 'radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, transparent 70%)',
+                filter: 'blur(30px)',
+                animation: 'pulse 4s ease-in-out infinite',
                 pointerEvents: 'none'
             }}></div>
 
             {/* 메인 컨텐츠 */}
             <div style={{
-                background: 'rgba(255, 255, 255, 0.95)',
-                backdropFilter: 'blur(10px)',
+                background: 'rgba(255, 255, 255, 0.08)',
+                backdropFilter: 'blur(20px)',
                 padding: '50px 40px',
-                borderRadius: '20px',
-                boxShadow: '0 10px 40px rgba(0, 0, 0, 0.3)',
+                borderRadius: '30px',
+                boxShadow: `
+                    0 8px 32px rgba(0, 0, 0, 0.3),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+                    0 0 80px rgba(197, 160, 89, 0.15)
+                `,
+                border: '1px solid rgba(255, 255, 255, 0.1)',
                 textAlign: 'center',
                 maxWidth: '500px',
                 width: '100%',
                 position: 'relative',
                 zIndex: 1
             }}>
-                {/* 캐릭터 이미지 (둥실둥실) */}
+                {/* 캐릭터 + 말풍선 영역 */}
                 <div style={{
-                    width: '150px',
-                    height: '150px',
-                    margin: '0 auto 30px',
                     position: 'relative',
-                    animation: 'float 3s ease-in-out infinite'
+                    width: '200px',
+                    height: '250px',
+                    margin: '0 auto 30px'
                 }}>
-                    <img
-                        src={characterImage}
-                        alt="월하 캐릭터"
-                        style={{
-                            width: '100%',
-                            height: '100%',
-                            objectFit: 'contain',
-                            filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.1))'
-                        }}
-                    />
-
-                    {/* 말풍선 */}
+                    {/* 캐릭터 이미지 (둥실둥실) */}
                     <div style={{
                         position: 'absolute',
-                        top: '-80px',
+                        bottom: '-120px',
                         left: '50%',
                         transform: 'translateX(-50%)',
-                        background: '#fff',
-                        padding: '12px 20px',
+                        width: '300px',
+                        height: '300px',
+                        animation: 'float 3s ease-in-out infinite'
+                    }}>
+                        <img
+                            src={characterImage}
+                            alt="월하 캐릭터"
+                            style={{
+                                width: '100%',
+                                height: '100%',
+                                objectFit: 'contain',
+                                filter: 'drop-shadow(0 8px 16px rgba(197, 160, 89, 0.3))'
+                            }}
+                        />
+                    </div>
+
+                    {/* 말풍선 (캐릭터 위쪽) */}
+                    <div style={{
+                        position: 'absolute',
+                        top: '0',
+                        left: '50%',
+                        transform: 'translateX(-50%)',
+                        background: 'rgba(255, 255, 255, 0.95)',
+                        padding: '12px 24px',
                         borderRadius: '20px',
-                        boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                        boxShadow: '0 4px 20px rgba(0,0,0,0.2)',
                         whiteSpace: 'nowrap',
                         fontSize: '0.9rem',
                         fontWeight: '600',
                         color: '#c5a059',
-                        animation: 'fadeIn 0.5s ease-in-out'
+                        animation: 'fadeIn 0.5s ease-in-out, bounce 2s ease-in-out infinite',
+                        border: '2px solid rgba(197, 160, 89, 0.2)'
                     }}>
                         {stepMessage}
                         {/* 말풍선 꼬리 */}
                         <div style={{
                             position: 'absolute',
-                            bottom: '-8px',
+                            bottom: '-12px',
                             left: '50%',
                             transform: 'translateX(-50%)',
                             width: 0,
                             height: 0,
-                            borderLeft: '10px solid transparent',
-                            borderRight: '10px solid transparent',
-                            borderTop: '10px solid #fff'
+                            borderLeft: '12px solid transparent',
+                            borderRight: '12px solid transparent',
+                            borderTop: '12px solid rgba(255, 255, 255, 0.95)'
                         }}></div>
                     </div>
                 </div>
 
                 <h2 style={{
-                    fontSize: '1.5rem',
+                    fontSize: '1.8rem',
                     fontWeight: '700',
-                    color: '#2c3e50',
+                    color: '#fff',
                     marginBottom: '10px',
-                    fontFamily: "'Noto Serif KR', serif"
+                    fontFamily: "'Noto Serif KR', serif",
+                    textShadow: '0 2px 10px rgba(197, 160, 89, 0.5)'
                 }}>
                     프리미엄 사주 분석 중
                 </h2>
 
                 <p style={{
-                    fontSize: '0.95rem',
-                    color: '#7f8c8d',
-                    marginBottom: '30px',
+                    fontSize: '1rem',
+                    color: 'rgba(255, 255, 255, 0.7)',
+                    marginBottom: '40px',
                     lineHeight: '1.6'
                 }}>
                     AI가 당신의 운명을<br/>
@@ -222,26 +259,31 @@ function PremiumGeneratePage() {
                 {/* 진행률 바 */}
                 <div style={{
                     width: '100%',
-                    height: '10px',
-                    background: '#e0e0e0',
+                    height: '12px',
+                    background: 'rgba(255, 255, 255, 0.1)',
                     borderRadius: '10px',
                     overflow: 'hidden',
-                    marginBottom: '15px'
+                    marginBottom: '15px',
+                    border: '1px solid rgba(255, 255, 255, 0.1)'
                 }}>
                     <div style={{
                         height: '100%',
-                        background: 'linear-gradient(90deg, #c5a059 0%, #9a7b3a 100%)',
+                        background: 'linear-gradient(90deg, #c5a059 0%, #f4d03f 50%, #c5a059 100%)',
+                        backgroundSize: '200% 100%',
                         borderRadius: '10px',
                         width: `${progress}%`,
-                        transition: 'width 0.8s ease'
+                        transition: 'width 0.8s ease',
+                        animation: 'shimmer 2s ease-in-out infinite',
+                        boxShadow: '0 0 20px rgba(197, 160, 89, 0.5)'
                     }}></div>
                 </div>
 
                 <p style={{
-                    fontSize: '0.9rem',
-                    color: '#c5a059',
-                    fontWeight: '600',
-                    marginBottom: '30px'
+                    fontSize: '1.1rem',
+                    color: '#f4d03f',
+                    fontWeight: '700',
+                    marginBottom: '30px',
+                    textShadow: '0 0 10px rgba(244, 208, 63, 0.5)'
                 }}>
                     {progress}%
                 </p>
@@ -261,25 +303,29 @@ function PremiumGeneratePage() {
                             gap: '8px'
                         }}>
                             <div style={{
-                                width: '40px',
-                                height: '40px',
+                                width: '45px',
+                                height: '45px',
                                 borderRadius: '50%',
-                                background: step >= num ? 'linear-gradient(135deg, #c5a059 0%, #9a7b3a 100%)' : '#e0e0e0',
+                                background: step >= num
+                                    ? 'linear-gradient(135deg, #f4d03f 0%, #c5a059 100%)'
+                                    : 'rgba(255, 255, 255, 0.1)',
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
-                                color: '#fff',
+                                color: step >= num ? '#1a1a2e' : 'rgba(255, 255, 255, 0.3)',
                                 fontWeight: '700',
                                 fontSize: '1.1rem',
                                 transition: 'all 0.5s',
-                                boxShadow: step >= num ? '0 4px 12px rgba(197, 160, 89, 0.4)' : 'none'
+                                boxShadow: step >= num ? '0 4px 20px rgba(244, 208, 63, 0.4)' : 'none',
+                                border: step >= num ? 'none' : '2px solid rgba(255, 255, 255, 0.2)'
                             }}>
                                 {num}
                             </div>
                             <span style={{
                                 fontSize: '0.75rem',
-                                color: step >= num ? '#c5a059' : '#999',
-                                fontWeight: step >= num ? '600' : '400'
+                                color: step >= num ? '#f4d03f' : 'rgba(255, 255, 255, 0.5)',
+                                fontWeight: step >= num ? '600' : '400',
+                                textShadow: step >= num ? '0 0 10px rgba(244, 208, 63, 0.3)' : 'none'
                             }}>
                                 Step {num}
                             </span>
@@ -290,19 +336,19 @@ function PremiumGeneratePage() {
                 {/* 안내 문구 */}
                 <div style={{
                     padding: '20px',
-                    background: 'linear-gradient(135deg, rgba(197, 160, 89, 0.1) 0%, rgba(197, 160, 89, 0.05) 100%)',
-                    borderRadius: '12px',
-                    border: '1px solid rgba(197, 160, 89, 0.2)'
+                    background: 'rgba(197, 160, 89, 0.1)',
+                    borderRadius: '15px',
+                    border: '1px solid rgba(197, 160, 89, 0.3)'
                 }}>
                     <p style={{
-                        fontSize: '0.85rem',
-                        color: '#666',
+                        fontSize: '0.9rem',
+                        color: 'rgba(255, 255, 255, 0.9)',
                         lineHeight: '1.6',
                         margin: 0
                     }}>
-                        💎 프리미엄 풀코스 진단은<br/>
-                        <strong>A4 5장 이상</strong>의 상세한 분석 결과를 제공합니다.<br/>
-                        <span style={{ color: '#c5a059', fontWeight: '600' }}>
+                        💎 프리미엄 풀코스 진단<br/>
+                        <strong style={{ color: '#f4d03f' }}>A4 5장 이상</strong>의 상세한 분석 결과를 제공합니다.<br/>
+                        <span style={{ color: '#f4d03f', fontWeight: '600' }}>
                             예상 소요 시간: 1~2분
                         </span>
                     </p>
@@ -312,21 +358,59 @@ function PremiumGeneratePage() {
             <style>{`
                 @keyframes float {
                     0%, 100% {
-                        transform: translateY(0px);
+                        transform: translateX(-50%) translateY(0px);
                     }
                     50% {
-                        transform: translateY(-20px);
+                        transform: translateX(-50%) translateY(-25px);
                     }
                 }
 
                 @keyframes fadeIn {
                     from {
                         opacity: 0;
-                        transform: translateX(-50%) translateY(10px);
+                        transform: translateX(-50%) scale(0.8);
                     }
                     to {
                         opacity: 1;
-                        transform: translateX(-50%) translateY(0);
+                        transform: translateX(-50%) scale(1);
+                    }
+                }
+
+                @keyframes bounce {
+                    0%, 100% {
+                        transform: translateX(-50%) translateY(0px);
+                    }
+                    50% {
+                        transform: translateX(-50%) translateY(-5px);
+                    }
+                }
+
+                @keyframes twinkle {
+                    0%, 100% {
+                        opacity: 0.3;
+                    }
+                    50% {
+                        opacity: 1;
+                    }
+                }
+
+                @keyframes pulse {
+                    0%, 100% {
+                        opacity: 0.3;
+                        transform: scale(1);
+                    }
+                    50% {
+                        opacity: 0.6;
+                        transform: scale(1.1);
+                    }
+                }
+
+                @keyframes shimmer {
+                    0% {
+                        background-position: -200% 0;
+                    }
+                    100% {
+                        background-position: 200% 0;
                     }
                 }
             `}</style>

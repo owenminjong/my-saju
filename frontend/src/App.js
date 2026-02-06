@@ -21,6 +21,7 @@ import AuthSuccess from './pages/login/AuthSuccess';
 import AuthFail from './pages/login/AuthFail';
 import SajuInput from './pages/SajuInput';
 import SajuResult from './pages/SajuResult';
+import PremiumResult from './pages/PremiumResult';
 import SampleResult from './pages/SampleResult';
 import SharedResult from './pages/SharedResult';
 import OrdersPage from "./pages/admin/OrdersPage";
@@ -167,6 +168,7 @@ function App() {
             {/* 🔮 사주 서비스 */}
             <Route path="/saju-input" element={<SajuInput />} />
             <Route path="/result" element={<SajuResult />} />
+            <Route path="/premium/result/:diagnosisId" element={<PremiumResult />} />
 
             {/* 🔗 공유 링크 */}
             <Route path="/r/:encodedData" element={<SharedResult />} />
