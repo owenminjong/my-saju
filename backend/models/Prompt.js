@@ -1,3 +1,5 @@
+// models/Prompt.js
+
 const { DataTypes } = require('sequelize');
 const { sequelize } = require('./sequelize');
 
@@ -11,12 +13,24 @@ const Prompt = sequelize.define('prompts', {
         type: DataTypes.STRING(100),
         allowNull: false
     },
+    description: {  // ⭐ 추가
+        type: DataTypes.STRING(255),
+        allowNull: true
+    },
     content: {
         type: DataTypes.TEXT,
         allowNull: false
     },
     category: {
         type: DataTypes.STRING(50),
+        allowNull: true
+    },
+    step: {  // ⭐ 추가
+        type: DataTypes.INTEGER(11),
+        allowNull: true
+    },
+    estimated_tokens: {  // ⭐ 추가 (여기!)
+        type: DataTypes.INTEGER(11),
         allowNull: true
     },
     is_active: {

@@ -10,10 +10,11 @@ dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+const frontendUrl = process.env.FRONTEND_URL;
 
 // 미들웨어 (순서 중요!)
 app.use(cors({
-    origin: 'http://localhost:3000',
+    origin: frontendUrl,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization']

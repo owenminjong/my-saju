@@ -13,7 +13,6 @@ import PaymentTestPage from './pages/PaymentTestPage';
 import PremiumPaymentPage from './pages/PremiumPaymentPage';
 import PremiumPaymentSuccess from './pages/PremiumPaymentSuccess';
 import PaymentFail from './pages/PaymentFail';
-import PremiumGeneratePage from './pages/PremiumGeneratePage';
 
 // 🏠 메인 & 사주 서비스 페이지
 import MainPage from './pages/MainPage';
@@ -25,6 +24,8 @@ import SajuResult from './pages/SajuResult';
 import SampleResult from './pages/SampleResult';
 import SharedResult from './pages/SharedResult';
 import OrdersPage from "./pages/admin/OrdersPage";
+import FreeGeneratePage from './pages/FreeGeneratePage';
+import PremiumGeneratePage from './pages/PremiumGeneratePage';
 
 // 관리자 네비게이션 컴포넌트
 function AdminNav() {
@@ -186,7 +187,9 @@ function App() {
             <Route path="/payment/premium" element={<PremiumPaymentPage />} />
             <Route path="/payment/premium/success" element={<PremiumPaymentSuccess />} />
             <Route path="/payment/fail" element={<PaymentFail />} />
+            <Route path="/free/generate" element={<FreeGeneratePage />} />
             <Route path="/premium/generate" element={<PremiumGeneratePage />} />
+
           </Routes>
         </Layout>
       </Router>

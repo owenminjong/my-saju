@@ -217,34 +217,14 @@ const SajuInput = () => {
             mbti: formData.mbti
         };
 
-        // 무료 모드만 처리
-        try {
-            setLoading(true);
-            console.log('🔵 무료 사주 요청:', requestData);
+        // ⭐ 무료 모드: FreeGeneratePage로 이동
+        console.log('🔵 무료 사주 요청:', requestData);
 
-            const response = await getFreeDiagnosis(requestData);
-            console.log('✅ 무료 사주 응답:', response);
-
-            navigate('/result', {
-                state: {
-                    result: {
-                        ...response.sajuData,
-                        summary: response.sajuData.summary,
-                        diagnosis: response.diagnosis,
-                        usage: response.usage,
-                        uniqueId: response.uniqueId,
-                        characterImage: response.characterImage,  // ✅ 추가
-                        imageMetadata: response.imageMetadata
-                    }
-                }
-            });
-
-        } catch (error) {
-            console.error('❌ 무료 사주 오류:', error);
-            alert(error.message);
-        } finally {
-            setLoading(false);
-        }
+        navigate('/free/generate', {
+            state: {
+                sajuData: requestData
+            }
+        });
     };
 
     return (
@@ -390,7 +370,7 @@ const SajuInput = () => {
                             <button type="submit" className="submit-btn" disabled={loading}>
                                 {loading ? '분석 중...' : '내 운명 확인하기'}
                             </button>
-                        )}
+                        )}ㄹ
                     </form>
                 </div>
             </section>

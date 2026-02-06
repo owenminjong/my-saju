@@ -1,7 +1,8 @@
+// frontend/src/pages/PremiumPaymentSuccess.jsx
+
 import React, { useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { paymentAPI } from '../services/api';
-import axios from 'axios';
 
 function PremiumPaymentSuccess() {
     const navigate = useNavigate();
@@ -9,69 +10,53 @@ function PremiumPaymentSuccess() {
     const isConfirming = useRef(false);
 
     useEffect(() => {
-        if (isConfirming.current) {
-            return;
-        }
+        if (isConfirming.current) return;
         confirmPayment();
     }, []);
 
     const confirmPayment = async () => {
-        if (isConfirming.current) {
-            return;
-        }
+        if (isConfirming.current) return;
         isConfirming.current = true;
 
         const paymentKey = searchParams.get('paymentKey');
         const orderId = searchParams.get('orderId');
+        const amount = searchParams.get('amount');
 
-        console.log('결제 승인 시작:', { paymentKey, orderId });
+        console.log('💳 결제 승인 시작:', { paymentKey, orderId, amount });
 
         try {
-            // 1. 결제 승인
+            // 1️⃣ 결제 승인
             const response = await paymentAPI.confirm({
                 paymentKey,
                 orderId,
             });
 
-            console.log('결제 승인 완료:', response.data);
+            console.log('✅ 결제 승인 완료:', response.data);
 
-            // 2. 더미 데이터로 무료 사주 API 호출 (테스트)
-            console.log('🤖 AI 프리미엄 분석 시작 (더미)');
+            // 2️⃣ sessionStorage에서 사주 데이터 가져오기
+            const orderData = JSON.parse(sessionStorage.getItem('premiumOrderData'));
 
-            const dummyData = {
-                name: '프리미엄 테스트',
-                year: 1990,
-                month: 1,
-                day: 1,
-                hour: 0,
-                minute: 0,
-                isLunar: false,
-                gender: 'M',
-                mbti: 'ISTJ'
-            };
+            if (!orderData) {
+                alert('❌ 주문 데이터를 찾을 수 없습니다.');
+                navigate('/');
+                return;
+            }
 
-            const sajuResponse = await axios.post('http://localhost:5000/api/diagnosis/free', dummyData);
+            console.log('📦 주문 데이터:', orderData);
 
-            console.log('✅ AI 분석 완료:', sajuResponse.data);
-
-            // 3. 결과 페이지로 이동
-            setTimeout(() => {
-                navigate('/result', {
-                    state: {
-                        result: {
-                            ...sajuResponse.data.sajuData,
-                            diagnosis: sajuResponse.data.diagnosis,
-                            usage: sajuResponse.data.usage,
-                            uniqueId: sajuResponse.data.uniqueId,
-                            isPremium: true, // ✅ 프리미엄 표시
-                            orderId: orderId
-                        }
-                    }
-                });
-            }, 1000);
+            // 3️⃣ PremiumGeneratePage로 이동 (데이터 전달)
+            navigate('/premium/generate', {
+                state: {
+                    orderId: orderId,  // 토스 orderId (UUID)
+                    dbOrderId: response.data.order?.id,  // DB orders 테이블의 id
+                    amount: amount,
+                    sajuData: orderData.sajuData,
+                    product: orderData.product
+                }
+            });
 
         } catch (error) {
-            console.error('결제 승인 실패:', error);
+            console.error('❌ 결제 승인 실패:', error);
 
             if (error.response?.data?.message?.includes('기존 요청')) {
                 alert('✅ 결제가 이미 완료되었습니다!');
@@ -104,30 +89,14 @@ function PremiumPaymentSuccess() {
                     borderTop: '4px solid #c5a059',
                     borderRadius: '50%',
                     margin: '0 auto 25px',
-                    animation: 'spin 1.2s linear infinite',
-                    position: 'relative'
-                }}>
-                    <div style={{
-                        width: '40px',
-                        height: '40px',
-                        border: '3px solid rgba(197, 160, 89, 0.3)',
-                        borderBottom: '3px solid #c5a059',
-                        borderRadius: '50%',
-                        position: 'absolute',
-                        top: '10px',
-                        left: '10px',
-                        animation: 'spin 1.5s linear infinite reverse'
-                    }}></div>
-                </div>
+                    animation: 'spin 1.2s linear infinite'
+                }}></div>
 
-                <p style={{ fontSize: '1.2rem', fontWeight: '700', color: '#2c3e50', marginBottom: '10px' }}>
-                    프리미엄 사주 생성 중...
+                <p style={{ fontSize: '1.2rem', fontWeight: '700', color: '#2c3e50' }}>
+                    결제 처리 중...
                 </p>
-                <p style={{ fontSize: '0.95rem', color: '#7f8c8d', marginBottom: '5px' }}>
-                    결제가 완료되었습니다!
-                </p>
-                <p style={{ fontSize: '0.85rem', color: '#94a3b8' }}>
-                    AI가 상세한 분석을 진행하고 있습니다
+                <p style={{ fontSize: '0.9rem', color: '#7f8c8d' }}>
+                    잠시만 기다려주세요
                 </p>
             </div>
             <style>{`
