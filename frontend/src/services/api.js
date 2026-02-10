@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:5000/api';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
 const api = axios.create({
     baseURL: API_BASE_URL,
@@ -9,12 +9,21 @@ const api = axios.create({
     },
 });
 
-// ✅ 요청 인터셉터 추가 (토큰 자동 추가)
+// 요청 인터셉터
 api.interceptors.request.use(
     (config) => {
-        const token = localStorage.getItem('token');
-        if (token) {
-            config.headers.Authorization = `Bearer ${token}`;
+        console.log('🚀 API 요청:', config.method.toUpperCase(), config.url);
+
+        if (config.url.startsWith('/admin')) {
+            const adminToken = localStorage.getItem('adminToken');
+            if (adminToken) {
+                config.headers.Authorization = `Bearer ${adminToken}`;
+            }
+        } else {
+            const token = localStorage.getItem('token');
+            if (token) {
+                config.headers.Authorization = `Bearer ${token}`;
+            }
         }
         return config;
     },
@@ -23,51 +32,76 @@ api.interceptors.request.use(
     }
 );
 
-// 관리자 API
+// 응답 인터셉터
+api.interceptors.response.use(
+    (response) => response,
+    (error) => {
+        if (error.response?.status === 401) {
+            if (window.location.pathname.startsWith('/admin')) {
+                localStorage.removeItem('adminToken');
+                localStorage.removeItem('adminInfo');
+                window.location.href = '/admin/login';
+            }
+        }
+        return Promise.reject(error);
+    }
+);
+
+// ⭐ adminAPI export 추가
 export const adminAPI = {
     // 대시보드
-    getDashboard: () => api.get('/admin/dashboard'),
+    getDashboardStats: () => api.get('/admin/dashboard/stats'),
 
-    // 회원 관리
+    // 사용자 관리
     getUsers: (params) => api.get('/admin/users', { params }),
-    getUserDetail: (id) => api.get(`/admin/users/${id}`),
-    updateUserStatus: (id, status) => api.patch(`/admin/users/${id}/status`, { status }),
+    getUserById: (id) => api.get(`/admin/users/${id}`),
     deleteUser: (id) => api.delete(`/admin/users/${id}`),
 
+    // ⭐ 토큰 사용 내역
+    getTokenUsages: (params) => api.get('/admin/token-usage', { params }),
+    getTokenUsageByOrder: (orderId) => api.get(`/admin/token-usage/order/${orderId}`),
+
     // 프롬프트 관리
-    getPrompts: (params) => api.get('/admin/prompts', { params }),
-    getPromptDetail: (id) => api.get(`/admin/prompts/${id}`),
+    getPrompts: () => api.get('/admin/prompts'),
     createPrompt: (data) => api.post('/admin/prompts', data),
     updatePrompt: (id, data) => api.put(`/admin/prompts/${id}`, data),
     deletePrompt: (id) => api.delete(`/admin/prompts/${id}`),
 
     // 상품 관리
     getProducts: () => api.get('/admin/products'),
-    getProductDetail: (id) => api.get(`/admin/products/${id}`),
     createProduct: (data) => api.post('/admin/products', data),
     updateProduct: (id, data) => api.put(`/admin/products/${id}`, data),
     deleteProduct: (id) => api.delete(`/admin/products/${id}`),
 
-    // API Keys 관리
+    // API 키 관리
     getApiKeys: () => api.get('/admin/api-keys'),
-    getApiKeyDetail: (id) => api.get(`/admin/api-keys/${id}`),
-    upsertApiKey: (data) => api.post('/admin/api-keys', data),
-    toggleApiKey: (id, is_active) => api.patch(`/admin/api-keys/${id}/toggle`, { is_active }),
+    createApiKey: (data) => api.post('/admin/api-keys', data),
+    updateApiKey: (id, data) => api.put(`/admin/api-keys/${id}`, data),
     deleteApiKey: (id) => api.delete(`/admin/api-keys/${id}`),
 
     // 주문 관리
     getOrders: (params) => api.get('/admin/orders', { params }),
-    getOrderDetail: (id) => api.get(`/admin/orders/${id}`),
-    cancelOrder: (id) => api.post(`/admin/orders/${id}/cancel`),
-    refundOrder: (id, amount, reason) => api.post(`/admin/orders/${id}/refund`, { amount, reason }),
+    updateOrderStatus: (orderId, data) => api.patch(`/admin/orders/${orderId}/status`, data),
+    getOrderById: (orderId) => api.get(`/admin/orders/${orderId}`),
+    deleteOrder: (orderId) => api.delete(`/admin/orders/${orderId}`),
 };
 
-// 결제 API 추가
+// ⭐ paymentAPI export 추가
 export const paymentAPI = {
-    prepare: (data) => api.post('/payment/prepare', data),
-    confirm: (data) => api.post('/payment/confirm', data),
-    verify: (data) => api.post('/payment/verify', data),
-    cancel: (data) => api.post('/payment/cancel', data),
+    // 결제 요청
+    requestPayment: (data) => api.post('/payment/request', data),
+
+    // 결제 완료 처리
+    completePayment: (data) => api.post('/payment/complete', data),
+
+    // 결제 취소
+    cancelPayment: (orderId) => api.post(`/payment/cancel/${orderId}`),
+
+    // 사용자 결제 내역
+    getUserPayments: () => api.get('/payment/history'),
+
+    // 결제 상세 조회
+    getPaymentDetail: (orderId) => api.get(`/payment/${orderId}`),
 };
 
 export default api;

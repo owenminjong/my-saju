@@ -2,7 +2,11 @@
 
 const express = require('express');
 const router = express.Router();
-const usersController = require('../../controllers/admin/usersController');  // ⭐ userController로 수정
+const usersController = require('../../controllers/admin/usersController');
+const { adminOnlyMiddleware } = require('../../middleware/authMiddleware'); // ⭐ 추가
+
+// ⭐ 모든 라우트에 관리자 인증 적용
+router.use(adminOnlyMiddleware);
 
 // GET /api/admin/users - 회원 목록
 router.get('/', usersController.getUsers);

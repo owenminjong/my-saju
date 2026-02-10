@@ -1,6 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const promptsController = require('../../controllers/admin/promptsController');
+const { adminOnlyMiddleware } = require('../../middleware/authMiddleware'); // ⭐ 추가
+
+// ⭐ 모든 라우트에 관리자 인증 적용
+router.use(adminOnlyMiddleware);
 
 // GET /api/admin/prompts - 프롬프트 목록
 router.get('/', promptsController.getPrompts);

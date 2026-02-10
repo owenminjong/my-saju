@@ -1,7 +1,7 @@
 // frontend/src/App.js
 
 import React, { useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Link, useLocation, Navigate } from 'react-router-dom';
 import { Menu, X, Home } from 'lucide-react';
 import DashboardPage from './pages/admin/DashboardPage';
 import UsersPage from './pages/admin/UsersPage';
@@ -13,6 +13,8 @@ import PaymentTestPage from './pages/PaymentTestPage';
 import PremiumPaymentPage from './pages/PremiumPaymentPage';
 import PremiumPaymentSuccess from './pages/PremiumPaymentSuccess';
 import PaymentFail from './pages/PaymentFail';
+import AdminLoginPage from './pages/admin/AdminLoginPage';
+import TokenUsagePage from './pages/admin/TokenUsagePage'; // ⭐ 추가
 
 // 🏠 메인 & 사주 서비스 페이지
 import MainPage from './pages/MainPage';
@@ -28,6 +30,17 @@ import OrdersPage from "./pages/admin/OrdersPage";
 import FreeGeneratePage from './pages/FreeGeneratePage';
 import PremiumGeneratePage from './pages/PremiumGeneratePage';
 
+// ⭐ 관리자 라우트 보호 컴포넌트
+function AdminRoute({ children }) {
+  const adminToken = localStorage.getItem('adminToken');
+
+  if (!adminToken) {
+    return <Navigate to="/admin/login" replace />;
+  }
+
+  return children;
+}
+
 // 관리자 네비게이션 컴포넌트
 function AdminNav() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -37,6 +50,7 @@ function AdminNav() {
     { path: '/admin', label: '대시보드' },
     { path: '/admin/users', label: '회원 관리' },
     { path: '/admin/orders', label: '주문/결제' },
+    { path: '/admin/token-usage', label: '토큰 사용량' }, // ⭐ 추가
     { path: '/admin/prompts', label: '프롬프트' },
     { path: '/admin/products', label: '상품 관리' },
     { path: '/admin/api-keys', label: 'API Keys' },
@@ -48,6 +62,13 @@ function AdminNav() {
       return location.pathname === '/admin';
     }
     return location.pathname.startsWith(path);
+  };
+
+  // 로그아웃 함수
+  const handleLogout = () => {
+    localStorage.removeItem('adminToken');
+    localStorage.removeItem('adminInfo');
+    window.location.href = '/admin/login';
   };
 
   return (
@@ -99,6 +120,16 @@ function AdminNav() {
               </div>
             </div>
 
+            {/* 로그아웃 버튼 */}
+            <div className="hidden sm:flex items-center">
+              <button
+                  onClick={handleLogout}
+                  className="px-4 py-2 text-sm text-red-600 hover:text-red-800 font-medium"
+              >
+                로그아웃
+              </button>
+            </div>
+
             {/* 모바일 햄버거 메뉴 버튼 */}
             <div className="flex items-center sm:hidden">
               <button
@@ -128,6 +159,13 @@ function AdminNav() {
                         {item.label}
                       </Link>
                   ))}
+                  {/* 모바일 로그아웃 버튼 */}
+                  <button
+                      onClick={handleLogout}
+                      className="block w-full text-left px-4 py-3 text-sm font-medium text-red-600 hover:bg-red-50"
+                  >
+                    로그아웃
+                  </button>
                 </div>
               </div>
           )}
@@ -139,7 +177,7 @@ function AdminNav() {
 // 레이아웃 래퍼
 function Layout({ children }) {
   const location = useLocation();
-  const isAdminPage = location.pathname.startsWith('/admin');
+  const isAdminPage = location.pathname.startsWith('/admin') && location.pathname !== '/admin/login';
   const isMainPage = location.pathname === '/';
 
   return (
@@ -176,22 +214,28 @@ function App() {
 
             <Route path="/ex-result" element={<SampleResult />} />
 
-            {/* 🔧 관리자 페이지 */}
-            <Route path="/admin" element={<DashboardPage />} />
-            <Route path="/admin/users" element={<UsersPage />} />
-            <Route path="/admin/users/:id" element={<UserDetailPage />} />
-            <Route path="/admin/prompts" element={<PromptsPage />} />
-            <Route path="/admin/products" element={<ProductsPage />} />
-            <Route path="/admin/api-keys" element={<ApiKeysPage />} />
-            <Route path="/admin/payment-test" element={<PaymentTestPage />} />
-            <Route path="/admin/orders" element={<OrdersPage />} />
+            {/* ⭐ 관리자 로그인 (보호 안됨) */}
+            <Route path="/admin/login" element={<AdminLoginPage />} />
 
+            {/* 🔧 관리자 페이지 (보호됨) */}
+            <Route path="/admin" element={<AdminRoute><DashboardPage /></AdminRoute>} />
+            <Route path="/admin/users" element={<AdminRoute><UsersPage /></AdminRoute>} />
+            <Route path="/admin/users/:id" element={<AdminRoute><UserDetailPage /></AdminRoute>} />
+            <Route path="/admin/orders" element={<AdminRoute><OrdersPage /></AdminRoute>} />
+            <Route path="/admin/token-usage" element={<AdminRoute><TokenUsagePage /></AdminRoute>} /> {/* ⭐ 추가 */}
+            <Route path="/admin/prompts" element={<AdminRoute><PromptsPage /></AdminRoute>} />
+            <Route path="/admin/products" element={<AdminRoute><ProductsPage /></AdminRoute>} />
+            <Route path="/admin/api-keys" element={<AdminRoute><ApiKeysPage /></AdminRoute>} />
+            <Route path="/admin/payment-test" element={<AdminRoute><PaymentTestPage /></AdminRoute>} />
+
+            {/* 결제 페이지 */}
             <Route path="/payment/premium" element={<PremiumPaymentPage />} />
             <Route path="/payment/premium/success" element={<PremiumPaymentSuccess />} />
             <Route path="/payment/fail" element={<PaymentFail />} />
+
+            {/* 생성 페이지 */}
             <Route path="/free/generate" element={<FreeGeneratePage />} />
             <Route path="/premium/generate" element={<PremiumGeneratePage />} />
-
           </Routes>
         </Layout>
       </Router>

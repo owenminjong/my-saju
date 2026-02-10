@@ -1,6 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const apiKeysController = require('../../controllers/admin/apiKeysController');
+const { adminOnlyMiddleware } = require('../../middleware/authMiddleware'); // ⭐ 추가
+
+// ⭐ 모든 라우트에 관리자 인증 적용
+router.use(adminOnlyMiddleware);
 
 // GET /api/admin/api-keys - API 키 목록
 router.get('/', apiKeysController.getApiKeys);

@@ -162,8 +162,90 @@ const adminMiddleware = (req, res, next) => {
     next();
 };
 
+/**
+ * 관리자 전용 인증 미들웨어
+ * Admin 테이블의 JWT 토큰만 허용 (User 토큰 무시)
+ *
+ * 사용법:
+ * router.get('/admin/dashboard', adminOnlyMiddleware, controller.method);
+ */
+const adminOnlyMiddleware = async (req, res, next) => {
+    try {
+        const authHeader = req.headers.authorization;
+
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            return res.status(401).json({
+                success: false,
+                message: '관리자 인증 토큰이 없습니다.'
+            });
+        }
+
+        const token = authHeader.replace('Bearer ', '');
+
+        // JWT 검증
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+        console.log('🔓 관리자 JWT 디코딩:', decoded);
+
+        // 관리자 토큰인지 확인 (isAdmin 플래그로 구분)
+        if (!decoded.isAdmin || !decoded.adminId) {
+            return res.status(403).json({
+                success: false,
+                message: '관리자 권한이 필요합니다.'
+            });
+        }
+
+        // Admin 모델에서 관리자 확인
+        const Admin = require('../../models/Admin');
+        const admin = await Admin.findOne({
+            where: { id: decoded.adminId }
+        });
+
+        if (!admin) {
+            return res.status(401).json({
+                success: false,
+                message: '유효하지 않은 관리자입니다.'
+            });
+        }
+
+        // req.admin에 관리자 정보 저장
+        req.admin = {
+            id: admin.id,
+            username: admin.username,
+            name: admin.name
+        };
+
+        console.log('✅ 관리자 인증 성공:', req.admin);
+
+        next();
+
+    } catch (error) {
+        console.error('❌ 관리자 인증 오류:', error);
+
+        if (error.name === 'JsonWebTokenError') {
+            return res.status(401).json({
+                success: false,
+                message: '유효하지 않은 토큰입니다.'
+            });
+        }
+
+        if (error.name === 'TokenExpiredError') {
+            return res.status(401).json({
+                success: false,
+                message: '토큰이 만료되었습니다. 다시 로그인해주세요.'
+            });
+        }
+
+        res.status(500).json({
+            success: false,
+            message: '인증 처리 중 오류가 발생했습니다.'
+        });
+    }
+};
+
 module.exports = {
     authMiddleware,
     optionalAuthMiddleware,
-    adminMiddleware
+    adminMiddleware,
+    adminOnlyMiddleware
 };

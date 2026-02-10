@@ -92,6 +92,12 @@ Order.associate = function(models) {
         foreignKey: 'order_id',
         as: 'diagnosisResult'
     });
+
+    // ⭐ 새로 추가
+    Order.hasMany(models.TokenUsage, {
+        foreignKey: 'order_id',
+        as: 'tokenUsages'
+    });
 };
 
 module.exports = Order;
