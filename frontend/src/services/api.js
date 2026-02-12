@@ -86,13 +86,18 @@ export const adminAPI = {
     deleteOrder: (orderId) => api.delete(`/admin/orders/${orderId}`),
 };
 
-// ⭐ paymentAPI export 추가
 export const paymentAPI = {
+    // ✅ prepare 함수 추가!
+    prepare: (data) => api.post('/payment/prepare', data),
+
     // 결제 요청
     requestPayment: (data) => api.post('/payment/request', data),
 
     // 결제 완료 처리
     completePayment: (data) => api.post('/payment/complete', data),
+
+    // ✅ confirm 함수 추가 (토스페이먼츠 승인)
+    confirm: (data) => api.post('/payment/confirm', data),
 
     // 결제 취소
     cancelPayment: (orderId) => api.post(`/payment/cancel/${orderId}`),

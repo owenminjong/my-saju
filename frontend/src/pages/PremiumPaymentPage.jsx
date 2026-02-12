@@ -1,3 +1,5 @@
+// frontend/src/pages/PremiumPaymentPage.jsx
+
 import React, { useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { paymentAPI } from '../services/api';
@@ -7,7 +9,7 @@ function PremiumPaymentPage() {
     const navigate = useNavigate();
     const location = useLocation();
     const { sajuData, product } = location.state || {};
-    const isProcessing = useRef(false); // ✅ 중복 방지
+    const isProcessing = useRef(false);
 
     useEffect(() => {
         console.log('=== PremiumPaymentPage 마운트 ===');
@@ -18,7 +20,6 @@ function PremiumPaymentPage() {
             return;
         }
 
-        // ✅ 이미 처리 중이면 무시
         if (isProcessing.current) {
             console.log('이미 결제 처리 중...');
             return;
@@ -41,6 +42,14 @@ function PremiumPaymentPage() {
 
             console.log('결제 시작:', { product, paymentAmount });
 
+            // ✅ 1. sessionStorage에 데이터 저장 (중요!)
+            sessionStorage.setItem('premiumOrderData', JSON.stringify({
+                sajuData,
+                product
+            }));
+            console.log('✅ sessionStorage에 주문 데이터 저장 완료');
+
+            // ✅ 2. 결제 준비 API 호출
             const prepareResponse = await paymentAPI.prepare({
                 product_id: product.id,
             });
@@ -57,6 +66,7 @@ function PremiumPaymentPage() {
             console.log('토스페이먼츠 SDK 로딩...');
             const tossPayments = await loadTossPayments(clientKey);
 
+            // ✅ 3. 토스페이먼츠 결제창 호출
             await tossPayments.requestPayment('카드', {
                 amount: paymentAmount,
                 orderId: orderId,
@@ -68,6 +78,9 @@ function PremiumPaymentPage() {
 
         } catch (error) {
             console.error('결제 오류:', error);
+
+            // ✅ 에러 발생 시 sessionStorage 정리
+            sessionStorage.removeItem('premiumOrderData');
 
             if (error.code === 'USER_CANCEL') {
                 alert('결제를 취소하셨습니다.');

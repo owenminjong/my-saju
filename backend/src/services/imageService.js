@@ -30,6 +30,26 @@ function getZodiacAnimal(year) {
 }
 
 /**
+ * 천간 → 색상 매핑
+ */
+function getColorFromSky(skyChar) {
+    const colorMap = {
+        '갑': '파랑',  // 甲 - 양목
+        '을': '파랑',  // 乙 - 음목
+        '병': '빨강',  // 丙 - 양화
+        '정': '빨강',  // 丁 - 음화
+        '무': '금',    // 戊 - 양토
+        '기': '금',    // 己 - 음토
+        '경': '하양',  // 庚 - 양금 (2000년 흰 용)
+        '신': '하양',  // 辛 - 음금
+        '임': '검정',  // 壬 - 양수
+        '계': '검정'   // 癸 - 음수
+    };
+
+    return colorMap[skyChar] || '검정';
+}
+
+/**
  * 12시진 → 4시간대 매핑
  */
 function mapTimeOfDay(timeOfDay) {
@@ -94,17 +114,18 @@ function getSeason(month) {
 /**
  * 캐릭터 이미지 경로 생성
  */
-function getCharacterImagePath(gender, zodiac) {
+function getCharacterImagePath(gender, zodiac, color) {
     const genderStr = gender === 'M' ? '남' : '여';
-    const filename = `${zodiac}띠 ${genderStr}.png`;  // ✅ 언더스코어(_) → 공백( )
-    return path.join(CHARACTER_PATH, filename);
+    const folderName = `${zodiac}띠 ${genderStr}`;
+    const filename = `${color}.png`;
+    return path.join(CHARACTER_PATH, folderName, filename);
 }
 
 /**
  * 배경 이미지 경로 생성
  */
 function getBackgroundImagePath(season, timeOfDay4) {
-    const filename = `${season} ${timeOfDay4}.png`;  // ✅ 언더스코어(_) → 공백( )으로 변경
+    const filename = `${season} ${timeOfDay4}.png`;
     return path.join(BACKGROUND_PATH, filename);
 }
 
@@ -114,7 +135,7 @@ function getBackgroundImagePath(season, timeOfDay4) {
 async function createImage(bgPath, charPath, outputPath) {
     console.log('   🎨 이미지 합성 시작...');
 
-    // ✅ 1. 배경 먼저 리사이징
+    // ✅ 1. 배경 리사이징
     const resizedBg = await sharp(bgPath)
         .resize(800, 800, {
             fit: 'cover',
@@ -122,21 +143,21 @@ async function createImage(bgPath, charPath, outputPath) {
         })
         .toBuffer();
 
-    // ✅ 2. 캐릭터 리사이징 (800x800에 맞춤)
+    // ✅ 2. 캐릭터 리사이징 (크기 조절: 800 → 500~600)
     const characterBuffer = await sharp(charPath)
-        .resize(800, 800, {
+        .resize(500, 500, {  // ✅ 800 → 500으로 축소 (62.5% 크기)
             fit: 'contain',
             position: 'center',
             background: { r: 0, g: 0, b: 0, alpha: 0 }
         })
         .toBuffer();
 
-    // ✅ 3. 합성
+    // ✅ 3. 합성 (캐릭터를 하단 중앙에 배치)
     await sharp(resizedBg)
         .composite([
             {
                 input: characterBuffer,
-                gravity: 'center',
+                gravity: 'south',  // ✅ center → south (하단 중앙)
                 blend: 'over'
             }
         ])
@@ -162,20 +183,25 @@ async function generateCharacterImage(sajuData) {
 
         // 1️⃣ 데이터 계산
         const zodiac = saju?.year?.branch?.animal || getZodiacAnimal(year);
+        const skyChar = saju?.year?.stem?.char;  // 천간 가져오기
+        const color = getColorFromSky(skyChar);  // 색상 결정
+
         const season = getSeason(month);
         const timeOfDay12 = getTimeOfDay(hour || 0);
         const timeOfDay4 = mapTimeOfDay(timeOfDay12);
 
         console.log('🎨 이미지 생성 정보:');
         console.log(`   - 연도: ${year}`);
+        console.log(`   - 천간: ${skyChar}`);
+        console.log(`   - 색상: ${color}`);
         console.log(`   - 띠: ${zodiac}`);
         console.log(`   - 계절: ${season}`);
         console.log(`   - 시간(12시진): ${timeOfDay12}`);
         console.log(`   - 시간(4단계): ${timeOfDay4}`);
         console.log(`   - 성별: ${genderStr}`);
 
-        // 2️⃣ 파일명 생성 (캐시 키)
-        const outputFilename = `${season}_${timeOfDay4}_${genderStr}_${zodiac}.jpg`
+        // 2️⃣ 파일명 생성 (캐시 키에 색상 추가)
+        const outputFilename = `${season}_${timeOfDay4}_${genderStr}_${color}_${zodiac}.jpg`;
         const outputPath = path.join(OUTPUT_PATH, outputFilename);
         const webPath = `/generated-images/${outputFilename}`;
 
@@ -192,6 +218,8 @@ async function generateCharacterImage(sajuData) {
                 cached: true,
                 metadata: {
                     zodiac,
+                    color,
+                    skyChar,
                     season,
                     timeOfDay: timeOfDay4,
                     gender: genderStr
@@ -213,6 +241,8 @@ async function generateCharacterImage(sajuData) {
                 cached: true,
                 metadata: {
                     zodiac,
+                    color,
+                    skyChar,
                     season,
                     timeOfDay: timeOfDay4,
                     gender: genderStr
@@ -225,14 +255,23 @@ async function generateCharacterImage(sajuData) {
             try {
                 // 이미지 경로 확인
                 const bgPath = getBackgroundImagePath(season, timeOfDay4);
-                const charPath = getCharacterImagePath(gender, zodiac);
+                const charPath = getCharacterImagePath(gender, zodiac, color);
 
                 console.log(`   - 배경: ${bgPath}`);
                 console.log(`   - 캐릭터: ${charPath}`);
 
                 // 파일 존재 확인
-                await fs.access(bgPath);
-                await fs.access(charPath);
+                try {
+                    await fs.access(bgPath);
+                } catch {
+                    throw new Error(`배경 이미지를 찾을 수 없습니다: ${bgPath}`);
+                }
+
+                try {
+                    await fs.access(charPath);
+                } catch {
+                    throw new Error(`캐릭터 이미지를 찾을 수 없습니다: ${charPath}`);
+                }
 
                 // 이미지 생성
                 await createImage(bgPath, charPath, outputPath);
@@ -244,6 +283,8 @@ async function generateCharacterImage(sajuData) {
                     cached: false,
                     metadata: {
                         zodiac,
+                        color,
+                        skyChar,
                         season,
                         timeOfDay: timeOfDay4,
                         gender: genderStr

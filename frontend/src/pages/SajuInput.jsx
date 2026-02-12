@@ -1,6 +1,7 @@
+// frontend/src/pages/SajuInput.jsx
+
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { getFreeDiagnosis } from '../services/sajuApi';
 import { adminAPI } from '../services/api';
 import PremiumPromoCard from '../components/PremiumPromoCard';
 import './SajuInput.css';
@@ -9,7 +10,7 @@ const SajuInput = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const mode = location.state?.mode || 'free';
-    const hasAlerted = useRef(false)
+    const hasAlerted = useRef(false);
 
     const [loading, setLoading] = useState(false);
     const [product, setProduct] = useState(null);
@@ -51,7 +52,7 @@ const SajuInput = () => {
         if (mode === 'premium') {
             const token = localStorage.getItem('token');
             if (!token) {
-                if (!hasAlerted.current) {  // ✅ 한 번만 실행
+                if (!hasAlerted.current) {
                     hasAlerted.current = true;
                     alert('로그인이 필요합니다.');
                 }
@@ -65,7 +66,7 @@ const SajuInput = () => {
             }
             fetchPremiumProduct();
         }
-    }, [mode]);
+    }, [mode, navigate]);
 
     const fetchPremiumProduct = async () => {
         try {
@@ -124,7 +125,6 @@ const SajuInput = () => {
         }
     };
 
-    // ✅ Validation 체크 함수
     const validateForm = () => {
         if (!formData.name) {
             alert('성함을 입력해주세요.');
@@ -145,8 +145,10 @@ const SajuInput = () => {
         return true;
     };
 
-    // ✅ 프리미엄 결제 처리
-    const handlePremiumPayment = () => {
+    // ✅ 무료 모드 제출
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+
         if (!validateForm()) {
             return;
         }
@@ -178,46 +180,6 @@ const SajuInput = () => {
             mbti: formData.mbti
         };
 
-        console.log('💎 유료 사주 - 결제 진행');
-        navigate('/payment/premium', {
-            state: {
-                sajuData: requestData,
-                product: product
-            }
-        });
-    };
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-
-        const dateParts = formData.birthDate.split('.');
-        if (dateParts.length !== 3) {
-            alert('생년월일을 올바른 형식(YYYY.MM.DD)으로 입력해주세요.');
-            return;
-        }
-
-        const year = parseInt(dateParts[0]);
-        const month = parseInt(dateParts[1]);
-        const day = parseInt(dateParts[2]);
-
-        if (!year || !month || !day) {
-            alert('올바른 생년월일을 입력해주세요.');
-            return;
-        }
-
-        const requestData = {
-            name: formData.name,
-            year,
-            month,
-            day,
-            hour: parseInt(formData.hour),
-            minute: parseInt(formData.minute),
-            isLunar: formData.isLunar,
-            gender: formData.gender,
-            mbti: formData.mbti
-        };
-
-        // ⭐ 무료 모드: FreeGeneratePage로 이동
         console.log('🔵 무료 사주 요청:', requestData);
 
         navigate('/free/generate', {
@@ -362,25 +324,24 @@ const SajuInput = () => {
                             </p>
                         </div>
 
-                        {/* ✅ 유료 모드일 때 하단 여백 (카드 공간 확보) */}
+                        {/* ✅ 유료 모드일 때 하단 여백 */}
                         {mode === 'premium' && <div style={{ height: '300px' }}></div>}
 
-                        {/* 무료 모드일 때만 제출 버튼 표시 */}
+                        {/* ✅ 무료 모드일 때만 제출 버튼 */}
                         {mode === 'free' && (
                             <button type="submit" className="submit-btn" disabled={loading}>
                                 {loading ? '분석 중...' : '내 운명 확인하기'}
                             </button>
-                        )}ㄹ
+                        )}
                     </form>
                 </div>
             </section>
 
-            {/* ✅ 유료 모드일 때 Fixed 카드 */}
+            {/* ✅ 유료 모드: formData 전달 */}
             {mode === 'premium' && product && (
                 <PremiumPromoCard
                     sajuData={formData}
                     productInfo={product}
-                    onPaymentClick={handlePremiumPayment}
                 />
             )}
         </>

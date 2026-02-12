@@ -1,6 +1,6 @@
 // frontend/src/pages/FreeGeneratePage.jsx
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react'; // ✅ useRef 추가
 import { useNavigate, useLocation } from 'react-router-dom';
 import { getFreeDiagnosis } from '../services/sajuApi';
 import characterImage from './월하 메인 캐릭터.png';
@@ -9,6 +9,7 @@ function FreeGeneratePage() {
     const navigate = useNavigate();
     const location = useLocation();
     const { sajuData } = location.state || {};
+    const hasCalledAPI = useRef(false); // ✅ 추가
 
     const [progress, setProgress] = useState(0);
     const [message, setMessage] = useState('당신의 운명을 분석하고 있습니다...');
@@ -20,10 +21,16 @@ function FreeGeneratePage() {
             return;
         }
 
+        // ✅ 중복 실행 방지
+        if (hasCalledAPI.current) {
+            console.log('⏭️ 이미 API 호출됨 - 스킵');
+            return;
+        }
+
+        hasCalledAPI.current = true;
         console.log('🔮 무료 사주 생성 시작:', sajuData);
         generateFreeSaju();
     }, []);
-
     const generateFreeSaju = async () => {
         try {
             // 진행률 애니메이션 시작
@@ -60,7 +67,8 @@ function FreeGeneratePage() {
                             usage: response.usage,
                             uniqueId: response.uniqueId,
                             characterImage: response.characterImage,
-                            imageMetadata: response.imageMetadata
+                            imageMetadata: response.imageMetadata,
+                            metadata: response.metadata  // ✅ 추가!
                         }
                     }
                 });

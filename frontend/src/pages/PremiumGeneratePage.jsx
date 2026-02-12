@@ -1,6 +1,6 @@
 // frontend/src/pages/PremiumGeneratePage.jsx
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import characterImage from './월하 메인 캐릭터.png';
@@ -9,9 +9,10 @@ function PremiumGeneratePage() {
     const navigate = useNavigate();
     const location = useLocation();
     const { orderId, sajuData } = location.state || {};
+    const hasStarted = useRef(false); // ✅ 중복 실행 방지
 
     const [step, setStep] = useState(1);
-    const [stepMessage, setStepMessage] = useState('');
+    const [stepMessage, setStepMessage] = useState('인생 로드맵을 생성 중입니다...');
     const [progress, setProgress] = useState(0);
 
     // 🎭 단계별 메시지
@@ -22,12 +23,24 @@ function PremiumGeneratePage() {
     };
 
     useEffect(() => {
+        console.log('=== PremiumGeneratePage 데이터 확인 ===');
+        console.log('location.state:', location.state);
+        console.log('orderId:', orderId);
+        console.log('sajuData:', sajuData);
+
         if (!orderId || !sajuData) {
             alert('잘못된 접근입니다.');
             navigate('/');
             return;
         }
 
+        // ✅ 중복 실행 방지
+        if (hasStarted.current) {
+            console.log('⏭️ 이미 생성 시작됨 - 스킵');
+            return;
+        }
+
+        hasStarted.current = true;
         console.log('🎨 프리미엄 사주 생성 시작:', { orderId, sajuData });
         generatePremiumSaju();
     }, []);
@@ -42,10 +55,30 @@ function PremiumGeneratePage() {
                 return;
             }
 
-            // 진행률 애니메이션 시작
-            animateProgress();
+            console.log('📝 프리미엄 사주 생성 API 호출...');
 
-            console.log('📝 프리미엄 사주 생성 시작...');
+            // ✅ 진행률 애니메이션 시작 (30초 동안 90%까지)
+            const progressInterval = setInterval(() => {
+                setProgress(prev => {
+                    if (prev >= 90) {
+                        clearInterval(progressInterval);
+                        return 90;
+                    }
+
+                    const newProgress = prev + 3; // 3%씩 증가
+
+                    // 단계 업데이트
+                    if (newProgress >= 30 && newProgress < 60) {
+                        setStep(2);
+                        setStepMessage(stepMessages[2]);
+                    } else if (newProgress >= 60) {
+                        setStep(3);
+                        setStepMessage(stepMessages[3]);
+                    }
+
+                    return newProgress;
+                });
+            }, 1000); // 1초마다 3%씩 증가
 
             // ⭐ 실제 API 호출
             const response = await axios.post(
@@ -58,16 +91,24 @@ function PremiumGeneratePage() {
                     headers: {
                         Authorization: `Bearer ${token}`,
                         'Content-Type': 'application/json'
-                    }
+                    },
+                    withCredentials: true
                 }
             );
 
             console.log('✅ 프리미엄 진단 생성 완료:', response.data);
 
-            // 100% 도달 후 결과 페이지로 이동
+            // ✅ API 완료 후 100%로 즉시 변경
+            clearInterval(progressInterval);
+            setProgress(100);
+            setStepMessage('완료되었습니다!');
+
+            // 잠시 대기 후 결과 페이지로 이동
             setTimeout(() => {
+                // ✅ sessionStorage 정리
+                sessionStorage.removeItem('premiumOrderData');
                 navigate(`/premium/result/${response.data.diagnosisId}`);
-            }, 2000);
+            }, 1500);
 
         } catch (error) {
             console.error('❌ 프리미엄 사주 생성 오류:', error);
@@ -79,35 +120,10 @@ function PremiumGeneratePage() {
                 alert('유효하지 않은 결제입니다.');
                 navigate('/');
             } else {
-                alert('사주 생성에 실패했습니다.');
+                alert(error.response?.data?.message || '사주 생성에 실패했습니다.');
                 navigate('/');
             }
         }
-    };
-
-    // 진행률 애니메이션
-    const animateProgress = () => {
-        let currentProgress = 0;
-        const interval = setInterval(() => {
-            currentProgress = Math.min(currentProgress + 10, 100);  // ⭐ 100 제한
-
-            if (currentProgress >= 30 && currentProgress < 50) {
-                setStep(2);
-                setStepMessage(stepMessages[2]);
-            } else if (currentProgress >= 70 && currentProgress < 90) {
-                setStep(3);
-                setStepMessage(stepMessages[3]);
-            } else if (currentProgress < 30) {
-                setStep(1);
-                setStepMessage(stepMessages[1]);
-            }
-
-            setProgress(currentProgress);
-
-            if (currentProgress >= 100) {
-                clearInterval(interval);
-            }
-        }, 800); // 0.8초마다 10%씩 증가
     };
 
     return (
@@ -144,10 +160,10 @@ function PremiumGeneratePage() {
             {/* 🌙 달빛 효과 */}
             <div style={{
                 position: 'absolute',
-                top: '10%',
-                right: '10%',
-                width: '150px',
-                height: '150px',
+                top: '5%',
+                right: '5%',
+                width: '120px',
+                height: '120px',
                 borderRadius: '50%',
                 background: 'radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, transparent 70%)',
                 filter: 'blur(30px)',
@@ -159,8 +175,8 @@ function PremiumGeneratePage() {
             <div style={{
                 background: 'rgba(255, 255, 255, 0.08)',
                 backdropFilter: 'blur(20px)',
-                padding: '50px 40px',
-                borderRadius: '30px',
+                padding: '30px 25px',
+                borderRadius: '25px',
                 boxShadow: `
                     0 8px 32px rgba(0, 0, 0, 0.3),
                     inset 0 1px 0 rgba(255, 255, 255, 0.1),
@@ -168,7 +184,7 @@ function PremiumGeneratePage() {
                 `,
                 border: '1px solid rgba(255, 255, 255, 0.1)',
                 textAlign: 'center',
-                maxWidth: '500px',
+                maxWidth: '420px',
                 width: '100%',
                 position: 'relative',
                 zIndex: 1
@@ -176,18 +192,18 @@ function PremiumGeneratePage() {
                 {/* 캐릭터 + 말풍선 영역 */}
                 <div style={{
                     position: 'relative',
-                    width: '200px',
-                    height: '250px',
-                    margin: '0 auto 30px'
+                    width: '100%',
+                    height: '180px',
+                    margin: '0 auto 25px'
                 }}>
-                    {/* 캐릭터 이미지 (둥실둥실) */}
+                    {/* 캐릭터 이미지 */}
                     <div style={{
                         position: 'absolute',
-                        bottom: '-120px',
+                        bottom: '-90px',
                         left: '50%',
                         transform: 'translateX(-50%)',
-                        width: '300px',
-                        height: '300px',
+                        width: '220px',
+                        height: '220px',
                         animation: 'float 3s ease-in-out infinite'
                     }}>
                         <img
@@ -202,44 +218,45 @@ function PremiumGeneratePage() {
                         />
                     </div>
 
-                    {/* 말풍선 (캐릭터 위쪽) */}
+                    {/* 말풍선 */}
                     <div style={{
                         position: 'absolute',
                         top: '0',
                         left: '50%',
                         transform: 'translateX(-50%)',
                         background: 'rgba(255, 255, 255, 0.95)',
-                        padding: '12px 24px',
-                        borderRadius: '20px',
+                        padding: '10px 20px',
+                        borderRadius: '18px',
                         boxShadow: '0 4px 20px rgba(0,0,0,0.2)',
                         whiteSpace: 'nowrap',
-                        fontSize: '0.9rem',
+                        fontSize: '0.85rem',
                         fontWeight: '600',
                         color: '#c5a059',
                         animation: 'fadeIn 0.5s ease-in-out, bounce 2s ease-in-out infinite',
-                        border: '2px solid rgba(197, 160, 89, 0.2)'
+                        border: '2px solid rgba(197, 160, 89, 0.2)',
+                        maxWidth: '90%'
                     }}>
                         {stepMessage}
                         {/* 말풍선 꼬리 */}
                         <div style={{
                             position: 'absolute',
-                            bottom: '-12px',
+                            bottom: '-10px',
                             left: '50%',
                             transform: 'translateX(-50%)',
                             width: 0,
                             height: 0,
-                            borderLeft: '12px solid transparent',
-                            borderRight: '12px solid transparent',
-                            borderTop: '12px solid rgba(255, 255, 255, 0.95)'
+                            borderLeft: '10px solid transparent',
+                            borderRight: '10px solid transparent',
+                            borderTop: '10px solid rgba(255, 255, 255, 0.95)'
                         }}></div>
                     </div>
                 </div>
 
                 <h2 style={{
-                    fontSize: '1.8rem',
+                    fontSize: '1.5rem',
                     fontWeight: '700',
                     color: '#fff',
-                    marginBottom: '10px',
+                    marginBottom: '8px',
                     fontFamily: "'Noto Serif KR', serif",
                     textShadow: '0 2px 10px rgba(197, 160, 89, 0.5)'
                 }}>
@@ -247,10 +264,10 @@ function PremiumGeneratePage() {
                 </h2>
 
                 <p style={{
-                    fontSize: '1rem',
+                    fontSize: '0.9rem',
                     color: 'rgba(255, 255, 255, 0.7)',
-                    marginBottom: '40px',
-                    lineHeight: '1.6'
+                    marginBottom: '30px',
+                    lineHeight: '1.5'
                 }}>
                     AI가 당신의 운명을<br/>
                     상세하게 분석하고 있습니다
@@ -259,11 +276,11 @@ function PremiumGeneratePage() {
                 {/* 진행률 바 */}
                 <div style={{
                     width: '100%',
-                    height: '12px',
+                    height: '10px',
                     background: 'rgba(255, 255, 255, 0.1)',
                     borderRadius: '10px',
                     overflow: 'hidden',
-                    marginBottom: '15px',
+                    marginBottom: '12px',
                     border: '1px solid rgba(255, 255, 255, 0.1)'
                 }}>
                     <div style={{
@@ -272,17 +289,17 @@ function PremiumGeneratePage() {
                         backgroundSize: '200% 100%',
                         borderRadius: '10px',
                         width: `${progress}%`,
-                        transition: 'width 0.8s ease',
+                        transition: 'width 1s ease',
                         animation: 'shimmer 2s ease-in-out infinite',
                         boxShadow: '0 0 20px rgba(197, 160, 89, 0.5)'
                     }}></div>
                 </div>
 
                 <p style={{
-                    fontSize: '1.1rem',
+                    fontSize: '1rem',
                     color: '#f4d03f',
                     fontWeight: '700',
-                    marginBottom: '30px',
+                    marginBottom: '25px',
                     textShadow: '0 0 10px rgba(244, 208, 63, 0.5)'
                 }}>
                     {progress}%
@@ -292,19 +309,19 @@ function PremiumGeneratePage() {
                 <div style={{
                     display: 'flex',
                     justifyContent: 'center',
-                    gap: '15px',
-                    marginBottom: '30px'
+                    gap: '12px',
+                    marginBottom: '25px'
                 }}>
                     {[1, 2, 3].map(num => (
                         <div key={num} style={{
                             display: 'flex',
                             flexDirection: 'column',
                             alignItems: 'center',
-                            gap: '8px'
+                            gap: '6px'
                         }}>
                             <div style={{
-                                width: '45px',
-                                height: '45px',
+                                width: '40px',
+                                height: '40px',
                                 borderRadius: '50%',
                                 background: step >= num
                                     ? 'linear-gradient(135deg, #f4d03f 0%, #c5a059 100%)'
@@ -314,7 +331,7 @@ function PremiumGeneratePage() {
                                 justifyContent: 'center',
                                 color: step >= num ? '#1a1a2e' : 'rgba(255, 255, 255, 0.3)',
                                 fontWeight: '700',
-                                fontSize: '1.1rem',
+                                fontSize: '1rem',
                                 transition: 'all 0.5s',
                                 boxShadow: step >= num ? '0 4px 20px rgba(244, 208, 63, 0.4)' : 'none',
                                 border: step >= num ? 'none' : '2px solid rgba(255, 255, 255, 0.2)'
@@ -322,7 +339,7 @@ function PremiumGeneratePage() {
                                 {num}
                             </div>
                             <span style={{
-                                fontSize: '0.75rem',
+                                fontSize: '0.7rem',
                                 color: step >= num ? '#f4d03f' : 'rgba(255, 255, 255, 0.5)',
                                 fontWeight: step >= num ? '600' : '400',
                                 textShadow: step >= num ? '0 0 10px rgba(244, 208, 63, 0.3)' : 'none'
@@ -335,19 +352,19 @@ function PremiumGeneratePage() {
 
                 {/* 안내 문구 */}
                 <div style={{
-                    padding: '20px',
+                    padding: '18px',
                     background: 'rgba(197, 160, 89, 0.1)',
                     borderRadius: '15px',
                     border: '1px solid rgba(197, 160, 89, 0.3)'
                 }}>
                     <p style={{
-                        fontSize: '0.9rem',
+                        fontSize: '0.85rem',
                         color: 'rgba(255, 255, 255, 0.9)',
                         lineHeight: '1.6',
                         margin: 0
                     }}>
                         💎 프리미엄 풀코스 진단<br/>
-                        <strong style={{ color: '#f4d03f' }}>A4 5장 이상</strong>의 상세한 분석 결과를 제공합니다.<br/>
+                        <strong style={{ color: '#f4d03f' }}>A4 5장 이상</strong>의 상세한 분석<br/>
                         <span style={{ color: '#f4d03f', fontWeight: '600' }}>
                             예상 소요 시간: 1~2분
                         </span>
@@ -361,7 +378,7 @@ function PremiumGeneratePage() {
                         transform: translateX(-50%) translateY(0px);
                     }
                     50% {
-                        transform: translateX(-50%) translateY(-25px);
+                        transform: translateX(-50%) translateY(-20px);
                     }
                 }
 
@@ -412,6 +429,15 @@ function PremiumGeneratePage() {
                     100% {
                         background-position: 200% 0;
                     }
+                }
+
+                /* ✅ 모바일 최적화 */
+                @media (max-height: 667px) {
+                    /* 작은 화면에서 컴팩트하게 */
+                }
+
+                @media (max-width: 360px) {
+                    /* 초소형 화면 대응 */
                 }
             `}</style>
         </div>

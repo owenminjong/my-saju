@@ -7,7 +7,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import {Home, Crown, Share2} from 'lucide-react';
 import './SajuResult.css';
-import ShareModal from "../components/ShareModal";  // ⭐ 무료 결과 페이지와 동일한 CSS 사용
+import ShareModal from "../components/ShareModal";
 
 function PremiumResult() {
     const { diagnosisId } = useParams();
@@ -15,6 +15,7 @@ function PremiumResult() {
     const [result, setResult] = useState(null);
     const [showShareModal, setShowShareModal] = useState(false);
     const [loading, setLoading] = useState(true);
+    const [imageError, setImageError] = useState(false); // ✅ 추가
 
     useEffect(() => {
         loadResult();
@@ -46,6 +47,7 @@ function PremiumResult() {
             console.log('✅ 전체 응답:', response.data);
             console.log('📊 결과 데이터:', response.data.result);
             console.log('📝 진단 내용:', response.data.result.diagnosis);
+            console.log('🎨 캐릭터 이미지:', response.data.result.characterImage); // ✅ 추가
 
             setResult(response.data.result);
             setLoading(false);
@@ -107,6 +109,9 @@ function PremiumResult() {
     // ⭐ 진단 내용을 3개 섹션으로 분리
     const sections = result.diagnosis.split('---').map(s => s.trim()).filter(Boolean);
 
+    // ✅ 캐릭터 이미지 경로
+    const characterImage = result.characterImage || result.character_image;
+
     return (
         <div className="result-page">
             <div className="container">
@@ -130,10 +135,30 @@ function PremiumResult() {
                     </div>
                 </div>
 
-                {/* 프리미엄 캐릭터 카드 */}
+                {/* ✅ 프리미엄 캐릭터 카드 (이미지 추가) */}
                 <div className="char-card" style={{
-                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+                    background: characterImage && !imageError
+                        ? 'transparent'
+                        : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
                 }}>
+                    {/* ✅ 캐릭터 이미지 */}
+                    {characterImage && !imageError && (
+                        <img
+                            src={`http://localhost:5000${characterImage}`}
+                            className="char-img"
+                            alt="운명 캐릭터"
+                            onError={() => {
+                                console.error('❌ 이미지 로드 실패:', characterImage);
+                                setImageError(true);
+                            }}
+                            style={{
+                                width: '100%',
+                                height: '100%',
+                                objectFit: 'cover'
+                            }}
+                        />
+                    )}
+
                     <div className="char-overlay">
                         <Crown size={32} style={{
                             color: '#ffd700',
@@ -153,7 +178,6 @@ function PremiumResult() {
                     onClose={() => setShowShareModal(false)}
                     resultData={result}
                 />
-
 
                 {/* 진단 내용 (3개 섹션) */}
                 {sections.map((section, index) => {
@@ -234,7 +258,7 @@ function PremiumResult() {
                 {result.order && (
                     <div className="usage-info">
                         <p>
-                            💎 프리미엄 풀코스 진단
+                            💎 프리미엄 풀코스 진단 <br/>
                             결제 금액: {result.order.amount?.toLocaleString()}원 <br/>
                             생성 일시: {new Date(result.createdAt).toLocaleString('ko-KR')}
                         </p>

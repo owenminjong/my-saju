@@ -129,8 +129,6 @@ const generateFreeDiagnosis = async (req, res) => {
     }
 };
 
-// diagnosisController.js 마지막에 추가
-
 const {
     getAllPremiumPrompts,
     generateStep1Prompt,
@@ -193,7 +191,34 @@ const generatePremiumDiagnosis = async (req, res) => {
 
         console.log('✅ 사주 계산 완료\n');
 
-        // 3️⃣ 프리미엄 프롬프트 3개 가져오기
+        // 3️⃣ ✅ 캐릭터 이미지 생성 추가!
+        console.log('🎨 캐릭터 이미지 생성 중...');
+        let characterImage = null;
+        let imageMetadata = null;
+
+        try {
+            const imageResult = await generateCharacterImage({
+                user: {
+                    ...sajuResult.user,
+                    gender: sajuData.gender || 'M'
+                },
+                year: sajuData.year,
+                month: sajuData.month,
+                hour: sajuData.hour || 0,
+                saju: sajuResult.saju
+            });
+
+            if (imageResult.success) {
+                characterImage = imageResult.imagePath;
+                imageMetadata = imageResult.metadata;
+                console.log('✅ 이미지 생성 완료:', characterImage);
+            }
+        } catch (imageError) {
+            console.error('⚠️ 이미지 생성 실패:', imageError.message);
+            // 이미지 생성 실패해도 진단은 계속 진행
+        }
+
+        // 4️⃣ 프리미엄 프롬프트 3개 가져오기
         console.log('📥 프리미엄 프롬프트 로딩 중...');
         const prompts = await getAllPremiumPrompts();
         console.log(`✅ 프롬프트 로딩 완료`);
@@ -201,7 +226,7 @@ const generatePremiumDiagnosis = async (req, res) => {
         console.log(`  Step 2: ${prompts.step2.name} (${prompts.step2.estimated_tokens} 토큰)`);
         console.log(`  Step 3: ${prompts.step3.name} (${prompts.step3.estimated_tokens} 토큰)\n`);
 
-        // 4️⃣ Step 1: 인생 로드맵
+        // 5️⃣ Step 1: 인생 로드맵
         console.log('📝 Step 1: 인생 로드맵 생성 중...');
         const step1Prompt = generateStep1Prompt(sajuResult, prompts.step1);
         const step1Result = await callClaudeAPIPremium(
@@ -212,7 +237,7 @@ const generatePremiumDiagnosis = async (req, res) => {
         );
         console.log('✅ Step 1 완료\n');
 
-        // 5️⃣ Step 2: 3대 핵심 분야
+        // 6️⃣ Step 2: 3대 핵심 분야
         console.log('📝 Step 2: 3대 핵심 분야 분석 중...');
         const step2Prompt = generateStep2Prompt(sajuResult, prompts.step2, step1Result.text);
         const step2Result = await callClaudeAPIPremium(
@@ -223,7 +248,7 @@ const generatePremiumDiagnosis = async (req, res) => {
         );
         console.log('✅ Step 2 완료\n');
 
-        // 6️⃣ Step 3: 월간 캘린더
+        // 7️⃣ Step 3: 월간 캘린더
         console.log('📝 Step 3: 월간 캘린더 생성 중...');
         const step3Prompt = generateStep3Prompt(sajuResult, prompts.step3, step1Result.text, step2Result.text);
         const step3Result = await callClaudeAPIPremium(
@@ -234,7 +259,7 @@ const generatePremiumDiagnosis = async (req, res) => {
         );
         console.log('✅ Step 3 완료\n');
 
-        // 7️⃣ 3개 결과 합치기
+        // 8️⃣ 3개 결과 합치기
         const fullDiagnosis = `# Step 1: 인생 로드맵
 
 ${step1Result.text}
@@ -251,10 +276,10 @@ ${step2Result.text}
 
 ${step3Result.text}`;
 
-        // 8️⃣ input_hash 생성
+        // 9️⃣ input_hash 생성
         const inputHash = generateInputHash(sajuResult, sajuData.mbti);
 
-        // 9️⃣ DB 저장
+        // 🔟 ✅ DB 저장 (이미지 포함!)
         console.log('💾 DB 저장 중...');
         const diagnosisResult = await DiagnosisResult.create({
             user_id: userId,
@@ -267,6 +292,8 @@ ${step3Result.text}`;
             mbti: sajuData.mbti,
             saju_data: sajuResult,
             premium_diagnosis: fullDiagnosis,
+            character_image: characterImage,     // ✅ 이미지 경로
+            image_metadata: imageMetadata,       // ✅ 메타데이터
             diagnosis_type: 'premium'
         });
 
@@ -275,7 +302,7 @@ ${step3Result.text}`;
         console.log('🎉 프리미엄 진단 생성 완료!');
         console.log('='.repeat(80) + '\n');
 
-        // 🔟 응답
+        // 1️⃣1️⃣ 응답
         res.json({
             success: true,
             message: '프리미엄 진단이 완료되었습니다.',
@@ -343,6 +370,8 @@ const getPremiumResult = async (req, res) => {
                 mbti: result.mbti,
                 sajuData: result.saju_data,
                 diagnosis: result.premium_diagnosis,
+                characterImage: result.character_image,     // ✅ 이미지 추가
+                imageMetadata: result.image_metadata,       // ✅ 메타데이터 추가
                 order: result.order,
                 createdAt: result.created_at
             }
@@ -379,7 +408,7 @@ const getMyResults = async (req, res) => {
                 attributes: ['order_id', 'amount', 'created_at']
             }],
             order: [['created_at', 'DESC']],
-            attributes: ['id', 'name', 'created_at', 'birth_date', 'mbti']
+            attributes: ['id', 'name', 'created_at', 'birth_date', 'mbti', 'character_image'] // ✅ 이미지 추가
         });
 
         console.log(`✅ ${results.length}건 조회 완료`);
@@ -392,6 +421,7 @@ const getMyResults = async (req, res) => {
                 name: r.name,
                 birthDate: r.birth_date,
                 mbti: r.mbti,
+                characterImage: r.character_image,  // ✅ 이미지 추가
                 createdAt: r.created_at,
                 amount: r.order?.amount || 0,
                 orderDate: r.order?.created_at
@@ -416,10 +446,9 @@ function generateInputHash(sajuData, mbti) {
     return crypto.createHash('sha256').update(hashString).digest('hex');
 }
 
-// ⭐ export에 추가
 module.exports = {
     generateFreeDiagnosis,
-    generatePremiumDiagnosis,  // ⭐ 추가
-    getPremiumResult,          // ⭐ 추가
-    getMyResults               // ⭐ 추가
+    generatePremiumDiagnosis,
+    getPremiumResult,
+    getMyResults
 };

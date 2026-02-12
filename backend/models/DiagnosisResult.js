@@ -1,3 +1,5 @@
+// backend/src/models/DiagnosisResult.js
+
 const { DataTypes } = require('sequelize');
 const { sequelize } = require('./sequelize');
 
@@ -48,6 +50,16 @@ const DiagnosisResult = sequelize.define('diagnosis_results', {
         type: DataTypes.TEXT,
         allowNull: true
     },
+    // ✅ 추가!
+    character_image: {
+        type: DataTypes.STRING(255),
+        allowNull: true
+    },
+    // ✅ 추가!
+    image_metadata: {
+        type: DataTypes.JSON,
+        allowNull: true
+    },
     diagnosis_type: {
         type: DataTypes.ENUM('free', 'premium'),
         allowNull: true
@@ -74,13 +86,11 @@ const DiagnosisResult = sequelize.define('diagnosis_results', {
 });
 
 DiagnosisResult.associate = function(models) {
-    // DiagnosisResult는 한 명의 User에게 속함
     DiagnosisResult.belongsTo(models.User, {
         foreignKey: 'user_id',
         as: 'user'
     });
 
-    // DiagnosisResult는 한 개의 Order에 속함
     DiagnosisResult.belongsTo(models.Order, {
         foreignKey: 'order_id',
         as: 'order'
