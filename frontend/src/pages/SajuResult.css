@@ -288,11 +288,13 @@
     overflow-x: auto;
     margin: 16px 0;
     -webkit-overflow-scrolling: touch;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .content-table {
     width: 100%;
-    min-width: 300px;
+    min-width: 100%;  /* ✅ 300px → 100% */
     border-collapse: collapse;
     background: rgba(255, 255, 255, 0.05);
     font-size: 0.85rem;
@@ -307,17 +309,37 @@
 }
 
 .table-header {
-    padding: 10px 12px;
+    padding: 10px 8px;  /* ✅ 12px → 8px */
     text-align: left;
     color: var(--text-main);
     font-weight: 700;
-    font-size: 0.85rem;
+    font-size: 0.8rem;  /* ✅ 0.85rem → 0.8rem */
+    white-space: nowrap;  /* ✅ 추가: 헤더 줄바꿈 방지 */
 }
 
 .table-cell {
-    padding: 10px 12px;
+    padding: 10px 8px;  /* ✅ 12px → 8px */
     color: #cbd5e1;
-    font-size: 0.85rem;
+    font-size: 0.8rem;  /* ✅ 0.85rem → 0.8rem */
+    line-height: 1.5;  /* ✅ 추가 */
+    word-break: keep-all;  /* ✅ 추가: 한글 단어 단위 줄바꿈 */
+}
+
+/* ✅ 모바일에서 테이블 더 작게 */
+@media (max-width: 480px) {
+    .content-table {
+        font-size: 0.75rem;
+    }
+
+    .table-header {
+        padding: 8px 6px;
+        font-size: 0.75rem;
+    }
+
+    .table-cell {
+        padding: 8px 6px;
+        font-size: 0.75rem;
+    }
 }
 
 /* ========== 오행 분석 ========== */

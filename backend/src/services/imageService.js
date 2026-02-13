@@ -46,28 +46,26 @@ function getColorFromSky(skyChar) {
         '계': '검정'   // 癸 - 음수
     };
 
-    return colorMap[skyChar] || '검정';
+    return colorMap[skyChar];
 }
 
 /**
  * 12시진 → 4시간대 매핑
  */
-function mapTimeOfDay(timeOfDay) {
-    const timeMap = {
-        '자시': '밤',    // 23-01
-        '축시': '밤',    // 01-03
-        '인시': '아침',  // 03-05
-        '묘시': '아침',  // 05-07
-        '진시': '아침',  // 07-09
-        '사시': '낮',    // 09-11
-        '오시': '낮',    // 11-13
-        '미시': '낮',    // 13-15
-        '신시': '낮',    // 15-17
-        '유시': '저녁',  // 17-19
-        '술시': '저녁',  // 19-21
-        '해시': '밤'     // 21-23
-    };
-    return timeMap[timeOfDay] || '낮';
+function getTimeOfDayDirect(hour) {
+    // 밤: 21-01시 (해시, 자시, 축시)
+    if (hour >= 21 || hour < 3) return '밤';
+
+    // 아침: 03-09시 (인시, 묘시, 진시)
+    if (hour >= 3 && hour < 9) return '아침';
+
+    // 낮: 09-17시 (사시, 오시, 미시, 신시)
+    if (hour >= 9 && hour < 17) return '낮';
+
+    // 저녁: 17-21시 (유시, 술시)
+    if (hour >= 17 && hour < 21) return '저녁';
+
+    return '낮'; // 기본값
 }
 
 /**
@@ -188,7 +186,7 @@ async function generateCharacterImage(sajuData) {
 
         const season = getSeason(month);
         const timeOfDay12 = getTimeOfDay(hour || 0);
-        const timeOfDay4 = mapTimeOfDay(timeOfDay12);
+        const timeOfDay4 = getTimeOfDayDirect(hour || 0);
 
         console.log('🎨 이미지 생성 정보:');
         console.log(`   - 연도: ${year}`);
