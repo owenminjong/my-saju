@@ -21,6 +21,28 @@ exports.getProducts = async (req, res) => {
     }
 };
 
+exports.getActiveProducts = async (req, res) => {
+    try {
+        const products = await Product.findAll({
+            where: { is_active: true },
+            order: [['created_at', 'DESC']]
+        });
+
+        res.json({
+            success: true,
+            data: products
+        });
+
+    } catch (error) {
+        console.error('활성 상품 조회 오류:', error);
+        res.status(500).json({
+            success: false,
+            message: '상품 조회에 실패했습니다.'
+        });
+    }
+};
+
+
 // 상품 상세 조회
 exports.getProductDetail = async (req, res) => {
     try {

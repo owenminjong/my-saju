@@ -99,24 +99,46 @@ function SharedResult() {
         );
     }
 
-    // ✅ 데이터 파싱 - API 응답 구조에 맞게 수정
+    // ✅ imageMetadata 파싱 (문자열이면 JSON.parse)
+    let imageMetadata = resultData?.imageMetadata;
+    if (typeof imageMetadata === 'string') {
+        try {
+            imageMetadata = JSON.parse(imageMetadata);
+            console.log('✅ imageMetadata 파싱:', imageMetadata);
+        } catch (error) {
+            console.error('❌ imageMetadata 파싱 실패:', error);
+            imageMetadata = {};
+        }
+    }
+
+// ✅ 데이터 파싱 - API 응답 구조에 맞게 수정
     const originalName = resultData?.user?.name || '익명';
     const maskedName = maskName(originalName);
 
-    // ✅ metadata.character에서 띠 정보 추출 (예: "흰 호랑이띠 · 여름 · 아침")
+// ✅ metadata.character에서 띠 정보 추출 (예: "흰 호랑이띠 · 여름 · 아침")
     const characterString = resultData?.metadata?.character || '';
     const animalMatch = characterString.match(/([가-힣]+)띠/);
-    const animal = animalMatch ? animalMatch[1] : (resultData?.imageMetadata?.zodiac || '용');
+    const animal = animalMatch ? animalMatch[1] : (imageMetadata?.zodiac);
 
-    // ✅ fields에서 등급 가져오기
-    const grades = resultData?.fields || {};
+// ✅ fields 데이터 정규화 (객체면 grade 추출, 문자열이면 그대로)
+    const normalizeFields = (fields) => {
+        if (!fields) return { wealth: 'C', career: 'C', love: 'C', health: 'C' };
 
-    // ✅ metadata.character에서 계절과 시간대 추출
+        const normalized = {};
+        for (const [key, value] of Object.entries(fields)) {
+            // 객체면 grade 추출, 문자열이면 그대로
+            normalized[key] = typeof value === 'object' ? (value.grade || 'C') : value;
+        }
+        return normalized;
+    };
+
+    const grades = normalizeFields(resultData?.fields);
+
+// ✅ metadata.character에서 계절과 시간대 추출
     const seasonMatch = characterString.match(/띠\s*·\s*([가-힣]+)\s*·/);
     const timeMatch = characterString.match(/·\s*([가-힣]+)$/);
-    const season = seasonMatch ? seasonMatch[1] : (resultData?.imageMetadata?.season || '봄');
-    const timeOfDay = timeMatch ? timeMatch[1] : (resultData?.imageMetadata?.timeOfDay || '낮');
-
+    const season = seasonMatch ? seasonMatch[1] : (imageMetadata?.season);
+    const timeOfDay = timeMatch ? timeMatch[1] : (imageMetadata?.timeOfDay);
     // 등급별 색상
     const getGradeColor = (grade) => {
         switch (grade) {
@@ -229,7 +251,7 @@ function SharedResult() {
                             <div className={`${getGradeBg(grades.wealth)} rounded-xl sm:rounded-2xl p-3 sm:p-4 text-center border transition-all hover:scale-105 active:scale-95`}>
                                 <div className="text-white/70 text-xs sm:text-sm mb-1 sm:mb-2">재물운</div>
                                 <div className={`text-3xl sm:text-4xl font-bold ${getGradeColor(grades.wealth)}`}>
-                                    {grades.wealth || 'C'}
+                                    {grades.wealth}
                                 </div>
                             </div>
 
@@ -237,7 +259,7 @@ function SharedResult() {
                             <div className={`${getGradeBg(grades.career)} rounded-xl sm:rounded-2xl p-3 sm:p-4 text-center border transition-all hover:scale-105 active:scale-95`}>
                                 <div className="text-white/70 text-xs sm:text-sm mb-1 sm:mb-2">직업운</div>
                                 <div className={`text-3xl sm:text-4xl font-bold ${getGradeColor(grades.career)}`}>
-                                    {grades.career || 'C'}
+                                    {grades.career}
                                 </div>
                             </div>
 
@@ -245,7 +267,7 @@ function SharedResult() {
                             <div className={`${getGradeBg(grades.love)} rounded-xl sm:rounded-2xl p-3 sm:p-4 text-center border transition-all hover:scale-105 active:scale-95`}>
                                 <div className="text-white/70 text-xs sm:text-sm mb-1 sm:mb-2">연애운</div>
                                 <div className={`text-3xl sm:text-4xl font-bold ${getGradeColor(grades.love)}`}>
-                                    {grades.love || 'C'}
+                                    {grades.love}
                                 </div>
                             </div>
 
@@ -253,7 +275,7 @@ function SharedResult() {
                             <div className={`${getGradeBg(grades.health)} rounded-xl sm:rounded-2xl p-3 sm:p-4 text-center border transition-all hover:scale-105 active:scale-95`}>
                                 <div className="text-white/70 text-xs sm:text-sm mb-1 sm:mb-2">건강운</div>
                                 <div className={`text-3xl sm:text-4xl font-bold ${getGradeColor(grades.health)}`}>
-                                    {grades.health || 'C'}
+                                    {grades.health}
                                 </div>
                             </div>
                         </div>

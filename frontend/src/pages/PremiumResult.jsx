@@ -5,9 +5,11 @@ import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import {Home, Crown, Share2} from 'lucide-react';
+import SajuTable from '../components/SajuTable';
+import ElementChart from '../components/ElementChart';
+import ShareModal from '../components/ShareModal';
+import { Home, Crown, Share2, AlertTriangle } from 'lucide-react';
 import './SajuResult.css';
-import ShareModal from "../components/ShareModal";
 
 function PremiumResult() {
     const { diagnosisId } = useParams();
@@ -15,7 +17,7 @@ function PremiumResult() {
     const [result, setResult] = useState(null);
     const [showShareModal, setShowShareModal] = useState(false);
     const [loading, setLoading] = useState(true);
-    const [imageError, setImageError] = useState(false); // ✅ 추가
+    const [imageError, setImageError] = useState(false);
 
     useEffect(() => {
         loadResult();
@@ -45,16 +47,13 @@ function PremiumResult() {
             );
 
             console.log('✅ 전체 응답:', response.data);
-            console.log('📊 결과 데이터:', response.data.result);
-            console.log('📝 진단 내용:', response.data.result.diagnosis);
-            console.log('🎨 캐릭터 이미지:', response.data.result.characterImage); // ✅ 추가
+            console.log('📊 사주 데이터:', response.data.result.sajuData);
 
             setResult(response.data.result);
             setLoading(false);
 
         } catch (error) {
             console.error('❌ 결과 조회 실패:', error);
-            console.error('❌ 에러 응답:', error.response?.data);
 
             if (error.response?.status === 403) {
                 alert('접근 권한이 없습니다.');
@@ -106,19 +105,55 @@ function PremiumResult() {
         return null;
     }
 
-    // ⭐ 진단 내용을 3개 섹션으로 분리
+// ✅ sajuData 파싱 (문자열이면 JSON.parse)
+    let sajuData = result.sajuData || {};
+
+    if (typeof sajuData === 'string') {
+        try {
+            sajuData = JSON.parse(sajuData);
+            console.log('✅ sajuData 파싱 완료:', sajuData);
+        } catch (error) {
+            console.error('❌ sajuData 파싱 실패:', error);
+            sajuData = {};
+        }
+    }
+
+    const { user, saju, elements } = sajuData;
+
+// ✅ ShareModal에 전달할 데이터 재구성
+    const shareData = {
+        user: sajuData.user,
+        saju: sajuData.saju,
+        elements: sajuData.elements,
+        fields: sajuData.fields,
+        metadata: {
+            userName: result.name,
+            mbti: result.mbti,
+            grades: sajuData.fields
+        },
+        characterImage: result.characterImage,
+        imageMetadata: result.imageMetadata,
+        name: result.name,
+        birthDate: result.birthDate,
+        birthTime: result.birthTime,
+        gender: result.gender
+    };
+
+// ✅ 프리미엄 진단을 3개 섹션으로 분리
     const sections = result.diagnosis.split('---').map(s => s.trim()).filter(Boolean);
 
-    // ✅ 캐릭터 이미지 경로
+// ✅ 캐릭터 이미지 경로
     const characterImage = result.characterImage || result.character_image;
-
     return (
         <div className="result-page">
             <div className="container">
                 {/* 상단 네비게이션 */}
                 <div className="top-header">
                     <div className="nav-bar">
-                        <span className="nav-logo">月下 PREMIUM</span>
+                        <span className="nav-logo">
+                            <Crown size={20} style={{ display: 'inline', verticalAlign: 'middle', marginRight: '4px', color: '#ffd700' }} />
+                            月下 PREMIUM
+                        </span>
                         <div className="nav-actions">
                             <button
                                 onClick={() => setShowShareModal(true)}
@@ -135,30 +170,17 @@ function PremiumResult() {
                     </div>
                 </div>
 
-                {/* ✅ 프리미엄 캐릭터 카드 (이미지 추가) */}
-                <div className="char-card" style={{
-                    background: characterImage && !imageError
-                        ? 'transparent'
-                        : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-                }}>
-                    {/* ✅ 캐릭터 이미지 */}
-                    {characterImage && !imageError && (
-                        <img
-                            src={`http://localhost:5000${characterImage}`}
-                            className="char-img"
-                            alt="운명 캐릭터"
-                            onError={() => {
-                                console.error('❌ 이미지 로드 실패:', characterImage);
-                                setImageError(true);
-                            }}
-                            style={{
-                                width: '100%',
-                                height: '100%',
-                                objectFit: 'cover'
-                            }}
-                        />
-                    )}
-
+                {/* 캐릭터 카드 */}
+                <div className="char-card">
+                    <img
+                        src={!imageError && characterImage
+                            ? `http://localhost:5000${characterImage}`
+                            : "https://images.unsplash.com/photo-1548712393-27c9b837267f?q=80&w=1000&auto=format&fit=crop"
+                        }
+                        className="char-img"
+                        alt="운명 캐릭터"
+                        onError={() => setImageError(true)}
+                    />
                     <div className="char-overlay">
                         <Crown size={32} style={{
                             color: '#ffd700',
@@ -176,12 +198,65 @@ function PremiumResult() {
                 <ShareModal
                     isOpen={showShareModal}
                     onClose={() => setShowShareModal(false)}
-                    resultData={result}
+                    resultData={shareData}
                 />
 
-                {/* 진단 내용 (3개 섹션) */}
+                {/* 📋 사주팔자 표 */}
+                {saju && (
+                    <div className="result-box">
+                        <div className="box-title">
+                            <span className="title-icon">📋</span>
+                            사주팔자
+                        </div>
+                        <SajuTable saju={saju}/>
+                    </div>
+                )}
+
+                {/* 🔮 오행 분석 */}
+                {elements && (
+                    <div className="result-box">
+                        <div className="box-title">
+                            <span className="title-icon">🔮</span>
+                            오행 분석
+                        </div>
+                        <ElementChart elements={elements}/>
+                        <div className="element-list">
+                            {elements?.chart?.map((element) => (
+                                <div key={element.element} className="element-item">
+                                    <div className="element-info">
+                                        <div
+                                            className="element-dot"
+                                            style={{backgroundColor: element.color}}
+                                        ></div>
+                                        <span className="element-name">
+                                            {element.element}
+                                            <span className="element-subname">({element.name})</span>
+                                        </span>
+                                    </div>
+                                    <div className="element-stats">
+                                        <span className="element-count">
+                                            {elements.distribution[element.element]}개
+                                        </span>
+                                        <span className="element-percentage">
+                                            {element.percentage}%
+                                        </span>
+                                        <span className={`element-status status-${
+                                            elements.status[element.element] === '과다' ? 'excess' :
+                                                elements.status[element.element] === '발달' ? 'develop' :
+                                                    elements.status[element.element] === '적정' ? 'normal' :
+                                                        elements.status[element.element] === '부족' ? 'lack' : 'none'
+                                        }`}>
+                                            {elements.status[element.element]}
+                                        </span>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
+                {/* 💎 프리미엄 진단 3단계 */}
                 {sections.map((section, index) => {
-                    // 섹션 제목 추출
                     const titleMatch = section.match(/^#\s+(.+)/m);
                     const sectionTitle = titleMatch ? titleMatch[1] : `Step ${index + 1}`;
 
@@ -202,26 +277,49 @@ function PremiumResult() {
                                     remarkPlugins={[remarkGfm]}
                                     components={{
                                         h1: ({node, ...props}) => (
-                                            <h2 className="section-heading" {...props} />
+                                            <h2 className="section-heading" style={{fontSize: '1.3rem', marginTop: '0'}} {...props} />
                                         ),
-                                        h2: ({node, ...props}) => (
-                                            <h2 className="section-heading" {...props} />
-                                        ),
+                                        h2: ({node, children, ...props}) => {
+                                            const text = String(children);
+
+                                            if (text.includes('위기') || text.includes('🚨')) {
+                                                return (
+                                                    <div className="crisis-box" style={{marginTop: '24px', marginBottom: '0'}}>
+                                                        <div className="crisis-header">
+                                                            <AlertTriangle size={22} className="crisis-icon"/>
+                                                            <span className="crisis-title">{text.replace(/^\d+\.\s*/, '').replace('🚨', '').trim()}</span>
+                                                        </div>
+                                                    </div>
+                                                );
+                                            }
+
+                                            return <h2 className="section-heading" {...props}>{children}</h2>;
+                                        },
                                         h3: ({node, ...props}) => (
                                             <h3 className="section-subheading" {...props} />
                                         ),
-                                        p: ({node, ...props}) => (
-                                            <p className="section-paragraph" {...props} />
-                                        ),
+                                        p: ({node, children, ...props}) => {
+                                            const text = String(children);
+
+                                            if (text.includes('**') && (text.includes('월:') || text.includes('월 :'))) {
+                                                return <p className="crisis-paragraph" {...props}>{children}</p>;
+                                            }
+
+                                            return <p className="section-paragraph" {...props}>{children}</p>;
+                                        },
                                         ul: ({node, ...props}) => (
                                             <ul className="section-list" {...props} />
                                         ),
                                         ol: ({node, ...props}) => (
                                             <ol className="section-ordered-list" {...props} />
                                         ),
-                                        strong: ({node, ...props}) => (
-                                            <strong className="highlight-text" {...props} />
-                                        ),
+                                        strong: ({node, children, ...props}) => {
+                                            const text = String(children);
+                                            if (text.includes('월:') || text.includes('월 :')) {
+                                                return <strong className="crisis-highlight" {...props}>{children}</strong>;
+                                            }
+                                            return <strong className="highlight-text" {...props}>{children}</strong>;
+                                        },
                                         table: ({node, ...props}) => (
                                             <div className="table-wrapper">
                                                 <table className="content-table" {...props} />
@@ -266,7 +364,7 @@ function PremiumResult() {
                 )}
 
                 {/* 하단 여백 */}
-                <div style={{ height: '60px' }}></div>
+                <div className="bottom-spacer"></div>
             </div>
         </div>
     );

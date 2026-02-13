@@ -8,7 +8,7 @@ import ElementChart from '../components/ElementChart';
 import ShareModal from '../components/ShareModal';
 import PremiumPromoCard from '../components/PremiumPromoCard';
 import { Share2, Home, AlertTriangle } from 'lucide-react';
-import { adminAPI } from '../services/api';
+import { userAPI  } from '../services/api';
 import './SajuResult.css';
 
 function SajuResult() {
@@ -24,7 +24,7 @@ function SajuResult() {
 
     const fetchPremiumProduct = useCallback(async () => {
         try {
-            const response = await adminAPI.getProducts();
+            const response = await userAPI.getActiveProducts();  // ✅ 변경!
             const premiumProduct = response.data.data.find(
                 p => p.name.includes('프리미엄') && p.is_active
             );
@@ -33,12 +33,8 @@ function SajuResult() {
             }
         } catch (error) {
             console.error('상품 조회 실패:', error);
-            setProduct({
-                price: 50000,
-                discount_price: 29900,
-                discount_rate: 40,
-                promotion_active: 1
-            });
+            // ✅ 에러 시에도 기본값 대신 null (카드 숨김)
+            setProduct(null);
         }
     }, []);
 

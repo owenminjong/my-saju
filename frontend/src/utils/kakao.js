@@ -48,18 +48,11 @@ export const createShareUrl = async () => {
 
         if (data.success) {
             const encodedData = data.data.encodedData;
-
-            // ✅ 훨씬 짧아진 URL
             const shareUrl = `http://localhost:3000/r/${encodedData}`;
-
-            return {
-                encodedData: encodedData,
-                shareUrl: shareUrl
-            };
+            return { encodedData, shareUrl };
         } else {
             throw new Error(data.message);
         }
-
     } catch (error) {
         console.error('공유 URL 생성 실패:', error);
         throw error;
@@ -67,11 +60,38 @@ export const createShareUrl = async () => {
 };
 
 /**
- * 카카오톡 공유 (모바일 최적화)
+ * ✅ 공유 URL 생성 (프리미엄: 데이터 직접 전달)
  */
-// frontend/src/utils/kakao.js
+export const createShareUrlWithData = async (resultData) => {
+    try {
+        const response = await fetch('http://localhost:5000/api/share/encode-hash', {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ resultData })
+        });
 
-export const shareKakao = async (resultData) => {
+        const data = await response.json();
+
+        if (data.success) {
+            const encodedData = data.data.encodedData;
+            const shareUrl = `http://localhost:3000/r/${encodedData}`;
+            return { encodedData, shareUrl };
+        } else {
+            throw new Error(data.message);
+        }
+    } catch (error) {
+        console.error('공유 URL 생성 실패:', error);
+        throw error;
+    }
+};
+
+/**
+ * 카카오톡 공유 (무료 & 프리미엄 통합)
+ */
+export const shareKakao = async (resultData = null) => {
     await initKakao();
 
     if (!window.Kakao || !window.Kakao.isInitialized()) {
@@ -80,18 +100,21 @@ export const shareKakao = async (resultData) => {
     }
 
     try {
-        const { shareUrl } = await createShareUrl();
+        // ✅ resultData가 있으면 프리미엄, 없으면 무료
+        const { shareUrl } = resultData
+            ? await createShareUrlWithData(resultData)
+            : await createShareUrl();
 
-        const name = resultData.user?.name || resultData.metadata?.userName || '익명';
-        const animal = resultData.saju?.year?.branch?.animal || '용';
-        const birthDate = resultData.user?.birthDate || '';
+        const name = resultData?.user?.name || resultData?.metadata?.userName || resultData?.name || '익명';
+        const animal = resultData?.saju?.year?.branch?.animal || '용';
+        const birthDate = resultData?.user?.birthDate || resultData?.birthDate || '';
         const monthMatch = birthDate.match(/(\d+)월/);
         const month = monthMatch ? parseInt(monthMatch[1]) : 9;
         const season = month >= 3 && month <= 5 ? '봄' :
             month >= 6 && month <= 8 ? '여름' :
                 month >= 9 && month <= 11 ? '가을' : '겨울';
 
-        const birthTime = resultData.user?.birthTime || '';
+        const birthTime = resultData?.user?.birthTime || resultData?.birthTime || '';
         let timeOfDay = '낮';
         if (birthTime.includes('자시') || birthTime.includes('축시') || birthTime.includes('인시')) {
             timeOfDay = '새벽';
@@ -101,7 +124,7 @@ export const shareKakao = async (resultData) => {
             timeOfDay = '저녁';
         }
 
-        const grades = resultData.fields || resultData.metadata?.grades || {};
+        const grades = resultData?.fields || resultData?.metadata?.grades || {};
         const wealthGrade = typeof grades.wealth === 'object' ? grades.wealth.grade : grades.wealth || 'A';
         const careerGrade = typeof grades.career === 'object' ? grades.career.grade : grades.career || 'B';
         const loveGrade = typeof grades.love === 'object' ? grades.love.grade : grades.love || 'B';
@@ -109,16 +132,15 @@ export const shareKakao = async (resultData) => {
 
         const gradeText = `재물 ${wealthGrade} | 직업 ${careerGrade} | 연애 ${loveGrade} | 건강 ${healthGrade}`;
 
-        // ✅ 생성된 캐릭터 이미지 사용 (절대 경로)
-        const imageUrl = resultData.characterImage
-            ? `http://localhost:5000${resultData.characterImage}`  // ✅ 실제 이미지
-            : 'https://mud-kage.kakao.com/dn/Q2iNx/btqgeRgV54P/VLdBs9cvyn8BJXB3o7N8UK/kakaolink40_original.png';
+        const imageUrl = resultData?.characterImage || resultData?.character_image
+            ? `http://localhost:5000${resultData.characterImage || resultData.character_image}`
+            : 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRTgCywlqiWA_6TsPwaWr4rPccdjjCUH-Y9UQ&s';
 
         console.log('📤 카카오 공유 데이터:', {
             이름: name,
             띠: animal,
             등급: gradeText,
-            이미지: imageUrl, // ✅ 확인
+            이미지: imageUrl,
             공유URL: shareUrl
         });
 
@@ -127,8 +149,7 @@ export const shareKakao = async (resultData) => {
             content: {
                 title: `${name}님의 ${season} ${timeOfDay}에 태어난 ${animal}띠 운세`,
                 description: gradeText,
-                //imageUrl: 'imageUrl', // ✅ 실제 생성된 이미지
-                imageUrl: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRTgCywlqiWA_6TsPwaWr4rPccdjjCUH-Y9UQ&s',
+                imageUrl: imageUrl,
                 link: {
                     mobileWebUrl: shareUrl,
                     webUrl: shareUrl,
@@ -154,13 +175,14 @@ export const shareKakao = async (resultData) => {
 };
 
 /**
- * URL 복사 (모바일 최적화)
+ * URL 복사 (무료 & 프리미엄 통합)
  */
-export const copyUrl = async () => {
+export const copyUrl = async (resultData = null) => {
     try {
-        const { shareUrl } = await createShareUrl();
+        const { shareUrl } = resultData
+            ? await createShareUrlWithData(resultData)
+            : await createShareUrl();
 
-        // 모바일에서 navigator.clipboard가 더 안정적
         if (navigator.clipboard && navigator.clipboard.writeText) {
             await navigator.clipboard.writeText(shareUrl);
             alert('링크가 복사되었습니다!');
@@ -168,7 +190,6 @@ export const copyUrl = async () => {
             return true;
         }
 
-        // Fallback: 모바일에서도 작동
         const textarea = document.createElement('textarea');
         textarea.value = shareUrl;
         textarea.setAttribute('readonly', '');
@@ -177,7 +198,6 @@ export const copyUrl = async () => {
         textarea.style.opacity = '0';
         document.body.appendChild(textarea);
 
-        // iOS Safari 지원
         const range = document.createRange();
         range.selectNodeContents(textarea);
         const selection = window.getSelection();

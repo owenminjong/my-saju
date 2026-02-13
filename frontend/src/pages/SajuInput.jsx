@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { adminAPI } from '../services/api';
+import { userAPI } from '../services/api';
 import PremiumPromoCard from '../components/PremiumPromoCard';
 import './SajuInput.css';
 
@@ -50,35 +50,43 @@ const SajuInput = () => {
 
     useEffect(() => {
         if (mode === 'premium') {
-            const token = localStorage.getItem('token');
-            if (!token) {
-                if (!hasAlerted.current) {
-                    hasAlerted.current = true;
-                    alert('로그인이 필요합니다.');
-                }
-                navigate('/login', {
-                    state: {
-                        redirectTo: '/saju-input',
-                        mode: 'premium'
-                    }
-                });
-                return;
-            }
-            fetchPremiumProduct();
+            checkAuthAndFetchProduct();
         }
-    }, [mode, navigate]);
+    }, [mode]);
 
-    const fetchPremiumProduct = async () => {
-        try {
-            const response = await adminAPI.getProducts();
-            const premiumProduct = response.data.data.find(
-                p => p.name.includes('프리미엄') && p.is_active
-            );
-            if (premiumProduct) {
-                setProduct(premiumProduct);
+// ✅ 새로 추가: 인증 체크 + 상품 조회
+    const checkAuthAndFetchProduct = async () => {
+        const token = localStorage.getItem('token');
+
+        // ⭐ 1. 로그인 체크
+        if (!token) {
+            if (!hasAlerted.current) {
+                hasAlerted.current = true;
+                alert('로그인이 필요합니다.');
             }
+            navigate('/login', {
+                state: { redirectTo: '/saju-input', mode: 'premium' }
+            });
+            return;
+        }
+
+        // ⭐ 2. 상품 조회 (인증 불필요 - 활성화된 상품만)
+        try {
+            await fetchPremiumProduct();
         } catch (error) {
             console.error('상품 조회 실패:', error);
+            // 상품 조회 실패해도 페이지는 표시 (로그인은 되어있으니)
+        }
+    };
+
+// ✅ userAPI로 변경
+    const fetchPremiumProduct = async () => {
+        const response = await userAPI.getActiveProducts(); // ⭐ adminAPI → userAPI
+        const premiumProduct = response.data.data.find(
+            p => p.name.includes('프리미엄') && p.is_active
+        );
+        if (premiumProduct) {
+            setProduct(premiumProduct);
         }
     };
 

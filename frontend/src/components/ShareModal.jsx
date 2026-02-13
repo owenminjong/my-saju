@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { X } from 'lucide-react';
 import { shareKakao, copyUrl } from '../utils/kakao';
 import { shareTwitter } from '../utils/twitter';
+import { shareInstagramStory } from '../utils/instagram';
 import './ShareModal.css';
 
 function ShareModal({ isOpen, onClose, resultData }) {
@@ -27,7 +28,7 @@ function ShareModal({ isOpen, onClose, resultData }) {
     const handleCopyUrl = async () => {
         try {
             setLoading(true);
-            const success = await copyUrl();
+            const success = await copyUrl(resultData);
             if (success) {
                 setCopySuccess(true);
                 setTimeout(() => setCopySuccess(false), 2000);
@@ -52,10 +53,31 @@ function ShareModal({ isOpen, onClose, resultData }) {
         }
     };
 
-    const handleInstagramShare = () => {
-        alert('인스타그램 스토리 공유는 준비 중입니다.\nURL을 복사해서 직접 공유해주세요! 😊');
-        // 자동으로 URL 복사
-        handleCopyUrl();
+    const handleInstagramShare = async () => {
+        try {
+            setLoading(true);
+
+            // 인스타그램 공유 시도
+            await shareInstagramStory(resultData);
+
+        } catch (error) {
+            console.error('인스타그램 공유 실패:', error);
+
+            // 에러 타입별 처리
+            if (error.message === 'DESKTOP') {
+                alert('📱 인스타그램 스토리 공유는 모바일에서만 가능합니다.\nURL을 복사해드릴게요!');
+            } else if (error.message === 'NOT_SUPPORTED') {
+                alert('😅 이 브라우저는 공유 기능을 지원하지 않습니다.\nURL을 복사해드릴게요!');
+            } else {
+                alert('공유에 실패했습니다.\nURL을 복사해드릴게요!');
+            }
+
+            // URL 복사로 대체
+            await handleCopyUrl();
+
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (

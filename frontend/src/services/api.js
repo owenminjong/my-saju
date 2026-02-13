@@ -47,6 +47,12 @@ api.interceptors.response.use(
     }
 );
 
+// ⭐ 일반 유저 API (카카오/네이버 로그인 유저용)
+export const userAPI = {
+    // 활성화된 상품 목록 조회 (인증 불필요)
+    getActiveProducts: () => api.get('/saju/products'),
+};
+
 // ⭐ adminAPI export 추가
 export const adminAPI = {
     // 대시보드
@@ -67,7 +73,7 @@ export const adminAPI = {
     updatePrompt: (id, data) => api.put(`/admin/prompts/${id}`, data),
     deletePrompt: (id) => api.delete(`/admin/prompts/${id}`),
 
-    // 상품 관리
+    // 상품 관리 (관리자 전용)
     getProducts: () => api.get('/admin/products'),
     createProduct: (data) => api.post('/admin/products', data),
     updateProduct: (id, data) => api.put(`/admin/products/${id}`, data),

@@ -67,9 +67,10 @@ async function callClaudeAPIFree(systemPrompt, userPrompt, userId) {
         console.log('✅ Claude API 호출 성공!');
         console.log(`📊 토큰 사용: input=${data.usage.input_tokens}, output=${data.usage.output_tokens}`);
 
-        // 토큰 사용량 저장
+        // 토큰 사용량 저장 (무료는 order_id 없음)
         await saveTokenUsage(
             userId,
+            null,  // order_id 없음
             data.usage.input_tokens + data.usage.output_tokens,
             'claude-free'
         );
@@ -86,9 +87,9 @@ async function callClaudeAPIFree(systemPrompt, userPrompt, userId) {
 }
 
 /**
- * 프리미엄 풀코스 - Claude API 호출
+ * ✅ 프리미엄 풀코스 - Claude API 호출 (orderId 추가!)
  */
-async function callClaudeAPIPremium(systemPrompt, userPrompt, userId, maxTokens = 3000) {
+async function callClaudeAPIPremium(systemPrompt, userPrompt, userId, orderId, maxTokens = 3000) {
     try {
         const apiKey = await getClaudeApiKey();
 
@@ -124,8 +125,10 @@ async function callClaudeAPIPremium(systemPrompt, userPrompt, userId, maxTokens 
         console.log('✅ Claude API 호출 성공!');
         console.log(`📊 토큰 사용: input=${data.usage.input_tokens}, output=${data.usage.output_tokens}`);
 
+        // ✅ orderId 전달!
         await saveTokenUsage(
             userId,
+            orderId,  // ✅ order_id 추가!
             data.usage.input_tokens + data.usage.output_tokens,
             'claude-premium'
         );
@@ -142,12 +145,13 @@ async function callClaudeAPIPremium(systemPrompt, userPrompt, userId, maxTokens 
 }
 
 /**
- * 토큰 사용량 저장
+ * ✅ 토큰 사용량 저장 (orderId 파라미터 추가!)
  */
-async function saveTokenUsage(userId, tokensUsed, apiType) {
+async function saveTokenUsage(userId, orderId, tokensUsed, apiType) {
     try {
         await TokenUsage.create({
             user_id: userId,
+            order_id: orderId,  // ✅ order_id 추가!
             tokens_used: tokensUsed,
             api_type: apiType
         });

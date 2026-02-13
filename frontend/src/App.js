@@ -29,6 +29,7 @@ import SharedResult from './pages/SharedResult';
 import OrdersPage from "./pages/admin/OrdersPage";
 import FreeGeneratePage from './pages/FreeGeneratePage';
 import PremiumGeneratePage from './pages/PremiumGeneratePage';
+import MyResults from './pages/MyResults';
 
 // ⭐ 관리자 라우트 보호 컴포넌트
 function AdminRoute({ children }) {
@@ -208,6 +209,9 @@ function App() {
             <Route path="/result" element={<SajuResult />} />
             <Route path="/premium/result/:diagnosisId" element={<PremiumResult />} />
 
+            {/* ✅ 내 사주 결과 목록 */}
+            <Route path="/my-results" element={<MyResults />} />
+
             {/* 🔗 공유 링크 */}
             <Route path="/r/:encodedData" element={<SharedResult />} />
             <Route path="/result/:encodedData" element={<SharedResult />} />
@@ -222,7 +226,7 @@ function App() {
             <Route path="/admin/users" element={<AdminRoute><UsersPage /></AdminRoute>} />
             <Route path="/admin/users/:id" element={<AdminRoute><UserDetailPage /></AdminRoute>} />
             <Route path="/admin/orders" element={<AdminRoute><OrdersPage /></AdminRoute>} />
-            <Route path="/admin/token-usage" element={<AdminRoute><TokenUsagePage /></AdminRoute>} /> {/* ⭐ 추가 */}
+            <Route path="/admin/token-usage" element={<AdminRoute><TokenUsagePage /></AdminRoute>} />
             <Route path="/admin/prompts" element={<AdminRoute><PromptsPage /></AdminRoute>} />
             <Route path="/admin/products" element={<AdminRoute><ProductsPage /></AdminRoute>} />
             <Route path="/admin/api-keys" element={<AdminRoute><ApiKeysPage /></AdminRoute>} />

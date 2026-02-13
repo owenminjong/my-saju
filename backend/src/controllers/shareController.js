@@ -83,11 +83,23 @@ exports.encodeShareData = async (req, res) => {
 exports.encodeShareDataHash = async (req, res) => {
     try {
         const zlib = require('zlib');
-        const sajuData = freeShareService.getFreeResult(req.session);
+
+        let sajuData;
+
+        // ✅ 프리미엄: req.body에 resultData가 있으면 사용
+        if (req.body && req.body.resultData) {
+            console.log('📦 프리미엄 데이터 인코딩');
+            sajuData = req.body.resultData;
+        }
+        // ✅ 무료: 세션에서 가져오기 (기존 방식 유지)
+        else {
+            console.log('📦 무료 데이터 인코딩 (세션)');
+            sajuData = freeShareService.getFreeResult(req.session);
+        }
 
         const dataToEncode = {
             user: sajuData.user || {
-                name: sajuData.metadata?.userName || '익명',
+                name: sajuData.metadata?.userName || sajuData.name || '익명',
                 birthDate: sajuData.birthDate,
                 birthTime: sajuData.birthTime,
                 gender: sajuData.gender
@@ -95,23 +107,18 @@ exports.encodeShareDataHash = async (req, res) => {
             saju: sajuData.saju || {},
             fields: sajuData.fields || sajuData.metadata?.grades || {},
             metadata: sajuData.metadata || {},
-            characterImage: sajuData.characterImage || null,  // ✅ 추가 필요
+            characterImage: sajuData.characterImage || sajuData.character_image || null,
             imageMetadata: sajuData.imageMetadata || {}
         };
 
-        console.log('📦 압축 인코딩 시작:', {
-            이름: dataToEncode.user.name
-        });
+        console.log('📦 압축 인코딩:', { 이름: dataToEncode.user.name });
 
-        // ✅ 1. JSON 문자열화
         const dataString = JSON.stringify(dataToEncode);
         console.log('원본 크기:', dataString.length, '자');
 
-        // ✅ 2. gzip 압축
         const compressed = zlib.gzipSync(dataString);
         console.log('압축 후 크기:', compressed.length, '바이트');
 
-        // ✅ 3. Base64 URL-safe 인코딩
         const encoded = compressed
             .toString('base64')
             .replace(/\+/g, '-')
@@ -123,7 +130,7 @@ exports.encodeShareDataHash = async (req, res) => {
         const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
         const shareUrl = `${frontendUrl}/r/${encoded}`;
 
-        console.log('✅ 최종 URL 길이:', shareUrl.length, '자');
+        console.log('✅ 최종 URL:', shareUrl.length, '자');
 
         res.json({
             success: true,

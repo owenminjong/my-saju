@@ -191,7 +191,7 @@ const generatePremiumDiagnosis = async (req, res) => {
 
         console.log('✅ 사주 계산 완료\n');
 
-        // 3️⃣ ✅ 캐릭터 이미지 생성 추가!
+        // 3️⃣ 캐릭터 이미지 생성
         console.log('🎨 캐릭터 이미지 생성 중...');
         let characterImage = null;
         let imageMetadata = null;
@@ -215,7 +215,6 @@ const generatePremiumDiagnosis = async (req, res) => {
             }
         } catch (imageError) {
             console.error('⚠️ 이미지 생성 실패:', imageError.message);
-            // 이미지 생성 실패해도 진단은 계속 진행
         }
 
         // 4️⃣ 프리미엄 프롬프트 3개 가져오기
@@ -233,6 +232,7 @@ const generatePremiumDiagnosis = async (req, res) => {
             step1Prompt.systemPrompt,
             step1Prompt.userPrompt,
             userId,
+            order.id,  // ✅ orderId 추가
             step1Prompt.maxTokens
         );
         console.log('✅ Step 1 완료\n');
@@ -244,6 +244,7 @@ const generatePremiumDiagnosis = async (req, res) => {
             step2Prompt.systemPrompt,
             step2Prompt.userPrompt,
             userId,
+            order.id,  // ✅ orderId 추가
             step2Prompt.maxTokens
         );
         console.log('✅ Step 2 완료\n');
@@ -255,6 +256,7 @@ const generatePremiumDiagnosis = async (req, res) => {
             step3Prompt.systemPrompt,
             step3Prompt.userPrompt,
             userId,
+            order.id,  // ✅ orderId 추가
             step3Prompt.maxTokens
         );
         console.log('✅ Step 3 완료\n');
@@ -279,7 +281,7 @@ ${step3Result.text}`;
         // 9️⃣ input_hash 생성
         const inputHash = generateInputHash(sajuResult, sajuData.mbti);
 
-        // 🔟 ✅ DB 저장 (이미지 포함!)
+        // 🔟 ✅ DB 저장 (전체 사주 데이터 포함!)
         console.log('💾 DB 저장 중...');
         const diagnosisResult = await DiagnosisResult.create({
             user_id: userId,
@@ -290,10 +292,22 @@ ${step3Result.text}`;
             birth_time: `${sajuData.hour || 0}:${sajuData.minute || 0}`,
             gender: sajuData.gender,
             mbti: sajuData.mbti,
-            saju_data: sajuResult,
+
+            // ✅ 전체 사주 데이터 저장!
+            saju_data: {
+                user: sajuResult.user,
+                saju: sajuResult.saju,
+                elements: sajuResult.elements,
+                dayMaster: sajuResult.dayMaster,
+                fields: sajuResult.fields,
+                recommendation: sajuResult.recommendation,
+                summary: sajuResult.summary,
+                mbti: sajuData.mbti
+            },
+
             premium_diagnosis: fullDiagnosis,
-            character_image: characterImage,     // ✅ 이미지 경로
-            image_metadata: imageMetadata,       // ✅ 메타데이터
+            character_image: characterImage,
+            image_metadata: imageMetadata,
             diagnosis_type: 'premium'
         });
 
