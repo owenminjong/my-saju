@@ -60,6 +60,7 @@ export const adminAPI = {
 
     // 사용자 관리
     getUsers: (params) => api.get('/admin/users', { params }),
+    getUserDetail: (id) => api.get(`/admin/users/${id}`),
     getUserById: (id) => api.get(`/admin/users/${id}`),
     deleteUser: (id) => api.delete(`/admin/users/${id}`),
 

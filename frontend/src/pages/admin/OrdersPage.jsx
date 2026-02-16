@@ -11,8 +11,7 @@ function OrdersPage() {
     const [filters, setFilters] = useState({
         search: '',
         status: '',
-        startDate: '',
-        endDate: '',
+        date: '', // ✅ startDate, endDate → date 로 변경
     });
     const [selectedOrder, setSelectedOrder] = useState(null);
     const [showDetailModal, setShowDetailModal] = useState(false);
@@ -22,7 +21,7 @@ function OrdersPage() {
             fetchOrders();
         }, 500);
         return () => clearTimeout(timer);
-    }, [filters.search, filters.status, filters.startDate, filters.endDate]);
+    }, [filters.search, filters.status, filters.date]); // ✅ date로 변경
 
     const fetchOrders = async (page = 1) => {
         try {
@@ -30,7 +29,13 @@ function OrdersPage() {
             const response = await adminAPI.getOrders({
                 page,
                 limit: 20,
-                ...filters,
+                search: filters.search,
+                status: filters.status,
+                // ✅ date가 있으면 startDate와 endDate를 같은 값으로 설정
+                ...(filters.date && {
+                    startDate: filters.date,
+                    endDate: filters.date
+                })
             });
             setOrders(response.data.orders);
             setPagination(response.data.pagination);
@@ -121,7 +126,7 @@ function OrdersPage() {
 
             {/* 필터 */}
             <div className="bg-white p-4 sm:p-6 rounded-lg shadow mb-4 sm:mb-6">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                     <div>
                         <label className="block text-sm font-medium mb-2 text-gray-700">검색 (이름/이메일)</label>
                         <div className="relative">
@@ -149,20 +154,11 @@ function OrdersPage() {
                         </select>
                     </div>
                     <div>
-                        <label className="block text-sm font-medium mb-2 text-gray-700">결제일 (시작)</label>
+                        <label className="block text-sm font-medium mb-2 text-gray-700">결제일</label>
                         <input
                             type="date"
-                            value={filters.startDate}
-                            onChange={(e) => setFilters({ ...filters, startDate: e.target.value })}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
-                        />
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium mb-2 text-gray-700">결제일 (종료)</label>
-                        <input
-                            type="date"
-                            value={filters.endDate}
-                            onChange={(e) => setFilters({ ...filters, endDate: e.target.value })}
+                            value={filters.date}
+                            onChange={(e) => setFilters({ ...filters, date: e.target.value })}
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
                         />
                     </div>
