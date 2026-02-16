@@ -64,7 +64,7 @@ app.use('/api/admin/users', adminUsersRoutes);
 app.use('/api/admin/products', adminProductsRoutes);
 app.use('/api/admin/prompts', adminPromptsRoutes);
 app.use('/api/admin/api-keys', adminApiKeysRoutes);
-app.use('/api/admin', adminPayRoutes);
+app.use('/api/admin/orders', adminPayRoutes);  // ✅ 이것만 남김
 app.use('/api/admin/token-usage', adminTokenUsageRoutes);
 
 // 루트 경로

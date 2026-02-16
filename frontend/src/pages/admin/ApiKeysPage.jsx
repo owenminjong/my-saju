@@ -40,13 +40,20 @@ function ApiKeysPage() {
     try {
       setLoading(true);
       const response = await adminAPI.getApiKeys();
-      const grouped = response.data.data.reduce((acc, key) => {
+
+      // ✅ 특정 서비스 필터링 (Google Gemini, OpenAI GPT, 구글 숨기기)
+      const filtered = response.data.data.filter(key =>
+          !['gpt', 'gemini', 'google'].includes(key.service_name)
+      );
+
+      const grouped = filtered.reduce((acc, key) => {
         if (!acc[key.category]) {
           acc[key.category] = [];
         }
         acc[key.category].push(key);
         return acc;
       }, {});
+
       setApiKeys(grouped);
       setLoading(false);
     } catch (error) {
@@ -125,7 +132,9 @@ function ApiKeysPage() {
                           </h3>
                           <p className="text-xs sm:text-sm text-gray-500 truncate">{apiKey.service_name}</p>
                         </div>
-                        <button
+
+                        {/* ✅ 활성/비활성 버튼 숨김 */}
+                        {/* <button
                             onClick={() => handleToggle(apiKey.id, apiKey.is_active)}
                             className={`ml-2 px-2 sm:px-3 py-1 text-xs rounded-full transition-colors flex-shrink-0 ${
                                 apiKey.is_active
@@ -134,7 +143,7 @@ function ApiKeysPage() {
                             }`}
                         >
                           {apiKey.is_active ? '활성' : '비활성'}
-                        </button>
+                        </button> */}
                       </div>
 
                       <div className="mb-3 sm:mb-4">
@@ -215,7 +224,8 @@ function ApiKeysPage() {
                     </p>
                   </div>
 
-                  <div className="mb-4 sm:mb-6">
+                  {/* ✅ 활성화 체크박스 숨김 */}
+                  {/* <div className="mb-4 sm:mb-6">
                     <label className="flex items-center">
                       <input
                           type="checkbox"
@@ -225,7 +235,7 @@ function ApiKeysPage() {
                       />
                       <span className="text-sm">활성화</span>
                     </label>
-                  </div>
+                  </div> */}
 
                   <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
                     <button

@@ -112,11 +112,13 @@ class PaymentService {
     }
 
     /**
-     * 결제 취소
+     * 결제 취소 (전액)
      */
     static async cancelPayment(paymentKey, cancelReason) {
         try {
             const keys = await this.getPaymentKeys();
+
+            console.log('🔥 토스페이먼츠 취소 요청:', { paymentKey, cancelReason });
 
             const response = await axios.post(
                 `https://api.tosspayments.com/v1/payments/${paymentKey}/cancel`,
@@ -129,43 +131,12 @@ class PaymentService {
                 }
             );
 
-            await Order.update(
-                { status: 'cancelled' },
-                { where: { payment_key: paymentKey } }
-            );
+            console.log('✅ 토스페이먼츠 취소 성공');
 
             return response.data;
         } catch (error) {
-            console.error('결제 취소 오류:', error.response?.data);
-            throw error;
-        }
-    }
-
-    /**
-     * 부분 환불
-     */
-    static async partialCancelPayment(paymentKey, cancelAmount, cancelReason) {
-        try {
-            const keys = await this.getPaymentKeys();
-
-            const response = await axios.post(
-                `https://api.tosspayments.com/v1/payments/${paymentKey}/cancel`,
-                {
-                    cancelAmount,
-                    cancelReason
-                },
-                {
-                    headers: {
-                        'Authorization': `Basic ${Buffer.from(keys.secretKey + ':').toString('base64')}`,
-                        'Content-Type': 'application/json'
-                    }
-                }
-            );
-
-            return response.data;
-        } catch (error) {
-            console.error('부분 환불 오류:', error.response?.data);
-            throw new Error(error.response?.data?.message || '부분 환불에 실패했습니다.');
+            console.error('❌ 결제 취소 오류:', error.response?.data);
+            throw new Error(error.response?.data?.message || '결제 취소에 실패했습니다.');
         }
     }
 }

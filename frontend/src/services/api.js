@@ -81,14 +81,17 @@ export const adminAPI = {
 
     // API 키 관리
     getApiKeys: () => api.get('/admin/api-keys'),
+    getApiKeyDetail: (id) => api.get(`/admin/api-keys/${id}`),
     createApiKey: (data) => api.post('/admin/api-keys', data),
     updateApiKey: (id, data) => api.put(`/admin/api-keys/${id}`, data),
     deleteApiKey: (id) => api.delete(`/admin/api-keys/${id}`),
 
-    // 주문 관리
+    // ✅ 주문 관리 (수정 및 추가)
     getOrders: (params) => api.get('/admin/orders', { params }),
+    getOrderDetail: (orderId) => api.get(`/admin/orders/${orderId}`),
+    getOrderStats: () => api.get('/admin/orders/stats'),
+    cancelOrder: (orderId, cancelReason) => api.post(`/admin/orders/${orderId}/cancel`, { cancelReason }),
     updateOrderStatus: (orderId, data) => api.patch(`/admin/orders/${orderId}/status`, data),
-    getOrderById: (orderId) => api.get(`/admin/orders/${orderId}`),
     deleteOrder: (orderId) => api.delete(`/admin/orders/${orderId}`),
 };
 

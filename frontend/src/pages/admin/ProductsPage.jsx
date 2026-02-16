@@ -166,12 +166,12 @@ function ProductsPage() {
                             >
                                 수정
                             </button>
-                            <button
+                            {/*<button
                                 onClick={() => handleDelete(product.id)}
                                 className="flex-1 px-3 py-2 text-red-600 bg-red-50 rounded hover:bg-red-100 text-sm"
                             >
                                 삭제
-                            </button>
+                            </button>*/}
                         </div>
                     </div>
                 ))}
