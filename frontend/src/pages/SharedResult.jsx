@@ -4,6 +4,8 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Share2, Sparkles } from 'lucide-react';
 
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+
 function SharedResult() {
     const { encodedData } = useParams();
     const navigate = useNavigate();
@@ -28,7 +30,7 @@ function SharedResult() {
 
                 let response;
                 if (isShortUrl) {
-                    response = await fetch('http://localhost:5000/api/share/decode-hash', {
+                    response = await fetch(`${API_BASE_URL}/api/share/decode-hash`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
@@ -38,7 +40,7 @@ function SharedResult() {
                     });
                 } else {
                     response = await fetch(
-                        `http://localhost:5000/api/share/decode/${encodedData}`,
+                        `${API_BASE_URL}/api/share/decode/${encodedData}`,
                         { credentials: 'include' }
                     );
                 }
@@ -214,7 +216,7 @@ function SharedResult() {
                     <div className="bg-gradient-to-br from-[#d4af37]/20 to-[#f59e0b]/20 rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8 mb-6 sm:mb-8 text-center border border-[#d4af37]/30 relative overflow-hidden">
                         {resultData?.characterImage ? (
                             <img
-                                src={`http://localhost:5000${resultData.characterImage}`}
+                                src={`${API_BASE_URL}${resultData.characterImage}`}
                                 alt={`${animal}띠 캐릭터`}
                                 className="w-full max-w-xs sm:max-w-md mx-auto rounded-lg sm:rounded-xl shadow-lg"
                                 onError={(e) => {

@@ -11,6 +11,8 @@ import ShareModal from '../components/ShareModal';
 import { Home, Crown, Share2, AlertTriangle } from 'lucide-react';
 import './SajuResult.css';
 
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+
 function PremiumResult() {
     const { diagnosisId } = useParams();
     const navigate = useNavigate();
@@ -38,7 +40,7 @@ function PremiumResult() {
             console.log('📥 프리미엄 결과 조회 중...', diagnosisId);
 
             const response = await axios.get(
-                `http://localhost:5000/api/diagnosis/premium/${diagnosisId}`,
+                `${API_BASE_URL}/api/diagnosis/premium/${diagnosisId}`,
                 {
                     headers: {
                         Authorization: `Bearer ${token}`
@@ -120,6 +122,28 @@ function PremiumResult() {
 
     const { user, saju, elements } = sajuData;
 
+    const formatBirthTime = (time) => {
+        if (!time) return '';
+        const hour = parseInt(time);
+        const siMap = [
+            { range: [23, 1],  name: '자시 (子時)' },
+            { range: [1, 3],   name: '축시 (丑時)' },
+            { range: [3, 5],   name: '인시 (寅時)' },
+            { range: [5, 7],   name: '묘시 (卯時)' },
+            { range: [7, 9],   name: '진시 (辰時)' },
+            { range: [9, 11],  name: '사시 (巳時)' },
+            { range: [11, 13], name: '오시 (午時)' },
+            { range: [13, 15], name: '미시 (未時)' },
+            { range: [15, 17], name: '신시 (申時)' },
+            { range: [17, 19], name: '유시 (酉時)' },
+            { range: [19, 21], name: '술시 (戌時)' },
+            { range: [21, 23], name: '해시 (亥時)' },
+        ];
+        const found = siMap.find(s => hour >= s.range[0] && hour < s.range[1]);
+        return found ? found.name : time;
+    };
+
+
 // ✅ ShareModal에 전달할 데이터 재구성
     const shareData = {
         user: sajuData.user,
@@ -174,7 +198,7 @@ function PremiumResult() {
                 <div className="char-card">
                     <img
                         src={!imageError && characterImage
-                            ? `http://localhost:5000${characterImage}`
+                            ? `${API_BASE_URL}${characterImage}`
                             : "https://images.unsplash.com/photo-1548712393-27c9b837267f?q=80&w=1000&auto=format&fit=crop"
                         }
                         className="char-img"
@@ -190,7 +214,7 @@ function PremiumResult() {
                         <span className="char-sub">Premium Full Course</span>
                         <h1 className="char-title">{result.name}님의 2026년</h1>
                         <p className="char-date">
-                            {result.birthDate} {result.birthTime} | {result.gender === 'M' ? '남성' : '여성'} | {result.mbti}
+                            {result.birthDate} {formatBirthTime(result.birthTime)} | {result.gender === 'M' ? '남성' : '여성'} | {result.mbti}
                         </p>
                     </div>
                 </div>

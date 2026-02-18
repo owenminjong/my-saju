@@ -46,7 +46,15 @@ const MainPage = () => {
                         className="menu-link"
                         onClick={(e) => {
                             e.preventDefault();
-                            handleLoginAlert();
+                            const token = localStorage.getItem('token');
+                            if (!token) {
+                                alert('로그인이 필요합니다.');
+                                navigate('/login', {
+                                    state: {redirectTo: '/my-results'}
+                                });
+                            } else {
+                                navigate('/my-results');
+                            }
                         }}
                         style={{background: 'none', border: 'none', width: '100%', textAlign: 'left'}}
                     >

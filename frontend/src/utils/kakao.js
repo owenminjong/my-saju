@@ -1,5 +1,8 @@
 // frontend/src/utils/kakao.js
 
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+const FRONTEND_URL = process.env.REACT_APP_FRONTEND_URL || 'http://localhost:3000';
+
 let kakaoInitialized = false;
 
 /**
@@ -17,7 +20,7 @@ export const initKakao = async () => {
     }
 
     try {
-        const response = await fetch('http://localhost:5000/api/share/kakao-key', {
+        const response = await fetch(`${API_BASE_URL}/api/share/kakao-key`, {
             credentials: 'include'
         });
         const data = await response.json();
@@ -39,7 +42,7 @@ export const initKakao = async () => {
  */
 export const createShareUrl = async () => {
     try {
-        const response = await fetch('http://localhost:5000/api/share/encode-hash', {
+        const response = await fetch(`${API_BASE_URL}/api/share/encode-hash`, {
             method: 'POST',
             credentials: 'include'
         });
@@ -48,7 +51,7 @@ export const createShareUrl = async () => {
 
         if (data.success) {
             const encodedData = data.data.encodedData;
-            const shareUrl = `http://localhost:3000/r/${encodedData}`;
+            const shareUrl = `${FRONTEND_URL}/r/${encodedData}`;
             return { encodedData, shareUrl };
         } else {
             throw new Error(data.message);
@@ -64,7 +67,7 @@ export const createShareUrl = async () => {
  */
 export const createShareUrlWithData = async (resultData) => {
     try {
-        const response = await fetch('http://localhost:5000/api/share/encode-hash', {
+        const response = await fetch(`${API_BASE_URL}/api/share/encode-hash`, {
             method: 'POST',
             credentials: 'include',
             headers: {
@@ -77,7 +80,7 @@ export const createShareUrlWithData = async (resultData) => {
 
         if (data.success) {
             const encodedData = data.data.encodedData;
-            const shareUrl = `http://localhost:3000/r/${encodedData}`;
+            const shareUrl = `${FRONTEND_URL}/r/${encodedData}`;
             return { encodedData, shareUrl };
         } else {
             throw new Error(data.message);
@@ -100,7 +103,6 @@ export const shareKakao = async (resultData = null) => {
     }
 
     try {
-        // ✅ resultData가 있으면 프리미엄, 없으면 무료
         const { shareUrl } = resultData
             ? await createShareUrlWithData(resultData)
             : await createShareUrl();
@@ -133,7 +135,7 @@ export const shareKakao = async (resultData = null) => {
         const gradeText = `재물 ${wealthGrade} | 직업 ${careerGrade} | 연애 ${loveGrade} | 건강 ${healthGrade}`;
 
         const imageUrl = resultData?.characterImage || resultData?.character_image
-            ? `http://localhost:5000${resultData.characterImage || resultData.character_image}`
+            ? `${API_BASE_URL}${resultData.characterImage || resultData.character_image}`
             : 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRTgCywlqiWA_6TsPwaWr4rPccdjjCUH-Y9UQ&s';
 
         console.log('📤 카카오 공유 데이터:', {

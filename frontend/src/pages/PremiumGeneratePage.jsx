@@ -5,6 +5,8 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import characterImage from './월하 메인 캐릭터.png';
 
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+
 function PremiumGeneratePage() {
     const navigate = useNavigate();
     const location = useLocation();
@@ -82,7 +84,7 @@ function PremiumGeneratePage() {
 
             // ⭐ 실제 API 호출
             const response = await axios.post(
-                'http://localhost:5000/api/diagnosis/premium',
+                `${API_BASE_URL}/api/diagnosis/premium`,
                 {
                     orderId: orderId,
                     sajuData: sajuData
@@ -366,7 +368,7 @@ function PremiumGeneratePage() {
                         💎 프리미엄 풀코스 진단<br/>
                         <strong style={{ color: '#f4d03f' }}>A4 5장 이상</strong>의 상세한 분석<br/>
                         <span style={{ color: '#f4d03f', fontWeight: '600' }}>
-                            예상 소요 시간: 1~2분
+                            예상 소요 시간: 5분
                         </span>
                     </p>
                 </div>

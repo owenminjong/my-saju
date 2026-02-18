@@ -108,9 +108,13 @@ app.listen(PORT, async () => {
     try {
         await sequelize.authenticate();
         console.log('✅ MySQL 데이터베이스 연결 성공!');
+
+        // ✅ 이 줄 추가 - 테이블 없으면 자동 생성, 있으면 그대로 유지
+        await sequelize.sync({ alter: false, force: false });
+        console.log('✅ DB 테이블 동기화 완료');
+
         console.log(`🚀 서버 실행 중: http://localhost:${PORT}`);
         console.log(`📡 프론트엔드 CORS 허용: ${frontendUrl}`);
-        console.log('🔐 관리자 로그인: POST /api/admin/auth/login');
     } catch (error) {
         console.error('❌ 데이터베이스 연결 실패:', error);
         process.exit(1);

@@ -3,6 +3,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+
 function LoginPage() {
     const navigate = useNavigate();
     const [socialLogins, setSocialLogins] = useState([]);
@@ -14,7 +16,7 @@ function LoginPage() {
 
     const fetchSocialLogins = async () => {
         try {
-            const response = await axios.get('http://localhost:5000/api/auth/social-logins');
+            const response = await axios.get(`${API_BASE_URL}/api/auth/social-logins`);
             setSocialLogins(response.data.data);
         } catch (error) {
             console.error('소셜 로그인 목록 조회 실패:', error);
@@ -24,11 +26,11 @@ function LoginPage() {
     };
 
     const handleKakaoLogin = () => {
-        window.location.href = 'http://localhost:5000/api/auth/kakao';
+        window.location.href = `${API_BASE_URL}/api/auth/kakao`;
     };
 
     const handleNaverLogin = () => {
-        window.location.href = 'http://localhost:5000/api/auth/naver';
+        window.location.href = `${API_BASE_URL}/api/auth/naver`;
     };
 
     const socialLoginButtons = {
