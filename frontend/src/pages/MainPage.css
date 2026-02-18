@@ -160,18 +160,43 @@ html {
     opacity: 0.4;
 }
 
-.moon-orb {
+.moon-container {
     position: absolute;
     top: 15%;
     left: 50%;
     transform: translateX(-50%);
-    width: 250px;
-    height: 250px;
-    background: radial-gradient(circle at 30% 30%, var(--gold-light), var(--gold) 60%, transparent 80%);
+    width: 350px;
+    height: 350px;
+    z-index: 0;
+}
+
+.moon-video-wrapper {
+    position: relative;
+    width: 100%;
+    height: 100%;
     border-radius: 50%;
-    filter: blur(40px);
-    opacity: 0.6;
-    animation: floatMoon 8s ease-in-out infinite alternate;
+    overflow: hidden;
+    box-shadow: 0 0 80px rgba(212, 175, 55, 0.3), inset 0 0 50px rgba(0,0,0,0.5);
+    border: 1px solid rgba(212, 175, 55, 0.2);
+}
+
+.moon-video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: brightness(1.05) contrast(1.1);
+}
+
+.moon-glow {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: radial-gradient(circle at center, transparent 30%, rgba(11, 16, 26, 0.4) 100%);
+    pointer-events: none;
+}
+
+/* 모바일 */
+@media (max-width: 768px) {
+    .moon-container { width: 260px; height: 260px; top: 10%; }
 }
 
 .fog-layer {
@@ -186,8 +211,8 @@ html {
 
 .hero-content {
     position: relative;
-    z-index: 1;
-    max-width: 600px;
+    z-index: 10;
+    max-width: 420px;
 }
 
 .main-title {
@@ -458,4 +483,75 @@ html {
     .step-list::before {
         left: 20px;
     }
+}
+
+/* === [Footer] === */
+.wolha-footer {
+    background-color: rgba(0, 0, 0, 0.3); /* 배경보다 살짝 더 어둡게 */
+    padding: 60px 20px 40px;
+    border-top: 1px solid rgba(212, 175, 55, 0.1);
+    color: var(--text-sub);
+    font-size: 0.85rem;
+    line-height: 1.6;
+}
+
+.footer-content {
+    max-width: 1000px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.footer-links {
+    margin-bottom: 25px;
+}
+
+.footer-link {
+    color: var(--text-main);
+    text-decoration: none;
+    transition: color 0.3s ease;
+    font-weight: 500;
+}
+
+.footer-link:hover {
+    color: var(--gold);
+}
+
+.footer-divider {
+    margin: 0 15px;
+    color: rgba(255, 255, 255, 0.1);
+}
+
+.footer-info {
+    margin-bottom: 30px;
+    font-weight: 300;
+}
+
+.footer-info p {
+    margin-bottom: 5px;
+}
+
+.company-name {
+    color: var(--gold-light);
+    margin-bottom: 10px !important;
+    font-weight: 500;
+}
+
+.footer-copyright {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.2);
+    letter-spacing: 1px;
+}
+
+/* 모바일 대응 */
+@media (max-width: 768px) {
+    .wolha-footer {
+        padding: 40px 20px;
+    }
+    .footer-divider {
+        margin: 0 8px;
+    }
+    .hero-content {
+        margin-top: 300px; /* 모바일 달 높이(260px) 기준 */
+    }
+
 }
