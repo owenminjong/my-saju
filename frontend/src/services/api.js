@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
 const api = axios.create({
     baseURL: API_BASE_URL,
@@ -14,7 +14,7 @@ api.interceptors.request.use(
     (config) => {
         console.log('🚀 API 요청:', config.method.toUpperCase(), config.url);
 
-        if (config.url.startsWith('/admin')) {
+        if (config.url.includes('/admin')) {
             const adminToken = localStorage.getItem('adminToken');
             if (adminToken) {
                 config.headers.Authorization = `Bearer ${adminToken}`;
@@ -27,9 +27,7 @@ api.interceptors.request.use(
         }
         return config;
     },
-    (error) => {
-        return Promise.reject(error);
-    }
+    (error) => Promise.reject(error)
 );
 
 // 응답 인터셉터
@@ -47,76 +45,67 @@ api.interceptors.response.use(
     }
 );
 
-// ⭐ 일반 유저 API (카카오/네이버 로그인 유저용)
+// 일반 유저 API
 export const userAPI = {
-    // 활성화된 상품 목록 조회 (인증 불필요)
-    getActiveProducts: () => api.get('/saju/products'),
+    getActiveProducts: () => api.get('/api/saju/products'),
 };
 
-// ⭐ adminAPI export 추가
+// 관리자 API
 export const adminAPI = {
     // 대시보드
-    getDashboardStats: () => api.get('/admin/dashboard/stats'),
+    getDashboardStats: () => api.get('/api/admin/dashboard/stats'),
 
     // 사용자 관리
-    getUsers: (params) => api.get('/admin/users', { params }),
-    getUserDetail: (id) => api.get(`/admin/users/${id}`),
-    getUserById: (id) => api.get(`/admin/users/${id}`),
-    deleteUser: (id) => api.delete(`/admin/users/${id}`),
+    getUsers: (params) => api.get('/api/admin/users', { params }),
+    getUserDetail: (id) => api.get(`/api/admin/users/${id}`),
+    getUserById: (id) => api.get(`/api/admin/users/${id}`),
+    updateUserStatus: (id, status) => api.patch(`/api/admin/users/${id}/status`, { status }),
+    deleteUser: (id) => api.delete(`/api/admin/users/${id}`),
 
-    // ⭐ 토큰 사용 내역
-    getTokenUsages: (params) => api.get('/admin/token-usage', { params }),
-    getTokenUsageByOrder: (orderId) => api.get(`/admin/token-usage/order/${orderId}`),
+    // 토큰 사용 내역
+    getTokenUsages: (params) => api.get('/api/admin/token-usage', { params }),
+    getTokenUsageByOrder: (orderId) => api.get(`/api/admin/token-usage/order/${orderId}`),
 
     // 프롬프트 관리
-    getPrompts: () => api.get('/admin/prompts'),
-    createPrompt: (data) => api.post('/admin/prompts', data),
-    updatePrompt: (id, data) => api.put(`/admin/prompts/${id}`, data),
-    deletePrompt: (id) => api.delete(`/admin/prompts/${id}`),
+    getPrompts: () => api.get('/api/admin/prompts'),
+    getPromptDetail: (id) => api.get(`/api/admin/prompts/${id}`),
+    createPrompt: (data) => api.post('/api/admin/prompts', data),
+    updatePrompt: (id, data) => api.put(`/api/admin/prompts/${id}`, data),
+    deletePrompt: (id) => api.delete(`/api/admin/prompts/${id}`),
 
-    // 상품 관리 (관리자 전용)
-    getProducts: () => api.get('/admin/products'),
-    createProduct: (data) => api.post('/admin/products', data),
-    updateProduct: (id, data) => api.put(`/admin/products/${id}`, data),
-    deleteProduct: (id) => api.delete(`/admin/products/${id}`),
+    // 상품 관리
+    getProducts: () => api.get('/api/admin/products'),
+    getProductDetail: (id) => api.get(`/api/admin/products/${id}`),
+    createProduct: (data) => api.post('/api/admin/products', data),
+    updateProduct: (id, data) => api.put(`/api/admin/products/${id}`, data),
+    deleteProduct: (id) => api.delete(`/api/admin/products/${id}`),
 
     // API 키 관리
-    getApiKeys: () => api.get('/admin/api-keys'),
-    getApiKeyDetail: (id) => api.get(`/admin/api-keys/${id}`),
-    createApiKey: (data) => api.post('/admin/api-keys', data),
-    updateApiKey: (id, data) => api.put(`/admin/api-keys/${id}`, data),
-    deleteApiKey: (id) => api.delete(`/admin/api-keys/${id}`),
+    getApiKeys: () => api.get('/api/admin/api-keys'),
+    getApiKeyDetail: (id) => api.get(`/api/admin/api-keys/${id}`),
+    upsertApiKey: (data) => api.post('/api/admin/api-keys', data),
+    toggleApiKey: (id, is_active) => api.patch(`/api/admin/api-keys/${id}/toggle`, { is_active }),
+    createApiKey: (data) => api.post('/api/admin/api-keys', data),
+    updateApiKey: (id, data) => api.put(`/api/admin/api-keys/${id}`, data),
+    deleteApiKey: (id) => api.delete(`/api/admin/api-keys/${id}`),
 
-    // ✅ 주문 관리 (수정 및 추가)
-    getOrders: (params) => api.get('/admin/orders', { params }),
-    getOrderDetail: (orderId) => api.get(`/admin/orders/${orderId}`),
-    getOrderStats: () => api.get('/admin/orders/stats'),
-    cancelOrder: (orderId, cancelReason) => api.post(`/admin/orders/${orderId}/cancel`, { cancelReason }),
-    updateOrderStatus: (orderId, data) => api.patch(`/admin/orders/${orderId}/status`, data),
-    deleteOrder: (orderId) => api.delete(`/admin/orders/${orderId}`),
+    // 주문 관리
+    getOrders: (params) => api.get('/api/admin/orders', { params }),
+    getOrderDetail: (orderId) => api.get(`/api/admin/orders/${orderId}`),
+    getOrderStats: () => api.get('/api/admin/orders/stats'),
+    cancelOrder: (orderId, cancelReason) => api.post(`/api/admin/orders/${orderId}/cancel`, { cancelReason }),
+    updateOrderStatus: (orderId, data) => api.patch(`/api/admin/orders/${orderId}/status`, data),
+    deleteOrder: (orderId) => api.delete(`/api/admin/orders/${orderId}`),
 };
 
 export const paymentAPI = {
-    // ✅ prepare 함수 추가!
-    prepare: (data) => api.post('/payment/prepare', data),
-
-    // 결제 요청
-    requestPayment: (data) => api.post('/payment/request', data),
-
-    // 결제 완료 처리
-    completePayment: (data) => api.post('/payment/complete', data),
-
-    // ✅ confirm 함수 추가 (토스페이먼츠 승인)
-    confirm: (data) => api.post('/payment/confirm', data),
-
-    // 결제 취소
-    cancelPayment: (orderId) => api.post(`/payment/cancel/${orderId}`),
-
-    // 사용자 결제 내역
-    getUserPayments: () => api.get('/payment/history'),
-
-    // 결제 상세 조회
-    getPaymentDetail: (orderId) => api.get(`/payment/${orderId}`),
+    prepare: (data) => api.post('/api/payment/prepare', data),
+    requestPayment: (data) => api.post('/api/payment/request', data),
+    completePayment: (data) => api.post('/api/payment/complete', data),
+    confirm: (data) => api.post('/api/payment/confirm', data),
+    cancelPayment: (orderId) => api.post(`/api/payment/cancel/${orderId}`),
+    getUserPayments: () => api.get('/api/payment/history'),
+    getPaymentDetail: (orderId) => api.get(`/api/payment/${orderId}`),
 };
 
 export default api;

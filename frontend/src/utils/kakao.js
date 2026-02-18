@@ -134,8 +134,9 @@ export const shareKakao = async (resultData = null) => {
 
         const gradeText = `재물 ${wealthGrade} | 직업 ${careerGrade} | 연애 ${loveGrade} | 건강 ${healthGrade}`;
 
-        const imageUrl = resultData?.characterImage || resultData?.character_image
-            ? `${API_BASE_URL}${resultData.characterImage || resultData.character_image}`
+        const rawImage = resultData?.characterImage || resultData?.character_image || '';
+        const imageUrl = rawImage && !rawImage.startsWith('data:')
+            ? `${API_BASE_URL}${rawImage}`
             : 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRTgCywlqiWA_6TsPwaWr4rPccdjjCUH-Y9UQ&s';
 
         console.log('📤 카카오 공유 데이터:', {

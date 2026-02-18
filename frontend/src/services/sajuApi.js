@@ -8,7 +8,7 @@ axios.defaults.withCredentials = true;
  */
 export const analyzeSaju = async (userData) => {
     try {
-        const response = await axios.post(`${API_BASE_URL}/saju/analyze`, userData);
+        const response = await axios.post(`${API_BASE_URL}/api/saju/analyze`, userData);
         return response.data;
     } catch (error) {
         throw new Error(error.response?.data?.message || '사주 분석에 실패했습니다.');
@@ -20,7 +20,7 @@ export const analyzeSaju = async (userData) => {
  */
 export const getTimeInfo = async () => {
     try {
-        const response = await axios.get(`${API_BASE_URL}/saju/time-info`);
+        const response = await axios.get(`${API_BASE_URL}/api/saju/time-info`);
         return response.data;
     } catch (error) {
         throw new Error('시간 정보를 불러오는데 실패했습니다.');
@@ -32,7 +32,7 @@ export const getTimeInfo = async () => {
  */
 export const getFreeDiagnosis = async (userData) => {
     try {
-        const response = await axios.post(`${API_BASE_URL}/diagnosis/free`, userData);
+        const response = await axios.post(`${API_BASE_URL}/api/diagnosis/free`, userData);
         return response.data;
     } catch (error) {
         throw new Error(error.response?.data?.message || '진단에 실패했습니다.');
