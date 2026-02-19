@@ -22,7 +22,7 @@ function AdminLoginPage() {
         try {
             console.log('📤 POST 요청 전송...');
 
-            const response = await api.post('/admin/auth/login', {
+            const response = await api.post('api/admin/auth/login', {
                 username,
                 password
             });

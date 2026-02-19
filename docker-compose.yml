@@ -1,8 +1,5 @@
-version: '3.8'
-
 services:
 
-  # ========== MariaDB ==========
   db:
     image: mariadb:10.11
     container_name: mysaju_db
@@ -11,7 +8,7 @@ services:
       MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
       MYSQL_DATABASE: ${DB_NAME}
     ports:
-      - "3307:3306"
+      - "3306:3306"
     volumes:
       - db_data:/var/lib/mysql
     healthcheck:
@@ -20,11 +17,8 @@ services:
       timeout: 5s
       retries: 5
 
-  # ========== Backend ==========
   backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
+    image: owen5257/my-saju-backend
     container_name: mysaju_backend
     restart: always
     depends_on:
@@ -46,21 +40,13 @@ services:
       NAVER_REDIRECT_URI: ${NAVER_REDIRECT_URI}
       CHARACTER_IMAGE_BASE_PATH: /app/character-images
     ports:
-      - "5001:5000"
+      - "5000:5000"
     volumes:
-      # 생성된 이미지 - 재시작해도 유지
       - generated_images:/app/public/generated-images
-      # 소스 이미지 - 담당자가 서버에 올린 캐릭터/배경 폴더
       - ${CHARACTER_IMAGE_BASE_PATH}:/app/character-images:ro
 
-  # ========== Frontend ==========
   frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-      args:
-        REACT_APP_API_URL: ${REACT_APP_API_URL}
-        REACT_APP_FRONTEND_URL: ${REACT_APP_FRONTEND_URL}
+    image: owen5257/my-saju-frontend
     container_name: mysaju_frontend
     restart: always
     depends_on:
