@@ -6,7 +6,7 @@ import axios from 'axios';
 import { Calendar, User, Heart, ArrowRight, Home } from 'lucide-react';
 import './MyResults.css';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+const API_BASE_URL = process.env.REACT_APP_API_URL ;
 
 function MyResults() {
     const navigate = useNavigate();

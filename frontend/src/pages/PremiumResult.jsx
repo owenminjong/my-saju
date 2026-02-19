@@ -11,7 +11,7 @@ import ShareModal from '../components/ShareModal';
 import { Home, Crown, Share2, AlertTriangle } from 'lucide-react';
 import './SajuResult.css';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+const API_BASE_URL = process.env.REACT_APP_API_URL ;
 
 function PremiumResult() {
     const { diagnosisId } = useParams();

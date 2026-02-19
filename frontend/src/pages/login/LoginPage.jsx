@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+const API_BASE_URL = process.env.REACT_APP_API_URL;
 
 function LoginPage() {
     const navigate = useNavigate();
@@ -64,7 +64,6 @@ function LoginPage() {
 
                 {/* 로고 & 타이틀 */}
                 <div className="text-center mb-8">
-                    <div className="text-6xl mb-4">✨</div>
                     <h1 className="text-3xl font-bold text-white mb-2">월하신녀</h1>
                     <p className="text-white/70">AI 사주 × MBTI 웹서비스</p>
                 </div>
