@@ -86,7 +86,7 @@ function MainPage() {
                         marginBottom: '80px',
                         color: '#1f2937'
                     }}>
-                        왜 MyLifeCode인가요?
+                        왜 월하사주인가요?
                     </h2>
                     <div style={{
                         display: 'grid',

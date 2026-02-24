@@ -72,7 +72,8 @@ function FreeGeneratePage() {
             fontFamily: "'Noto Sans KR', sans-serif",
             position: 'relative',
             overflow: 'hidden',
-            boxSizing: 'border-box'
+            boxSizing: 'border-box',
+            minHeight: '100vh'
         }}>
             {/* 별빛 배경 */}
             <div style={{

@@ -1,10 +1,12 @@
 // frontend/src/pages/SharedResult.jsx
 
-import React, { useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Share2, Sparkles } from 'lucide-react';
+import ShareModal from '../components/ShareModal';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL ;
+const API_BASE_URL = process.env.REACT_APP_API_URL;
+const FRONTEND_URL = process.env.REACT_APP_FRONTEND_URL;
 
 function SharedResult() {
     const { encodedData } = useParams();
@@ -12,8 +14,9 @@ function SharedResult() {
     const [resultData, setResultData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [shareModalOpen, setShareModalOpen] = useState(false);
+    const cardRef = useRef(null);
 
-    // ✅ 이름 마스킹 함수
     const maskName = (name) => {
         if (!name || name.length === 0) return '익명';
         if (name.length === 1) return name;
@@ -24,17 +27,13 @@ function SharedResult() {
     useEffect(() => {
         const fetchResult = async () => {
             try {
-                console.log('📥 공유 데이터 로드 시작');
-
                 const isShortUrl = window.location.pathname.startsWith('/r/');
-
                 let response;
+
                 if (isShortUrl) {
                     response = await fetch(`${API_BASE_URL}/api/share/decode-hash`, {
                         method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
+                        headers: { 'Content-Type': 'application/json' },
                         credentials: 'include',
                         body: JSON.stringify({ encodedData })
                     });
@@ -46,11 +45,8 @@ function SharedResult() {
                 }
 
                 const data = await response.json();
-
                 if (data.success) {
                     setResultData(data.data);
-                    console.log('전체 데이터', data);
-                    console.log('✅ 데이터 로드 완료:', data.data);
                 } else {
                     setError(data.message || '결과를 불러올 수 없습니다.');
                 }
@@ -70,7 +66,6 @@ function SharedResult() {
         }
     }, [encodedData]);
 
-    // 로딩 화면
     if (loading) {
         return (
             <div className="min-h-screen bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#334155] flex items-center justify-center px-4">
@@ -82,7 +77,6 @@ function SharedResult() {
         );
     }
 
-    // 에러 화면
     if (error) {
         return (
             <div className="min-h-screen bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#334155] flex items-center justify-center px-4">
@@ -101,47 +95,33 @@ function SharedResult() {
         );
     }
 
-    // ✅ imageMetadata 파싱 (문자열이면 JSON.parse)
     let imageMetadata = resultData?.imageMetadata;
     if (typeof imageMetadata === 'string') {
-        try {
-            imageMetadata = JSON.parse(imageMetadata);
-            console.log('✅ imageMetadata 파싱:', imageMetadata);
-        } catch (error) {
-            console.error('❌ imageMetadata 파싱 실패:', error);
-            imageMetadata = {};
-        }
+        try { imageMetadata = JSON.parse(imageMetadata); }
+        catch (e) { imageMetadata = {}; }
     }
 
-// ✅ 데이터 파싱 - API 응답 구조에 맞게 수정
     const originalName = resultData?.user?.name || '익명';
     const maskedName = maskName(originalName);
-
-// ✅ metadata.character에서 띠 정보 추출 (예: "흰 호랑이띠 · 여름 · 아침")
     const characterString = resultData?.metadata?.character || '';
     const animalMatch = characterString.match(/([가-힣]+)띠/);
-    const animal = animalMatch ? animalMatch[1] : (imageMetadata?.zodiac);
+    const animal = animalMatch ? animalMatch[1] : (imageMetadata?.zodiac || '용');
 
-// ✅ fields 데이터 정규화 (객체면 grade 추출, 문자열이면 그대로)
     const normalizeFields = (fields) => {
         if (!fields) return { wealth: 'C', career: 'C', love: 'C', health: 'C' };
-
         const normalized = {};
         for (const [key, value] of Object.entries(fields)) {
-            // 객체면 grade 추출, 문자열이면 그대로
             normalized[key] = typeof value === 'object' ? (value.grade || 'C') : value;
         }
         return normalized;
     };
-
     const grades = normalizeFields(resultData?.fields);
 
-// ✅ metadata.character에서 계절과 시간대 추출
     const seasonMatch = characterString.match(/띠\s*·\s*([가-힣]+)\s*·/);
     const timeMatch = characterString.match(/·\s*([가-힣]+)$/);
-    const season = seasonMatch ? seasonMatch[1] : (imageMetadata?.season);
-    const timeOfDay = timeMatch ? timeMatch[1] : (imageMetadata?.timeOfDay);
-    // 등급별 색상
+    const season = seasonMatch ? seasonMatch[1] : (imageMetadata?.season || '');
+    const timeOfDay = timeMatch ? timeMatch[1] : (imageMetadata?.timeOfDay || '');
+
     const getGradeColor = (grade) => {
         switch (grade) {
             case 'S': return 'text-red-400';
@@ -152,7 +132,6 @@ function SharedResult() {
         }
     };
 
-    // 등급별 배경색
     const getGradeBg = (grade) => {
         switch (grade) {
             case 'S': return 'bg-red-500/20 border-red-500/30';
@@ -163,26 +142,19 @@ function SharedResult() {
         }
     };
 
-    // ✅ 띠별 이모지 매핑
     const getAnimalEmoji = (animalName) => {
         const emojiMap = {
-            '용': '🐉',
-            '뱀': '🐍',
-            '말': '🐴',
-            '양': '🐑',
-            '원숭이': '🐵',
-            '닭': '🐓',
-            '개': '🐕',
-            '돼지': '🐖',
-            '쥐': '🐭',
-            '소': '🐮',
-            '호랑이': '🐯',
-            '토끼': '🐰'
+            '용': '🐉', '뱀': '🐍', '말': '🐴', '양': '🐑',
+            '원숭이': '🐵', '닭': '🐓', '개': '🐕', '돼지': '🐖',
+            '쥐': '🐭', '소': '🐮', '호랑이': '🐯', '토끼': '🐰'
         };
         return emojiMap[animalName] || '🐉';
     };
 
-    // 결과 화면
+    const gradeColor = (grade) => {
+        return grade === 'S' ? '#f87171' : grade === 'A' ? '#fbbf24' : grade === 'B' ? '#60a5fa' : '#9ca3af';
+    };
+
     return (
         <div className="min-h-screen bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#334155] py-4 sm:py-8 md:py-12 px-3 sm:px-4">
             <div className="max-w-2xl mx-auto">
@@ -198,7 +170,6 @@ function SharedResult() {
                 {/* 메인 카드 */}
                 <div className="bg-white/10 backdrop-blur-lg rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8 shadow-2xl border border-white/20 mb-4 sm:mb-6">
 
-                    {/* 이름 & 기본정보 */}
                     <div className="text-center mb-6 sm:mb-8">
                         <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-2 sm:mb-3 leading-tight">
                             {maskedName}님의 2026년
@@ -212,82 +183,51 @@ function SharedResult() {
                         </div>
                     </div>
 
-                    {/* 캐릭터 영역 */}
                     <div className="bg-gradient-to-br from-[#d4af37]/20 to-[#f59e0b]/20 rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8 mb-6 sm:mb-8 text-center border border-[#d4af37]/30 relative overflow-hidden">
                         {resultData?.characterImage ? (
                             <img
                                 src={`${API_BASE_URL}${resultData.characterImage}`}
                                 alt={`${animal}띠 캐릭터`}
                                 className="w-full max-w-xs sm:max-w-md mx-auto rounded-lg sm:rounded-xl shadow-lg"
+                                crossOrigin="anonymous"
                                 onError={(e) => {
                                     e.target.style.display = 'none';
                                     e.target.nextElementSibling.style.display = 'block';
                                 }}
                             />
                         ) : null}
-
-                        {/* 폴백 이모지 */}
                         <div style={{ display: resultData?.characterImage ? 'none' : 'block' }}>
                             <div className="text-7xl sm:text-8xl md:text-9xl mb-3 sm:mb-4">
                                 {getAnimalEmoji(animal)}
                             </div>
                         </div>
-
                         <p className="text-white text-lg sm:text-xl md:text-2xl font-bold mt-3 sm:mt-4">
                             {season} {timeOfDay}의 {animal}
                         </p>
                     </div>
 
-                    {/* 운세 등급 */}
                     <div className="mb-6 sm:mb-8">
                         <div className="flex items-center justify-center gap-2 mb-4 sm:mb-6">
                             <Sparkles className="text-[#d4af37]" size={20} />
-                            <h3 className="text-white text-lg sm:text-xl font-bold text-center">
-                                2026년 운세 등급
-                            </h3>
+                            <h3 className="text-white text-lg sm:text-xl font-bold text-center">2026년 운세 등급</h3>
                         </div>
-
-                        {/* 모바일: 2x2 그리드, 태블릿+: 4열 그리드 */}
                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
-                            {/* 재물 */}
-                            <div className={`${getGradeBg(grades.wealth)} rounded-xl sm:rounded-2xl p-3 sm:p-4 text-center border transition-all hover:scale-105 active:scale-95`}>
-                                <div className="text-white/70 text-xs sm:text-sm mb-1 sm:mb-2">재물운</div>
-                                <div className={`text-3xl sm:text-4xl font-bold ${getGradeColor(grades.wealth)}`}>
-                                    {grades.wealth}
+                            {[
+                                { label: '재물운', key: 'wealth' },
+                                { label: '직업운', key: 'career' },
+                                { label: '연애운', key: 'love' },
+                                { label: '건강운', key: 'health' },
+                            ].map(({ label, key }) => (
+                                <div key={key} className={`${getGradeBg(grades[key])} rounded-xl sm:rounded-2xl p-3 sm:p-4 text-center border`}>
+                                    <div className="text-white/70 text-xs sm:text-sm mb-1 sm:mb-2">{label}</div>
+                                    <div className={`text-3xl sm:text-4xl font-bold ${getGradeColor(grades[key])}`}>{grades[key]}</div>
                                 </div>
-                            </div>
-
-                            {/* 직업 */}
-                            <div className={`${getGradeBg(grades.career)} rounded-xl sm:rounded-2xl p-3 sm:p-4 text-center border transition-all hover:scale-105 active:scale-95`}>
-                                <div className="text-white/70 text-xs sm:text-sm mb-1 sm:mb-2">직업운</div>
-                                <div className={`text-3xl sm:text-4xl font-bold ${getGradeColor(grades.career)}`}>
-                                    {grades.career}
-                                </div>
-                            </div>
-
-                            {/* 연애 */}
-                            <div className={`${getGradeBg(grades.love)} rounded-xl sm:rounded-2xl p-3 sm:p-4 text-center border transition-all hover:scale-105 active:scale-95`}>
-                                <div className="text-white/70 text-xs sm:text-sm mb-1 sm:mb-2">연애운</div>
-                                <div className={`text-3xl sm:text-4xl font-bold ${getGradeColor(grades.love)}`}>
-                                    {grades.love}
-                                </div>
-                            </div>
-
-                            {/* 건강 */}
-                            <div className={`${getGradeBg(grades.health)} rounded-xl sm:rounded-2xl p-3 sm:p-4 text-center border transition-all hover:scale-105 active:scale-95`}>
-                                <div className="text-white/70 text-xs sm:text-sm mb-1 sm:mb-2">건강운</div>
-                                <div className={`text-3xl sm:text-4xl font-bold ${getGradeColor(grades.health)}`}>
-                                    {grades.health}
-                                </div>
-                            </div>
+                            ))}
                         </div>
                     </div>
 
-                    {/* CTA */}
                     <div className="text-center pt-5 sm:pt-6 border-t border-white/10">
-                        <p className="text-white/80 mb-4 sm:mb-6 text-base sm:text-lg">
-                            🔮 나도 2026년 운세가 궁금하다면?
-                        </p>
+                        <p className="text-white/80 mb-4 sm:mb-6 text-base sm:text-lg">🔮 나도 2026년 운세가 궁금하다면?</p>
                         <button
                             onClick={() => navigate('/')}
                             className="bg-gradient-to-r from-[#d4af37] to-[#f59e0b] text-white px-8 sm:px-12 py-3 sm:py-4 rounded-xl sm:rounded-2xl text-base sm:text-xl font-bold hover:scale-105 active:scale-95 transition-transform w-full shadow-lg"
@@ -297,12 +237,89 @@ function SharedResult() {
                     </div>
                 </div>
 
-                {/* 푸터 */}
-                <div className="text-center text-white/50 text-xs sm:text-sm pb-4">
-                    <p>MyLifeCode · 2026년 운세</p>
+                {/* 공유 버튼 */}
+                <div className="text-center mb-4">
+                    <button
+                        onClick={() => setShareModalOpen(true)}
+                        className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white px-6 py-3 rounded-2xl transition-all"
+                    >
+                        <Share2 size={18} />
+                        <span>나도 공유하기</span>
+                    </button>
                 </div>
 
+                {/* 푸터 */}
+                <div className="text-center text-white/50 text-xs sm:text-sm pb-4">
+                    <p>월하사주 · 2026년 운세</p>
+                </div>
             </div>
+
+            {/* ✅ 인스타 공유용 숨겨진 캡처 카드 */}
+            <div
+                ref={cardRef}
+                style={{
+                    position: 'fixed',
+                    left: '-9999px',
+                    top: '0',
+                    width: '390px',
+                    backgroundColor: '#1e293b',
+                    padding: '32px 24px',
+                    borderRadius: '24px',
+                    fontFamily: 'sans-serif',
+                }}
+            >
+                <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+                    <p style={{ color: '#d4af37', fontSize: '13px', letterSpacing: '2px', marginBottom: '8px', margin: '0 0 8px' }}>
+                        月下사주 · 2026년 운세
+                    </p>
+                    <h1 style={{ color: 'white', fontSize: '26px', fontWeight: 'bold', margin: 0 }}>
+                        {maskedName}님의 2026년
+                    </h1>
+                    <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '14px', margin: '8px 0 0' }}>
+                        {animal}띠 · {season} · {timeOfDay}
+                    </p>
+                </div>
+
+                {resultData?.characterImage && (
+                    <img
+                        src={`${API_BASE_URL}${resultData.characterImage}`}
+                        alt="캐릭터"
+                        crossOrigin="anonymous"
+                        style={{ width: '100%', borderRadius: '16px', marginBottom: '20px', display: 'block' }}
+                    />
+                )}
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '8px', marginBottom: '20px' }}>
+                    {[
+                        { label: '재물운', key: 'wealth' },
+                        { label: '직업운', key: 'career' },
+                        { label: '연애운', key: 'love' },
+                        { label: '건강운', key: 'health' },
+                    ].map(({ label, key }) => (
+                        <div key={key} style={{ backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: '12px', padding: '10px 4px', textAlign: 'center' }}>
+                            <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '11px', margin: '0 0 4px' }}>{label}</p>
+                            <p style={{ color: gradeColor(grades[key]), fontSize: '28px', fontWeight: 'bold', margin: 0 }}>{grades[key]}</p>
+                        </div>
+                    ))}
+                </div>
+
+                <div style={{ backgroundColor: '#d4af37', borderRadius: '14px', padding: '14px', textAlign: 'center' }}>
+                    <p style={{ color: 'white', fontSize: '15px', fontWeight: 'bold', margin: '0 0 4px' }}>
+                        🔮 나도 2026년 운세 보러가기
+                    </p>
+                    <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: '12px', margin: 0 }}>
+                        {FRONTEND_URL}
+                    </p>
+                </div>
+            </div>
+
+            {/* ShareModal */}
+            <ShareModal
+                isOpen={shareModalOpen}
+                onClose={() => setShareModalOpen(false)}
+                resultData={resultData}
+                cardRef={cardRef}
+            />
         </div>
     );
 }

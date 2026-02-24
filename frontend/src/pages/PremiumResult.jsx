@@ -1,6 +1,6 @@
 // frontend/src/pages/PremiumResult.jsx
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import ReactMarkdown from 'react-markdown';
@@ -20,6 +20,7 @@ function PremiumResult() {
     const [showShareModal, setShowShareModal] = useState(false);
     const [loading, setLoading] = useState(true);
     const [imageError, setImageError] = useState(false);
+    const cardRef = useRef(null);
 
     useEffect(() => {
         loadResult();
@@ -175,7 +176,12 @@ function PremiumResult() {
                 <div className="top-header">
                     <div className="nav-bar">
                         <span className="nav-logo">
-                            <Crown size={20} style={{ display: 'inline', verticalAlign: 'middle', marginRight: '4px', color: '#ffd700' }} />
+                            <Crown size={20} style={{
+                                display: 'inline',
+                                verticalAlign: 'middle',
+                                marginRight: '4px',
+                                color: '#ffd700'
+                            }}/>
                             月下 PREMIUM
                         </span>
                         <div className="nav-actions">
@@ -203,6 +209,7 @@ function PremiumResult() {
                         }
                         className="char-img"
                         alt="운명 캐릭터"
+                        crossOrigin="anonymous"
                         onError={() => setImageError(true)}
                     />
                     <div className="char-overlay">
@@ -216,6 +223,9 @@ function PremiumResult() {
                         <p className="char-date">
                             {result.birthDate} {formatBirthTime(result.birthTime)} | {result.gender === 'M' ? '남성' : '여성'} | {result.mbti}
                         </p>
+                        <p style={{color: 'rgba(255,255,255,0.4)', fontSize: '11px', marginTop: '8px'}}>
+                            {process.env.REACT_APP_FRONTEND_URL}
+                        </p>
                     </div>
                 </div>
 
@@ -223,6 +233,7 @@ function PremiumResult() {
                     isOpen={showShareModal}
                     onClose={() => setShowShareModal(false)}
                     resultData={shareData}
+                    cardRef={cardRef}
                 />
 
                 {/* 📋 사주팔자 표 */}
@@ -301,17 +312,20 @@ function PremiumResult() {
                                     remarkPlugins={[remarkGfm]}
                                     components={{
                                         h1: ({node, ...props}) => (
-                                            <h2 className="section-heading" style={{fontSize: '1.3rem', marginTop: '0'}} {...props} />
+                                            <h2 className="section-heading"
+                                                style={{fontSize: '1.3rem', marginTop: '0'}} {...props} />
                                         ),
                                         h2: ({node, children, ...props}) => {
                                             const text = String(children);
 
                                             if (text.includes('위기') || text.includes('🚨')) {
                                                 return (
-                                                    <div className="crisis-box" style={{marginTop: '24px', marginBottom: '0'}}>
+                                                    <div className="crisis-box"
+                                                         style={{marginTop: '24px', marginBottom: '0'}}>
                                                         <div className="crisis-header">
                                                             <AlertTriangle size={22} className="crisis-icon"/>
-                                                            <span className="crisis-title">{text.replace(/^\d+\.\s*/, '').replace('🚨', '').trim()}</span>
+                                                            <span
+                                                                className="crisis-title">{text.replace(/^\d+\.\s*/, '').replace('🚨', '').trim()}</span>
                                                         </div>
                                                     </div>
                                                 );
@@ -340,7 +354,8 @@ function PremiumResult() {
                                         strong: ({node, children, ...props}) => {
                                             const text = String(children);
                                             if (text.includes('월:') || text.includes('월 :')) {
-                                                return <strong className="crisis-highlight" {...props}>{children}</strong>;
+                                                return <strong
+                                                    className="crisis-highlight" {...props}>{children}</strong>;
                                             }
                                             return <strong className="highlight-text" {...props}>{children}</strong>;
                                         },
@@ -389,6 +404,91 @@ function PremiumResult() {
 
                 {/* 하단 여백 */}
                 <div className="bottom-spacer"></div>
+            </div>
+            {/* 인스타 공유용 숨겨진 카드 - 화면 밖에 렌더링 */}
+            <div
+                ref={cardRef}
+                style={{
+                    position: 'fixed',
+                    left: '-9999px',
+                    top: '0',
+                    width: '390px',
+                    backgroundColor: '#1e293b',
+                    padding: '32px 24px',
+                    borderRadius: '24px',
+                    fontFamily: 'sans-serif',
+                }}
+            >
+                {/* 상단 타이틀 */}
+                <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+                    <p style={{ color: '#d4af37', fontSize: '13px', letterSpacing: '2px', marginBottom: '8px' }}>
+                        月下사주 · 2026년 운세
+                    </p>
+                    <h1 style={{ color: 'white', fontSize: '26px', fontWeight: 'bold', margin: 0 }}>
+                        {result.name}님의 2026년
+                    </h1>
+                </div>
+
+                {/* 캐릭터 이미지 */}
+                {characterImage && (
+                    <img
+                        src={`${API_BASE_URL}${characterImage}`}
+                        alt="캐릭터"
+                        crossOrigin="anonymous"
+                        style={{
+                            width: '100%',
+                            borderRadius: '16px',
+                            marginBottom: '20px',
+                            display: 'block',
+                        }}
+                    />
+                )}
+
+                {/* 등급 */}
+                <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: '1fr 1fr 1fr 1fr',
+                    gap: '8px',
+                    marginBottom: '20px',
+                }}>
+                    {[
+                        { label: '재물운', key: 'wealth' },
+                        { label: '직업운', key: 'career' },
+                        { label: '연애운', key: 'love' },
+                        { label: '건강운', key: 'health' },
+                    ].map(({ label, key }) => {
+                        const grade = typeof sajuData.fields?.[key] === 'object'
+                            ? sajuData.fields?.[key]?.grade
+                            : sajuData.fields?.[key] || 'C';
+                        const color = grade === 'S' ? '#f87171' : grade === 'A' ? '#fbbf24' : grade === 'B' ? '#60a5fa' : '#9ca3af';
+                        return (
+                            <div key={key} style={{
+                                backgroundColor: 'rgba(255,255,255,0.1)',
+                                borderRadius: '12px',
+                                padding: '10px 4px',
+                                textAlign: 'center',
+                            }}>
+                                <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '11px', margin: '0 0 4px' }}>{label}</p>
+                                <p style={{ color, fontSize: '28px', fontWeight: 'bold', margin: 0 }}>{grade}</p>
+                            </div>
+                        );
+                    })}
+                </div>
+
+                {/* 나도 보러가기 버튼 영역 */}
+                <div style={{
+                    backgroundColor: '#d4af37',
+                    borderRadius: '14px',
+                    padding: '14px',
+                    textAlign: 'center',
+                }}>
+                    <p style={{ color: 'white', fontSize: '15px', fontWeight: 'bold', margin: '0 0 4px' }}>
+                        🔮 나도 2026년 운세 보러가기
+                    </p>
+                    <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: '12px', margin: 0 }}>
+                        {process.env.REACT_APP_FRONTEND_URL}
+                    </p>
+                </div>
             </div>
         </div>
     );

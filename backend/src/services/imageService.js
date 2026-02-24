@@ -199,7 +199,17 @@ async function generateCharacterImage(sajuData) {
         console.log(`   - 성별: ${genderStr}`);
 
         // 2️⃣ 파일명 생성 (캐시 키에 색상 추가)
-        const outputFilename = `${season}_${timeOfDay4}_${genderStr}_${color}_${zodiac}.jpg`;
+        const seasonEn  = { '봄': 'spring', '여름': 'summer', '가을': 'autumn', '겨울': 'winter' };
+        const timeEn    = { '밤': 'night', '아침': 'morning', '낮': 'day', '저녁': 'evening' };
+        const genderEn  = { '남': 'm', '여': 'f' };
+        const colorEn   = { '파랑': 'blue', '빨강': 'red', '금': 'gold', '하양': 'white', '검정': 'black' };
+        const zodiacEn  = {
+            '원숭이': 'monkey', '닭': 'rooster', '개': 'dog',  '돼지': 'pig',
+            '쥐': 'rat',        '소': 'ox',       '호랑이': 'tiger', '토끼': 'rabbit',
+            '용': 'dragon',     '뱀': 'snake',    '말': 'horse',     '양': 'sheep'
+        };
+
+        const outputFilename = `${seasonEn[season]}_${timeEn[timeOfDay4]}_${genderEn[genderStr]}_${colorEn[color]}_${zodiacEn[zodiac]}.jpg`;
         const outputPath = path.join(OUTPUT_PATH, outputFilename);
         const webPath = `/generated-images/${outputFilename}`;
 

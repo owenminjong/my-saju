@@ -31,7 +31,10 @@ app.use(session({
         secure: process.env.NODE_ENV === 'production'
     }
 }));
-app.use('/generated-images', express.static(path.join(__dirname, '../public/generated-images')));
+app.use('/generated-images', (req, res, next) => {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    next();
+}, express.static(path.join(__dirname, '../public/generated-images')));
 
 // 라우트 import
 const authRoutes = require('./routes/auth');

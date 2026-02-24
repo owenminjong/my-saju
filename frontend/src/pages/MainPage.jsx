@@ -10,9 +10,14 @@ const MainPage = () => {
     const canvasRef = useRef(null);
     const countRef = useRef(null);
     const counted = useRef(false);
+    const sajuInputRef = useRef(null);
 
     const toggleMenu = () => setMenuActive(true);
     const closeMenu = () => setMenuActive(false);
+
+    const scrollToSajuInput = () => {
+        sajuInputRef.current?.scrollIntoView({ behavior: 'smooth' });
+    };
 
     // Starfield canvas
     useEffect(() => {
@@ -168,11 +173,6 @@ const MainPage = () => {
                 </nav>
             </div>
 
-            {/* Top Banner */}
-            {/*<a href="https://search.naver.com/search.naver?query=월하신녀+성격사주+후기" target="_blank" rel="noreferrer" className="top-banner">
-                <span className="banner-count">3,847</span>명이 이미 경험했습니다 · <span className="banner-link">후기 확인하기</span>
-            </a>*/}
-
             {/* ===== 1. HERO ===== */}
             <section className="section hero-section">
                 <div className="hero-bg"></div>
@@ -193,10 +193,14 @@ const MainPage = () => {
                     </div>
                 </div>
 
-                <div className="scroll-indicator">
+                <div className="scroll-indicator" style={{ bottom: '80px' }}>
                     <span>Scroll</span>
                     <div className="line"></div>
                 </div>
+
+                <button className="cta-scroll-btn" onClick={scrollToSajuInput}>
+                    지금 바로 확인하기 ↓
+                </button>
             </section>
 
             {/* ===== 2. REASSURANCE ===== */}
@@ -246,7 +250,6 @@ const MainPage = () => {
             {/* ===== 5. CORE MESSAGE ===== */}
             <section className="section core-message">
                 <div className="core-bg"></div>
-                {/* 달 영상 */}
                 <div className="moon-container">
                     <div className="moon-video-wrapper">
                         <video autoPlay muted loop playsInline className="moon-video">
@@ -341,7 +344,6 @@ const MainPage = () => {
                     당신의 사주 결과에는<br />이런 것들이 담겨 있어요
                 </h2>
                 <div className="teaser-preview reveal">
-                    {/*<img src="character.png" alt="결과 미리보기" className="teaser-char" />*/}
                     <div className="teaser-overlay">
                         <span className="teaser-q">?</span>
                     </div>
@@ -362,7 +364,9 @@ const MainPage = () => {
                 <p className="cta-subtitle reveal">성격에 맞는 내 길을<br />지금 확인해보세요</p>
             </section>
 
-            <SajuInput />
+            <div ref={sajuInputRef}>
+                <SajuInput />
+            </div>
 
             {/* Footer */}
             <footer className="wolha-footer">
