@@ -14,7 +14,7 @@ const MainPage = () => {
 
     const toggleMenu = () => setMenuActive(true);
     const closeMenu = () => setMenuActive(false);
-
+    const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem('token'));
     const scrollToSajuInput = () => {
         sajuInputRef.current?.scrollIntoView({ behavior: 'smooth' });
     };
@@ -164,9 +164,11 @@ const MainPage = () => {
                     }} style={{ background: 'none', border: 'none', width: '100%', textAlign: 'left' }}>
                         내 사주 기록 보기
                     </button>
-                    <button className="menu-link" onClick={() => navigate('/login')} style={{ background: 'none', border: 'none', width: '100%', textAlign: 'left' }}>
-                        로그인하기
-                    </button>
+                    {!isLoggedIn && (
+                        <button className="menu-link" onClick={() => navigate('/login')} style={{ background: 'none', border: 'none', width: '100%', textAlign: 'left' }}>
+                            로그인하기
+                        </button>
+                    )}
                     <button className="menu-link" onClick={() => navigate('/saju-input', { state: { mode: 'premium' } })} style={{ background: 'none', border: 'none', width: '100%', textAlign: 'left' }}>
                         유료 사주 보러 가기
                     </button>

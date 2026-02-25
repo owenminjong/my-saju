@@ -118,18 +118,38 @@ function SajuResult() {
     const parseDiagnosis = (text) => {
         if (!text) return { beforeCrisis: '', crisisItems: [] };
 
-        const splitIndex = text.indexOf('## 🚨 위기 상황');
-        if (splitIndex === -1) return { beforeCrisis: text, crisisItems: [] };
+        const lines = text.split('\n');
+        const crisisLineIndex = lines.findIndex(line => /[🚨⚠️]/.test(line) && /위기/.test(line));
 
-        const beforeCrisis = text.slice(0, splitIndex);
-        const crisisSection = text.slice(splitIndex);
+        if (crisisLineIndex === -1) return { beforeCrisis: text, crisisItems: [] };
+
+        const beforeCrisis = lines.slice(0, crisisLineIndex).join('\n').trimEnd();
+        const crisisSection = lines.slice(crisisLineIndex + 1).join('\n').trim();
 
         const crisisItems = [];
-        const regex = /\*\*(위기\s*\d+\s*\([^)]+\)):\*\*\s*([\s\S]*?)(?=\n\n\*\*위기\s*\d+|\s*$)/g;
-        let match;
-        while ((match = regex.exec(crisisSection)) !== null) {
-            crisisItems.push({ title: match[1].trim(), content: match[2].trim() });
-        }
+
+        // 빈 줄 기준으로 항목 분리
+        const blocks = crisisSection.split(/\n\n+/).filter(b => b.trim());
+
+        blocks.forEach(block => {
+            const trimmed = block.trim();
+            if (!trimmed) return;
+
+            // 제목: **내용** 또는 **내용**: 또는 **내용** - 패턴
+            const titleMatch = trimmed.match(/\*\*([^*]+)\*\*/);
+            const title = titleMatch ? titleMatch[1].replace(/:$/, '').trim() : '위기';
+
+            // 본문: bold 제목과 구분자(: 또는 -) 이후 내용
+            const content = trimmed
+                .replace(/^[•\d.]+\s*/, '')
+                .replace(/\*\*[^*]+\*\*\s*[-:]\s*/, '')
+                .replace(/\*\*[^*]+\*\*/, '')
+                .trim();
+
+            if (content) {
+                crisisItems.push({ title, content });
+            }
+        });
 
         return { beforeCrisis, crisisItems };
     };

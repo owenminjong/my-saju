@@ -11,6 +11,7 @@ const SajuInput = () => {
     const location = useLocation();
     const mode = location.state?.mode || 'free';
     const hasAlerted = useRef(false);
+    const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
 
     const [loading, setLoading] = useState(false);
     const [product, setProduct] = useState(null);
@@ -53,6 +54,32 @@ const SajuInput = () => {
             checkAuthAndFetchProduct();
         }
     }, [mode]);
+
+// 키보드 감지
+    useEffect(() => {
+        const KEYBOARD_THRESHOLD = 150;
+        const initialHeight = window.visualViewport?.height || window.innerHeight;
+
+        const handleViewportChange = () => {
+            const currentHeight = window.visualViewport?.height || window.innerHeight;
+            const diff = initialHeight - currentHeight;
+            setIsKeyboardOpen(diff > KEYBOARD_THRESHOLD);
+        };
+
+        if (window.visualViewport) {
+            window.visualViewport.addEventListener('resize', handleViewportChange);
+        } else {
+            window.addEventListener('resize', handleViewportChange);
+        }
+
+        return () => {
+            if (window.visualViewport) {
+                window.visualViewport.removeEventListener('resize', handleViewportChange);
+            } else {
+                window.removeEventListener('resize', handleViewportChange);
+            }
+        };
+    }, []);
 
 // ✅ 새로 추가: 인증 체크 + 상품 조회
     const checkAuthAndFetchProduct = async () => {
@@ -346,7 +373,7 @@ const SajuInput = () => {
             </section>
 
             {/* ✅ 유료 모드: formData 전달 */}
-            {mode === 'premium' && product && (
+            {mode === 'premium' && product && !isKeyboardOpen && (
                 <PremiumPromoCard
                     sajuData={formData}
                     productInfo={product}

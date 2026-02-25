@@ -391,17 +391,6 @@ function PremiumResult() {
                     );
                 })}
 
-                {/* 결제 정보 */}
-                {result.order && (
-                    <div className="usage-info">
-                        <p>
-                            💎 프리미엄 풀코스 진단 <br/>
-                            결제 금액: {result.order.amount?.toLocaleString()}원 <br/>
-                            생성 일시: {new Date(result.createdAt).toLocaleString('ko-KR')}
-                        </p>
-                    </div>
-                )}
-
                 {/* 하단 여백 */}
                 <div className="bottom-spacer"></div>
             </div>

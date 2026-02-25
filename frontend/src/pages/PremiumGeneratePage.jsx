@@ -195,17 +195,17 @@ function PremiumGeneratePage() {
                 <div style={{
                     position: 'relative',
                     width: '100%',
-                    height: '180px',
+                    height: '180px',    // ← 이 값 그대로
                     margin: '0 auto 25px'
                 }}>
                     {/* 캐릭터 이미지 */}
                     <div style={{
                         position: 'absolute',
-                        bottom: '-90px',
+                        bottom: '-40px',          // ← -90px → -40px 으로 변경
                         left: '50%',
                         transform: 'translateX(-50%)',
-                        width: '220px',
-                        height: '220px',
+                        width: '180px',           // ← 220px → 180px 으로 축소
+                        height: '180px',          // ← 220px → 180px 으로 축소
                         animation: 'float 3s ease-in-out infinite'
                     }}>
                         <img
@@ -380,7 +380,7 @@ function PremiumGeneratePage() {
                         transform: translateX(-50%) translateY(0px);
                     }
                     50% {
-                        transform: translateX(-50%) translateY(-20px);
+                        transform: translateX(-50%) translateY(-10px);  /* ← -20px → -10px */
                     }
                 }
 
