@@ -12,33 +12,23 @@ function AdminLoginPage() {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        console.log('=== 🔐 로그인 시작 ===');
-        console.log('username:', username);
-        console.log('password:', password);
-
         setError('');
         setLoading(true);
 
         try {
-            console.log('📤 POST 요청 전송...');
 
             const response = await api.post('/api/admin/auth/login', {
                 username,
                 password
             });
 
-            console.log('📥 응답 받음:', response.data);
-
             if (response.data.success) {
                 localStorage.setItem('adminToken', response.data.token);
                 localStorage.setItem('adminInfo', JSON.stringify(response.data.admin));
 
-                console.log('✅ 로그인 성공, 페이지 이동');
                 navigate('/admin');
             }
         } catch (err) {
-            console.error('❌ 에러 발생:', err);
-            console.error('❌ 에러 응답:', err.response);
             setError(err.response?.data?.message || '로그인에 실패했습니다.');
         } finally {
             setLoading(false);
@@ -64,7 +54,6 @@ function AdminLoginPage() {
                             value={username}
                             onChange={(e) => setUsername(e.target.value)}
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 text-gray-900"
-                            placeholder="admin"
                             required
                         />
                     </div>
@@ -79,7 +68,6 @@ function AdminLoginPage() {
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 text-gray-900"
-                            placeholder="1234"
                             required
                         />
                     </div>
@@ -98,10 +86,6 @@ function AdminLoginPage() {
                         {loading ? '로그인 중...' : '로그인'}
                     </button>
                 </form>
-
-                <div className="mt-4 text-center text-sm text-gray-500">
-                    admin / 1234
-                </div>
             </div>
         </div>
     );

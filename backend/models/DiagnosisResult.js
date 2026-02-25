@@ -1,5 +1,3 @@
-// backend/src/models/DiagnosisResult.js
-
 const { DataTypes } = require('sequelize');
 const { sequelize } = require('./sequelize');
 
@@ -14,9 +12,14 @@ const DiagnosisResult = sequelize.define('diagnosis_results', {
         allowNull: true
     },
     input_hash: {
-        type: DataTypes.STRING(64),
+        type: DataTypes.STRING(100),  // 64 → 100으로 변경
         allowNull: false,
         unique: true
+    },
+    is_cached: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false  // 원본은 false, 복사본은 true
     },
     name: {
         type: DataTypes.STRING(100),
@@ -50,12 +53,10 @@ const DiagnosisResult = sequelize.define('diagnosis_results', {
         type: DataTypes.TEXT,
         allowNull: true
     },
-    // ✅ 추가!
     character_image: {
         type: DataTypes.STRING(255),
         allowNull: true
     },
-    // ✅ 추가!
     image_metadata: {
         type: DataTypes.JSON,
         allowNull: true

@@ -50,82 +50,126 @@ function PremiumGeneratePage() {
     const generatePremiumSaju = async () => {
         try {
             const token = localStorage.getItem('token');
-
             if (!token) {
                 alert('로그인이 필요합니다.');
                 navigate('/login');
                 return;
             }
 
-            console.log('📝 프리미엄 사주 생성 API 호출...');
-
-            // ✅ 진행률 애니메이션 시작 (30초 동안 90%까지)
-            const progressInterval = setInterval(() => {
-                setProgress(prev => {
-                    if (prev >= 90) {
-                        clearInterval(progressInterval);
-                        return 90;
-                    }
-
-                    const newProgress = prev + 3; // 3%씩 증가
-
-                    // 단계 업데이트
-                    if (newProgress >= 30 && newProgress < 60) {
-                        setStep(2);
-                        setStepMessage(stepMessages[2]);
-                    } else if (newProgress >= 60) {
-                        setStep(3);
-                        setStepMessage(stepMessages[3]);
-                    }
-
-                    return newProgress;
-                });
-            }, 1000); // 1초마다 3%씩 증가
-
-            // ⭐ 실제 API 호출
-            const response = await axios.post(
-                `${API_BASE_URL}/api/diagnosis/premium`,
-                {
-                    orderId: orderId,
-                    sajuData: sajuData
+            const response = await fetch(`${API_BASE_URL}/api/diagnosis/premium`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
                 },
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    },
-                    withCredentials: true
+                credentials: 'include',
+                body: JSON.stringify({ orderId, sajuData })
+            });
+
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+
+                const chunk = decoder.decode(value);
+                const lines = chunk.split('\n').filter(line => line.startsWith('data: '));
+
+                for (const line of lines) {
+                    try {
+                        const data = JSON.parse(line.replace('data: ', ''));
+
+                        if (data.error) {
+                            alert(data.error);
+                            navigate('/');
+                            return;
+                        }
+
+                        // ✅ 캐시 히트 → 가짜 타이머 실행
+                        if (data.diagnosisId && data.isCached) {
+                            startFakeTimer(data.diagnosisId);
+                            return;
+                        }
+
+                        // ✅ 실제 진행률 업데이트
+                        setProgress(data.progress);
+                        setStepMessage(data.message);
+
+                        // 단계 업데이트
+                        if (data.progress >= 10 && data.progress < 35) setStep(1);
+                        else if (data.progress >= 35 && data.progress < 80) setStep(2);
+                        else if (data.progress >= 80) setStep(3);
+
+                        // ✅ 일반 완료 (캐시 미스)
+                        if (data.diagnosisId && !data.isCached) {
+                            setTimeout(() => {
+                                sessionStorage.removeItem('premiumOrderData');
+                                navigate(`/premium/result/${data.diagnosisId}`);
+                            }, 1500);
+                        }
+
+                    } catch (e) {
+                        // JSON 파싱 실패 무시
+                    }
                 }
-            );
-
-            console.log('✅ 프리미엄 진단 생성 완료:', response.data);
-
-            // ✅ API 완료 후 100%로 즉시 변경
-            clearInterval(progressInterval);
-            setProgress(100);
-            setStepMessage('완료되었습니다!');
-
-            // 잠시 대기 후 결과 페이지로 이동
-            setTimeout(() => {
-                // ✅ sessionStorage 정리
-                sessionStorage.removeItem('premiumOrderData');
-                navigate(`/premium/result/${response.data.diagnosisId}`);
-            }, 1500);
+            }
 
         } catch (error) {
             console.error('❌ 프리미엄 사주 생성 오류:', error);
-
-            if (error.response?.status === 401) {
-                alert('로그인이 만료되었습니다. 다시 로그인해주세요.');
-                navigate('/login');
-            } else if (error.response?.status === 403) {
-                alert('유효하지 않은 결제입니다.');
-                navigate('/');
-            } else {
-                alert(error.response?.data?.message || '사주 생성에 실패했습니다.');
-                navigate('/');
-            }
+            alert('사주 생성에 실패했습니다.');
+            navigate('/');
         }
+    };
+
+    const startFakeTimer = (diagnosisId) => {
+        const TOTAL_DURATION = 150000; // 150초
+        const startTime = Date.now();
+
+        // 단계별 구간 정의
+        const stages = [
+            { until: 50000,  maxProgress: 33, step: 1, message: '인생 로드맵을 생성 중입니다...' },
+            { until: 100000, maxProgress: 75, step: 2, message: '3대 핵심 분야를 분석 중입니다...' },
+            { until: 150000, maxProgress: 94, step: 3, message: '월간 캘린더를 생성 중입니다...' }
+        ];
+
+        const interval = setInterval(() => {
+            const elapsed = Date.now() - startTime;
+
+            // 현재 단계 찾기
+            const stageIndex = stages.findIndex(s => elapsed < s.until);
+            if (stageIndex === -1) {
+                // 150초 완료
+                clearInterval(interval);
+                setProgress(100);
+                setStep(3);
+                setStepMessage('완료되었습니다!');
+                setTimeout(() => {
+                    sessionStorage.removeItem('premiumOrderData');
+                    navigate(`/premium/result/${diagnosisId}`);
+                }, 1000);
+                return;
+            }
+
+            const stage = stages[stageIndex];
+            const prevUntil = stageIndex === 0 ? 0 : stages[stageIndex - 1].until;
+            const prevMaxProgress = stageIndex === 0 ? 10 : stages[stageIndex - 1].maxProgress;
+
+            // 이 단계 안에서의 진행률 비율
+            const stageElapsed = elapsed - prevUntil;
+            const stageDuration = stage.until - prevUntil;
+            const stageRatio = stageElapsed / stageDuration;
+
+            // 이 단계의 진행률 범위 내에서 선형 증가
+            const currentProgress = Math.floor(
+                prevMaxProgress + (stage.maxProgress - prevMaxProgress) * stageRatio
+            );
+
+            setProgress(currentProgress);
+            setStep(stage.step);
+            setStepMessage(stage.message);
+
+        }, 500);
     };
 
     return (

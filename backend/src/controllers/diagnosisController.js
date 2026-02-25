@@ -1,12 +1,28 @@
 // backend/src/controllers/diagnosisController.js
 
 const sajuService = require('../services/sajuService');
-const { generateFreePrompt, generatePremiumPrompt } = require('../services/promptService');
+const { generateFreePrompt } = require('../services/promptService');
 const { callClaudeAPIFree, callClaudeAPIPremium } = require('../services/claudeService');
 const { generateCharacterImage } = require('../services/imageService');
 const { User, Order, DiagnosisResult } = require('../../models');
 const crypto = require('crypto');
 const { v4: uuidv4 } = require('uuid');
+
+const {
+    getAllPremiumPrompts,
+    generateStep1Prompt,
+    generateStep2Prompt,
+    generateStep3Prompt
+} = require('../services/premiumPromptService');
+
+/**
+ * input_hash 생성 함수
+ * ✅ 이름 제외 - 같은 사주면 이름 달라도 캐시 히트
+ */
+function generateInputHash(sajuData) {
+    const hashString = `${sajuData.year}-${sajuData.month}-${sajuData.day}-${sajuData.hour || 0}-${sajuData.minute || 0}-${sajuData.gender}-${sajuData.mbti}`;
+    return crypto.createHash('sha256').update(hashString).digest('hex');
+}
 
 /**
  * 무료 베이직 진단 생성
@@ -75,7 +91,6 @@ const generateFreeDiagnosis = async (req, res) => {
             prompt.userPrompt,
             null
         );
-
         console.log('✅ 무료 진단 완료!\n');
 
         // 4️⃣ 세션에 저장
@@ -129,15 +144,8 @@ const generateFreeDiagnosis = async (req, res) => {
     }
 };
 
-const {
-    getAllPremiumPrompts,
-    generateStep1Prompt,
-    generateStep2Prompt,
-    generateStep3Prompt
-} = require('../services/premiumPromptService');
-
 /**
- * 프리미엄 진단 생성 (3단계)
+ * 프리미엄 진단 생성 (3단계) - SSE + 캐시
  * POST /api/diagnosis/premium
  * 인증 필수
  */
@@ -154,7 +162,19 @@ const generatePremiumDiagnosis = async (req, res) => {
         console.log('📦 주문 ID:', orderId);
         console.log('\n');
 
+        // ✅ SSE 헤더 설정
+        res.setHeader('Content-Type', 'text/event-stream');
+        res.setHeader('Cache-Control', 'no-cache');
+        res.setHeader('Connection', 'keep-alive');
+        res.setHeader('Access-Control-Allow-Origin', '*');
+        res.flushHeaders();
+
+        const sendProgress = (progress, message, data = {}) => {
+            res.write(`data: ${JSON.stringify({ progress, message, ...data })}\n\n`);
+        };
+
         // 1️⃣ 결제 검증
+        sendProgress(3, '결제 검증 중...');
         console.log('💳 결제 검증 중...');
         const order = await Order.findOne({
             where: {
@@ -166,14 +186,64 @@ const generatePremiumDiagnosis = async (req, res) => {
 
         if (!order) {
             console.log('❌ 유효하지 않은 결제');
-            return res.status(403).json({
-                success: false,
-                message: '유효하지 않은 결제입니다.'
-            });
+            res.write(`data: ${JSON.stringify({ error: '유효하지 않은 결제입니다.' })}\n\n`);
+            return res.end();
         }
         console.log('✅ 결제 검증 완료\n');
 
-        // 2️⃣ 사주 계산
+        // 2️⃣ 캐시 확인
+        sendProgress(5, '기존 데이터 확인 중...');
+        const inputHash = generateInputHash(sajuData);
+        console.log('🔍 캐시 확인 중... hash:', inputHash);
+
+        const existing = await DiagnosisResult.findOne({
+            where: {
+                input_hash: inputHash,
+                diagnosis_type: 'premium',
+                is_cached: false
+            }
+        });
+
+        if (existing) {
+            console.log(`✅ 캐시 히트! 기존 결과 재사용 (기존 ID: ${existing.id})`);
+
+            sendProgress(10, '기존 데이터를 확인하고 있습니다...');
+
+            const copied = await DiagnosisResult.create({
+                user_id: userId,
+                order_id: order.id,
+                input_hash: `${inputHash}_${order.id}`,
+                is_cached: true,
+                name: sajuData.name,
+                birth_date: existing.birth_date,
+                birth_time: existing.birth_time,
+                gender: existing.gender,
+                mbti: existing.mbti,
+                saju_data: {
+                    ...existing.saju_data,
+                    user: {
+                        ...existing.saju_data.user,
+                        name: sajuData.name
+                    }
+                },
+                premium_diagnosis: existing.premium_diagnosis,
+                character_image: existing.character_image,
+                image_metadata: existing.image_metadata,
+                diagnosis_type: 'premium'
+            });
+
+            console.log(`✅ 복사 완료 (새 ID: ${copied.id})`);
+            sendProgress(100, '완료되었습니다!', {
+                diagnosisId: copied.id,
+                isCached: true
+            });
+            return res.end();
+        }
+
+        console.log('💡 캐시 없음 - 새로 생성합니다\n');
+
+        // 3️⃣ 사주 계산
+        sendProgress(6, '사주 계산 중...');
         console.log('🔮 사주 계산 중...');
         const sajuResult = await sajuService.analyzeBasicSaju({
             name: sajuData.name,
@@ -184,14 +254,12 @@ const generatePremiumDiagnosis = async (req, res) => {
             minute: sajuData.minute || 0,
             isLunar: sajuData.isLunar || false
         });
-
-        // MBTI 추가
         sajuResult.mbti = sajuData.mbti;
         sajuResult.user.gender = sajuData.gender;
-
         console.log('✅ 사주 계산 완료\n');
 
-        // 3️⃣ 캐릭터 이미지 생성
+        // 4️⃣ 캐릭터 이미지 생성
+        sendProgress(7, '캐릭터 이미지 생성 중...');
         console.log('🎨 캐릭터 이미지 생성 중...');
         let characterImage = null;
         let imageMetadata = null;
@@ -217,51 +285,55 @@ const generatePremiumDiagnosis = async (req, res) => {
             console.error('⚠️ 이미지 생성 실패:', imageError.message);
         }
 
-        // 4️⃣ 프리미엄 프롬프트 3개 가져오기
+        // 5️⃣ 프롬프트 로딩
+        sendProgress(9, '프롬프트 로딩 중...');
         console.log('📥 프리미엄 프롬프트 로딩 중...');
         const prompts = await getAllPremiumPrompts();
-        console.log(`✅ 프롬프트 로딩 완료`);
-        console.log(`  Step 1: ${prompts.step1.name} (${prompts.step1.estimated_tokens} 토큰)`);
-        console.log(`  Step 2: ${prompts.step2.name} (${prompts.step2.estimated_tokens} 토큰)`);
-        console.log(`  Step 3: ${prompts.step3.name} (${prompts.step3.estimated_tokens} 토큰)\n`);
+        console.log('✅ 프롬프트 로딩 완료');
 
-        // 5️⃣ Step 1: 인생 로드맵
+        // 6️⃣ Step 1: 인생 로드맵
+        sendProgress(10, '인생 로드맵을 생성 중입니다...');
         console.log('📝 Step 1: 인생 로드맵 생성 중...');
         const step1Prompt = generateStep1Prompt(sajuResult, prompts.step1);
         const step1Result = await callClaudeAPIPremium(
             step1Prompt.systemPrompt,
             step1Prompt.userPrompt,
             userId,
-            order.id,  // ✅ orderId 추가
+            order.id,
             step1Prompt.maxTokens
         );
         console.log('✅ Step 1 완료\n');
+        sendProgress(33, '인생 로드맵 완료!');
 
-        // 6️⃣ Step 2: 3대 핵심 분야
+        // 7️⃣ Step 2: 3대 핵심 분야
+        sendProgress(35, '3대 핵심 분야를 분석 중입니다...');
         console.log('📝 Step 2: 3대 핵심 분야 분석 중...');
         const step2Prompt = generateStep2Prompt(sajuResult, prompts.step2, step1Result.text);
         const step2Result = await callClaudeAPIPremium(
             step2Prompt.systemPrompt,
             step2Prompt.userPrompt,
             userId,
-            order.id,  // ✅ orderId 추가
+            order.id,
             step2Prompt.maxTokens
         );
         console.log('✅ Step 2 완료\n');
+        sendProgress(75, '3대 핵심 분야 완료!');
 
-        // 7️⃣ Step 3: 월간 캘린더
+        // 8️⃣ Step 3: 월간 캘린더
+        sendProgress(80, '월간 캘린더를 생성 중입니다...');
         console.log('📝 Step 3: 월간 캘린더 생성 중...');
         const step3Prompt = generateStep3Prompt(sajuResult, prompts.step3, step1Result.text, step2Result.text);
         const step3Result = await callClaudeAPIPremium(
             step3Prompt.systemPrompt,
             step3Prompt.userPrompt,
             userId,
-            order.id,  // ✅ orderId 추가
+            order.id,
             step3Prompt.maxTokens
         );
         console.log('✅ Step 3 완료\n');
+        sendProgress(94, '월간 캘린더 완료!');
 
-        // 8️⃣ 3개 결과 합치기
+        // 9️⃣ 합치기
         const fullDiagnosis = `# Step 1: 인생 로드맵
 
 ${step1Result.text}
@@ -278,22 +350,19 @@ ${step2Result.text}
 
 ${step3Result.text}`;
 
-        // 9️⃣ input_hash 생성
-        const inputHash = generateInputHash(sajuResult, sajuData.mbti);
-
-        // 🔟 ✅ DB 저장 (전체 사주 데이터 포함!)
+        // 🔟 DB 저장
+        sendProgress(95, 'DB 저장 중...');
         console.log('💾 DB 저장 중...');
         const diagnosisResult = await DiagnosisResult.create({
             user_id: userId,
             order_id: order.id,
             input_hash: inputHash,
+            is_cached: false,
             name: sajuData.name,
             birth_date: `${sajuData.year}-${sajuData.month}-${sajuData.day}`,
             birth_time: `${sajuData.hour || 0}:${sajuData.minute || 0}`,
             gender: sajuData.gender,
             mbti: sajuData.mbti,
-
-            // ✅ 전체 사주 데이터 저장!
             saju_data: {
                 user: sajuResult.user,
                 saju: sajuResult.saju,
@@ -304,7 +373,6 @@ ${step3Result.text}`;
                 summary: sajuResult.summary,
                 mbti: sajuData.mbti
             },
-
             premium_diagnosis: fullDiagnosis,
             character_image: characterImage,
             image_metadata: imageMetadata,
@@ -316,24 +384,13 @@ ${step3Result.text}`;
         console.log('🎉 프리미엄 진단 생성 완료!');
         console.log('='.repeat(80) + '\n');
 
-        // 1️⃣1️⃣ 응답
-        res.json({
-            success: true,
-            message: '프리미엄 진단이 완료되었습니다.',
-            diagnosisId: diagnosisResult.id,
-            usage: {
-                step1: step1Result.usage,
-                step2: step2Result.usage,
-                step3: step3Result.usage
-            }
-        });
+        sendProgress(100, '완료되었습니다!', { diagnosisId: diagnosisResult.id });
+        res.end();
 
     } catch (error) {
         console.error('❌ 프리미엄 진단 생성 오류:', error);
-        res.status(500).json({
-            success: false,
-            message: error.message || '프리미엄 진단 생성 중 오류가 발생했습니다.'
-        });
+        res.write(`data: ${JSON.stringify({ error: error.message || '진단 생성 중 오류가 발생했습니다.' })}\n\n`);
+        res.end();
     }
 };
 
@@ -349,7 +406,6 @@ const getPremiumResult = async (req, res) => {
 
         console.log(`🔍 프리미엄 결과 조회 (사용자: ${userId}, 진단: ${diagnosisId})`);
 
-        // 소유자 검증
         const result = await DiagnosisResult.findOne({
             where: {
                 id: diagnosisId,
@@ -384,8 +440,8 @@ const getPremiumResult = async (req, res) => {
                 mbti: result.mbti,
                 sajuData: result.saju_data,
                 diagnosis: result.premium_diagnosis,
-                characterImage: result.character_image,     // ✅ 이미지 추가
-                imageMetadata: result.image_metadata,       // ✅ 메타데이터 추가
+                characterImage: result.character_image,
+                imageMetadata: result.image_metadata,
                 order: result.order,
                 createdAt: result.created_at
             }
@@ -422,7 +478,7 @@ const getMyResults = async (req, res) => {
                 attributes: ['order_id', 'amount', 'created_at']
             }],
             order: [['created_at', 'DESC']],
-            attributes: ['id', 'name', 'created_at', 'birth_date', 'mbti', 'character_image'] // ✅ 이미지 추가
+            attributes: ['id', 'name', 'created_at', 'birth_date', 'mbti', 'character_image']
         });
 
         console.log(`✅ ${results.length}건 조회 완료`);
@@ -435,7 +491,7 @@ const getMyResults = async (req, res) => {
                 name: r.name,
                 birthDate: r.birth_date,
                 mbti: r.mbti,
-                characterImage: r.character_image,  // ✅ 이미지 추가
+                characterImage: r.character_image,
                 createdAt: r.created_at,
                 amount: r.order?.amount || 0,
                 orderDate: r.order?.created_at
@@ -450,15 +506,6 @@ const getMyResults = async (req, res) => {
         });
     }
 };
-
-/**
- * input_hash 생성 함수
- */
-function generateInputHash(sajuData, mbti) {
-    const { user } = sajuData;
-    const hashString = `${user.birthDate}-${user.birthTime}-${user.gender}-${user.name}-${mbti}`;
-    return crypto.createHash('sha256').update(hashString).digest('hex');
-}
 
 module.exports = {
     generateFreeDiagnosis,
