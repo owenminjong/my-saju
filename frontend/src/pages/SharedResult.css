@@ -1,5 +1,9 @@
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Noto+Serif+KR:wght@400;600;700;900&display=swap');
-
+@font-face {
+    font-family: 'CocochoiToon';
+    src: url('../../public/fonts/Griun_Cocochoitoon-Rg.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
 /* ── 변수 (메인페이지와 공유) ── */
 .sr-root {
     --gold: #c9a84c;
@@ -16,7 +20,7 @@
     min-height: 100vh;
     background: var(--bg-deep);
     color: var(--text-primary);
-    font-family: 'Noto Sans KR', sans-serif;
+    font-family: 'CocochoiToon', 'Noto Sans KR', sans-serif;
     overflow-x: hidden;
 }
 
@@ -90,7 +94,7 @@
 @keyframes sr-spin { to { transform: rotate(360deg); } }
 
 .sr-loading-text {
-    font-family: 'Noto Serif KR', serif;
+    font-family: 'CocochoiToon', 'Noto Sans KR', sans-serif;
     font-size: 14px;
     letter-spacing: 4px;
     color: var(--gold-dim);
@@ -108,7 +112,7 @@
 }
 .sr-error-icon { font-size: 52px; margin-bottom: 16px; }
 .sr-error-title {
-    font-family: 'Noto Serif KR', serif;
+    font-family: 'CocochoiToon', 'Noto Sans KR', sans-serif;
     font-size: 24px;
     color: var(--gold-light);
     margin-bottom: 12px;
@@ -126,7 +130,7 @@
     margin-bottom: 52px;
 }
 .sr-pretitle {
-    font-family: 'Noto Serif KR', serif;
+    font-family: 'CocochoiToon', 'Noto Sans KR', sans-serif;
     font-size: 13px;
     letter-spacing: 8px;
     color: var(--gold-dim);
@@ -151,7 +155,7 @@
     margin-bottom: 48px;
 }
 .sr-name {
-    font-family: 'Noto Serif KR', serif;
+    font-family: 'CocochoiToon', 'Noto Sans KR', sans-serif;
     font-size: clamp(26px, 6vw, 42px);
     font-weight: 700;
     line-height: 1.5;
@@ -168,7 +172,7 @@
     gap: 10px;
 }
 .sr-tag {
-    font-family: 'Noto Serif KR', serif;
+    font-family: 'CocochoiToon', 'Noto Sans KR', sans-serif;
     font-size: 13px;
     color: var(--text-secondary);
     padding: 6px 16px;
@@ -226,7 +230,7 @@
 }
 .sr-animal-emoji { font-size: 96px; }
 .sr-character-label {
-    font-family: 'Noto Serif KR', serif;
+    font-family: 'CocochoiToon', 'Noto Sans KR', sans-serif;
     font-size: 15px;
     color: var(--gold-light);
     letter-spacing: 2px;
@@ -277,7 +281,7 @@
     letter-spacing: 1px;
 }
 .sr-grade-value {
-    font-family: 'Noto Serif KR', serif;
+    font-family: 'CocochoiToon', 'Noto Sans KR', sans-serif;
     font-size: 44px;
     font-weight: 900;
     line-height: 1;
@@ -289,7 +293,7 @@
     margin-bottom: 48px;
 }
 .sr-cta-question {
-    font-family: 'Noto Serif KR', serif;
+    font-family: 'CocochoiToon', 'Noto Sans KR', sans-serif;
     font-size: clamp(18px, 3.5vw, 26px);
     color: var(--gold-light);
     margin-bottom: 16px;
@@ -311,7 +315,7 @@
     background: linear-gradient(135deg, rgba(201,168,76,0.15), rgba(42,31,78,0.35));
     border: 1px solid rgba(201,168,76,0.35);
     color: var(--gold);
-    font-family: 'Noto Serif KR', serif;
+    font-family: 'CocochoiToon', 'Noto Sans KR', sans-serif;
     font-size: 16px;
     cursor: pointer;
     transition: background 0.3s, border-color 0.3s, transform 0.3s;
