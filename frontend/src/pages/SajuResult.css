@@ -1,5 +1,10 @@
 /* SajuResult.css */
-
+@font-face {
+    font-family: 'CocochoiToon';
+    src: url('../../public/fonts/Griun_Cocochoitoon-Rg.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
 :root {
     --bg-deep: #050810;
     --primary-gold: #c5a059;
@@ -18,7 +23,7 @@
     min-height: 100vh;
     background-color: var(--bg-deep);
     color: var(--text-main);
-    font-family: 'Noto Sans KR', sans-serif;
+    font-family: 'CocochoiToon', 'Noto Sans KR', sans-serif;
 }
 
 .container {
@@ -62,7 +67,7 @@
     border-radius: 10px;
     border: none;
     cursor: pointer;
-    font-family: 'Noto Sans KR', sans-serif;
+    font-family: 'CocochoiToon', 'Noto Sans KR', sans-serif;
     font-size: 0.85rem;
     font-weight: 600;
     transition: all 0.2s ease;
@@ -81,7 +86,7 @@
 
 /* ========== 네비게이션 ========== */
 .nav-logo {
-    font-family: var(--font-serif);
+    font-family: 'CocochoiToon', 'Noto Sans KR', sans-serif;
     font-weight: bold;
     color: var(--primary-gold);
     font-size: 1.1rem;
@@ -98,7 +103,7 @@
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 8px;
     padding: 6px 12px;
-    font-family: 'Noto Sans KR', sans-serif;
+    font-family: 'CocochoiToon', 'Noto Sans KR', sans-serif;
     transition: all 0.2s ease;
 }
 
@@ -149,7 +154,7 @@
 }
 
 .char-title {
-    font-family: var(--font-serif);
+    font-family: 'CocochoiToon', 'Noto Sans KR', sans-serif;
     font-size: 1.6rem;
     font-weight: 700;
     text-shadow: 0 2px 10px rgba(0,0,0,0.8);
@@ -174,7 +179,7 @@
     border-radius: 10px;
     border: 1px solid rgba(255, 255, 255, 0.1);
     cursor: pointer;
-    font-family: 'Noto Sans KR', sans-serif;
+    font-family: 'CocochoiToon', 'Noto Sans KR', sans-serif;
     font-size: 0.85rem;
     transition: all 0.2s ease;
 }
@@ -198,7 +203,7 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    font-family: var(--font-serif);
+    font-family: 'CocochoiToon', 'Noto Sans KR', sans-serif;
     color: #fff;
     margin-bottom: 12px;
     font-size: 1rem;
@@ -220,7 +225,7 @@
     font-weight: 700;
     color: var(--text-main);
     margin: 16px 0 12px 0;
-    font-family: var(--font-serif);
+    font-family: 'CocochoiToon', 'Noto Sans KR', sans-serif;
 }
 
 .section-heading:first-child { margin-top: 0; }
@@ -415,7 +420,7 @@
 }
 
 .crisis-card-title {
-    font-family: var(--font-serif);
+    font-family: 'CocochoiToon', 'Noto Sans KR', sans-serif;
     font-size: 1.1rem;
     font-weight: 700;
     color: #fff;

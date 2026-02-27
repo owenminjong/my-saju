@@ -80,16 +80,6 @@ function UserDetailPage() {
                         </div>
                     </div>
                     <div>
-                        <div className="text-xs sm:text-sm text-gray-500">생년월일</div>
-                        <div className="font-medium text-sm sm:text-base">
-                            {user.birth_date ? new Date(user.birth_date).toLocaleDateString('ko-KR') : '-'}
-                        </div>
-                    </div>
-                    <div>
-                        <div className="text-xs sm:text-sm text-gray-500">출생시간</div>
-                        <div className="font-medium text-sm sm:text-base">{user.birth_time || '-'}</div>
-                    </div>
-                    <div>
                         <div className="text-xs sm:text-sm text-gray-500">상태</div>
                         <div>
                             <span className={`px-2 py-1 text-xs rounded-full ${

@@ -382,6 +382,8 @@ const MainPage = () => {
                         <p className="company-name">비더라이프 | 대표자 : 조홍경</p>
                         <p>주소 : 서울특별시 마포구 양화로 19길 4</p>
                         <p>이메일: bethelife92@gmail.com | 고객센터: 070-8064-8846</p>
+                        <p>사업자 등록번호 : 621-79-00496</p>
+                        <p>통신판매업신고 번호 : 2025-서울마포-3141호</p>
                     </div>
                     <div className="footer-copyright">© 2026 비더라이프. All rights reserved.</div>
                 </div>
