@@ -38,11 +38,17 @@ function ShareModal({ isOpen, onClose, resultData, cardRef }) {
                         love:   { grade: resultData.fields?.love?.grade   ?? resultData.fields?.love },
                         health: { grade: resultData.fields?.health?.grade ?? resultData.fields?.health },
                     },
+                    // ✅ elements 전체 추가
+                    elements: {
+                        distribution: resultData.elements?.distribution || null,
+                        status:       resultData.elements?.status       || null,
+                        chart:        resultData.elements?.chart        || null,
+                    },
                     metadata: {
-                        character: resultData.metadata?.character,  // "흰 용띠 · 가을 · 저녁"
+                        character: resultData.metadata?.character,
                     },
                     characterImage: resultData.characterImage,
-                    imageMetadata: resultData.imageMetadata,        // zodiac/season/timeOfDay fallback
+                    imageMetadata:  resultData.imageMetadata,
                 };
 
                 console.log('📊 [ShareModal] minimalData 구성 완료');
