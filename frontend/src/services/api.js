@@ -73,6 +73,9 @@ export const adminAPI = {
     updatePrompt: (id, data) => api.put(`/api/admin/prompts/${id}`, data),
     deletePrompt: (id) => api.delete(`/api/admin/prompts/${id}`),
 
+    // 프롬프트 테스트
+    runPromptTest: (data) => api.post('/api/admin/prompt-test', data),
+
     // 상품 관리
     getProducts: () => api.get('/api/admin/products'),
     getProductDetail: (id) => api.get(`/api/admin/products/${id}`),

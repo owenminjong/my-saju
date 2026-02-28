@@ -52,6 +52,7 @@ const adminPromptsRoutes = require('./routes/admin/prompts');
 const adminApiKeysRoutes = require('./routes/admin/apiKeys');
 const adminPayRoutes = require('./routes/admin/adminPay');
 const adminTokenUsageRoutes = require('./routes/admin/tokenUsage');
+const adminPromptTestRoutes = require('./routes/admin/promptTest');
 
 // 일반 라우트 등록
 app.use('/api/auth', authRoutes);
@@ -69,6 +70,7 @@ app.use('/api/admin/prompts', adminPromptsRoutes);
 app.use('/api/admin/api-keys', adminApiKeysRoutes);
 app.use('/api/admin/orders', adminPayRoutes);  // ✅ 이것만 남김
 app.use('/api/admin/token-usage', adminTokenUsageRoutes);
+app.use('/api/admin/prompt-test', adminPromptTestRoutes);
 
 // 루트 경로
 app.get('/', (req, res) => {

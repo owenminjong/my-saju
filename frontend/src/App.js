@@ -15,6 +15,7 @@ import PremiumPaymentSuccess from './pages/PremiumPaymentSuccess';
 import PaymentFail from './pages/PaymentFail';
 import AdminLoginPage from './pages/admin/AdminLoginPage';
 import TokenUsagePage from './pages/admin/TokenUsagePage'; // ⭐ 추가
+import PromptTestPage from './pages/admin/PromptTestPage';
 
 // 🏠 메인 & 사주 서비스 페이지
 import MainPage from './pages/MainPage';
@@ -55,7 +56,8 @@ function AdminNav() {
     { path: '/admin/prompts', label: '프롬프트' },
     { path: '/admin/products', label: '상품 관리' },
     { path: '/admin/api-keys', label: 'API Keys' },
-    { path: '/admin/payment-test', label: '결제 테스트' },
+    // { path: '/admin/payment-test', label: '결제 테스트' },
+    { path: '/admin/prompt-test', label: '프롬프트 테스트' },
   ];
 
   const isActive = (path) => {
@@ -231,6 +233,7 @@ function App() {
             <Route path="/admin/products" element={<AdminRoute><ProductsPage /></AdminRoute>} />
             <Route path="/admin/api-keys" element={<AdminRoute><ApiKeysPage /></AdminRoute>} />
             <Route path="/admin/payment-test" element={<AdminRoute><PaymentTestPage /></AdminRoute>} />
+            <Route path="/admin/prompt-test" element={<AdminRoute><PromptTestPage /></AdminRoute>} />
 
             {/* 결제 페이지 */}
             <Route path="/payment/premium" element={<PremiumPaymentPage />} />
