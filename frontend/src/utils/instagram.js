@@ -216,7 +216,7 @@ async function createShareCanvas(resultData) {
     ctx.textAlign = 'center';
     ctx.font = 'bold 52px serif';
     ctx.fillStyle = '#d4af37';
-    ctx.fillText('月下사주', W / 2, 105);
+    ctx.fillText('月令사주', W / 2, 105);
 
     ctx.font = '30px sans-serif';
     ctx.fillStyle = 'rgba(212,175,55,0.65)';
@@ -405,7 +405,7 @@ export async function shareInstagramStory(resultData, cardElement = null) {
             await navigator.share({
                 files: [file],
                 title: '2026년 운세',
-                text: `나의 2026년 운세\n월하사주에서 확인하세요!\n${FRONTEND_URL}`,
+                text: `나의 2026년 운세\n월령사주에서 확인하세요!\n${FRONTEND_URL}`,
             });
             return { success: true };
         }

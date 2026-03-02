@@ -163,7 +163,7 @@ function SajuResult() {
                 {/* 상단 헤더 */}
                 <div className="top-header">
                     <div className="nav-bar">
-                        <span className="nav-logo">月下</span>
+                        <span className="nav-logo">月令</span>
                         <div className="nav-actions">
                             <button onClick={() => setShowShareModal(true)} className="share-btn-top">
                                 <Share2 size={18} />

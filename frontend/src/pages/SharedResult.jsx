@@ -293,7 +293,7 @@ function SharedResult() {
 
                 {/* ── 헤더 ── */}
                 <header className="sr-header sr-reveal">
-                    <p className="sr-pretitle">月下神女</p>
+                    <p className="sr-pretitle">月令神女</p>
                     {/* ✅ sr-header-divider 제거 */}
                     <p className="sr-header-sub">공유받은 운세</p>
                 </header>
@@ -404,7 +404,7 @@ function SharedResult() {
                 </section>
 
                 <footer className="sr-footer sr-reveal">
-                    <p>月下神女 · 2026년 운세</p>
+                    <p>月令神女 · 2026년 운세</p>
                 </footer>
             </div>
 
@@ -415,7 +415,7 @@ function SharedResult() {
                 padding: '32px 24px', borderRadius: '24px', fontFamily: "'Noto Serif KR', serif"
             }}>
                 <div style={{textAlign: 'center', marginBottom: '16px'}}>
-                    <p style={{color: '#c9a84c', fontSize: '12px', letterSpacing: '4px', margin: '0 0 8px'}}>月下神女 · 2026년 운세</p>
+                    <p style={{color: '#c9a84c', fontSize: '12px', letterSpacing: '4px', margin: '0 0 8px'}}>月令神女 · 2026년 운세</p>
                     <h1 style={{color: '#eae6de', fontSize: '24px', fontWeight: 'bold', margin: 0}}>{maskedName}님의 2026년</h1>
                     <p style={{color: '#9a9590', fontSize: '13px', margin: '8px 0 0'}}>{animal}띠 · {season} · {timeOfDay}</p>
                 </div>

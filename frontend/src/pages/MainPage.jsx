@@ -153,7 +153,7 @@ const MainPage = () => {
             <div className={`side-menu ${menuActive ? 'active' : ''}`}>
                 <button className="close-btn" onClick={closeMenu}>&times;</button>
                 <div style={{ marginBottom: '40px' }}>
-                    <h3 style={{ fontFamily: "'Noto Serif KR', serif", color: 'var(--gold)', marginBottom: '5px' }}>月下神女</h3>
+                    <h3 style={{ fontFamily: "'Noto Serif KR', serif", color: 'var(--gold)', marginBottom: '5px' }}>月令神女</h3>
                     <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>당신의 운명을 읽는 신비로운 달빛</p>
                 </div>
                 <nav>
@@ -179,7 +179,7 @@ const MainPage = () => {
             <section className="section hero-section">
                 <div className="hero-bg"></div>
                 <div className="hero-content">
-                    <p className="hero-pretitle">월하신녀 성격사주</p>
+                    <p className="hero-pretitle">월령신녀 성격사주</p>
                     <h1 className="hero-title">
                         내 사주를 알고 있는데<br />
                         <span className="highlight">내 인생은 왜 안 변할까</span>
@@ -267,7 +267,7 @@ const MainPage = () => {
                     성격마다 다릅니다
                 </blockquote>
                 <p className="core-desc reveal">
-                    월하신녀는 당신의 사주에 성격을 더해<br />
+                    월령신녀는 당신의 사주에 성격을 더해<br />
                     <strong>당신만의 길</strong>을 알려드려요.<br />
                     그래야 진짜 인생이 바뀝니다.
                 </p>
@@ -288,7 +288,7 @@ const MainPage = () => {
                             <p>하반기 좋은 인연이 올 것,<br />적극적으로 어필하세요.</p>
                         </div>
                         <div className="compare-card new">
-                            <div className="compare-card-label"><span className="icon">🌙</span> 월하신녀</div>
+                            <div className="compare-card-label"><span className="icon">🌙</span> 월령신녀</div>
                             <p>
                                 7~9월이 연애 최적기예요.<br />
                                 하지만 당신은 내성적인 INFP,<br />
@@ -309,7 +309,7 @@ const MainPage = () => {
                             <p>올해 재물운 상승,<br />적극적 투자를 권장합니다.</p>
                         </div>
                         <div className="compare-card new">
-                            <div className="compare-card-label"><span className="icon">🌙</span> 월하신녀</div>
+                            <div className="compare-card-label"><span className="icon">🌙</span> 월령신녀</div>
                             <p>
                                 돈 벌 기회는 확실히 와요.<br />
                                 근데 당신 성격에 공격적 투자는 스트레스만 쌓여요.<br /><br />

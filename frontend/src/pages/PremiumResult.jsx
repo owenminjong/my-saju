@@ -182,7 +182,7 @@ function PremiumResult() {
                                 marginRight: '4px',
                                 color: '#ffd700'
                             }}/>
-                            月下 PREMIUM
+                            月令 PREMIUM
                         </span>
                         <div className="nav-actions">
                             <button
@@ -411,7 +411,7 @@ function PremiumResult() {
                 {/* 상단 타이틀 */}
                 <div style={{ textAlign: 'center', marginBottom: '20px' }}>
                     <p style={{ color: '#d4af37', fontSize: '13px', letterSpacing: '2px', marginBottom: '8px' }}>
-                        月下사주 · 2026년 운세
+                        月令사주 · 2026년 운세
                     </p>
                     <h1 style={{ color: 'white', fontSize: '26px', fontWeight: 'bold', margin: 0 }}>
                         {result.name}님의 2026년
