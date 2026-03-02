@@ -292,7 +292,7 @@ const generatePremiumDiagnosis = async (req, res) => {
         console.log('✅ 프롬프트 로딩 완료');
 
         // 6️⃣ Step 1: 인생 로드맵
-        sendProgress(10, '인생 로드맵을 생성 중입니다...');
+        sendProgress(10, '신녀가 운명을 펼쳐보고 있습니다...');
         console.log('📝 Step 1: 인생 로드맵 생성 중...');
         const step1Prompt = generateStep1Prompt(sajuResult, prompts.step1);
         const step1Result = await callClaudeAPIPremium(

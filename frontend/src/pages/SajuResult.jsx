@@ -20,6 +20,7 @@ function SajuResult() {
     const [showShareModal, setShowShareModal] = useState(false);
     const [product, setProduct] = useState(null);
     const [imageError, setImageError] = useState(false);
+    const [showPromoCard, setShowPromoCard] = useState(false);
 
     console.log('진단 결과 데이터:', result);
     console.log('결과 캐릭터:', result?.characterImage);
@@ -40,6 +41,21 @@ function SajuResult() {
     useEffect(() => {
         fetchPremiumProduct();
     }, [fetchPremiumProduct]);
+
+    useEffect(() => {
+        const handleScroll = () => {
+            const scrollTop = window.scrollY || document.documentElement.scrollTop;
+            const documentHeight = document.documentElement.scrollHeight;
+            const windowHeight = window.innerHeight;
+            const scrollPercent = (scrollTop + windowHeight) / documentHeight;
+            if (scrollPercent >= 0.8) {
+                setShowPromoCard(true);
+            }
+        };
+
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
 
     if (!result) {
         navigate('/');
@@ -291,7 +307,7 @@ function SajuResult() {
                 <div className="bottom-spacer" />
             </div>
 
-            {product && (
+            {product && showPromoCard && (
                 <PremiumPromoCard sajuData={result} productInfo={product} />
             )}
         </div>

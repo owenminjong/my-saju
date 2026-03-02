@@ -14,12 +14,12 @@ function PremiumGeneratePage() {
     const hasStarted = useRef(false); // ✅ 중복 실행 방지
 
     const [step, setStep] = useState(1);
-    const [stepMessage, setStepMessage] = useState('인생 로드맵을 생성 중입니다...');
+    const [stepMessage, setStepMessage] = useState('신녀가 운명을 펼쳐보고 있습니다...');
     const [progress, setProgress] = useState(0);
 
     // 🎭 단계별 메시지
     const stepMessages = {
-        1: '인생 로드맵을 생성 중입니다...',
+        1: '신녀가 운명을 펼쳐보고 있습니다...',
         2: '3대 핵심 분야를 분석 중입니다...',
         3: '월간 캘린더를 생성 중입니다...'
     };
@@ -128,7 +128,7 @@ function PremiumGeneratePage() {
 
         // 단계별 구간 정의
         const stages = [
-            { until: 50000,  maxProgress: 33, step: 1, message: '인생 로드맵을 생성 중입니다...' },
+            { until: 50000,  maxProgress: 33, step: 1, message: '신녀가 운명을 펼쳐보고 있습니다...' },
             { until: 100000, maxProgress: 75, step: 2, message: '3대 핵심 분야를 분석 중입니다...' },
             { until: 150000, maxProgress: 94, step: 3, message: '월간 캘린더를 생성 중입니다...' }
         ];
@@ -306,7 +306,7 @@ function PremiumGeneratePage() {
                     fontFamily: "'Noto Serif KR', serif",
                     textShadow: '0 2px 10px rgba(197, 160, 89, 0.5)'
                 }}>
-                    프리미엄 사주 풀이 중
+                    사주 풀이 중
                 </h2>
 
                 <p style={{
@@ -315,8 +315,8 @@ function PremiumGeneratePage() {
                     marginBottom: '30px',
                     lineHeight: '1.5'
                 }}>
-                    AI가 당신의 운명을<br/>
-                    상세하게 분석하고 있습니다
+                    신녀가 당신의 운명을<br/>
+                    깊이 들여다보고 있습니다
                 </p>
 
                 {/* 진행률 바 */}
@@ -409,10 +409,9 @@ function PremiumGeneratePage() {
                         lineHeight: '1.6',
                         margin: 0
                     }}>
-                        💎 프리미엄 풀코스 진단<br/>
-                        <strong style={{ color: '#f4d03f' }}>A4 5장 이상</strong>의 상세한 분석<br/>
+                        💎 월령신녀의 복채 풀이<br/>
                         <span style={{ color: '#f4d03f', fontWeight: '600' }}>
-                            예상 소요 시간: 5분
+                            약 5분 정도 걸려요. 나갔다 오셔도 결과는 사라지지 않아요.
                         </span>
                     </p>
                 </div>
