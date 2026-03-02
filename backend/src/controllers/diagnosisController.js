@@ -25,7 +25,7 @@ function generateInputHash(sajuData) {
 }
 
 /**
- * 무료 베이직 진단 생성
+ * 무료 운명 풀이 생성
  * POST /api/diagnosis/free
  */
 const generateFreeDiagnosis = async (req, res) => {
@@ -40,7 +40,7 @@ const generateFreeDiagnosis = async (req, res) => {
         }
 
         console.log('\n' + '='.repeat(80));
-        console.log('📋 무료 베이직 진단');
+        console.log('📋 무료 운명 풀이');
         console.log('='.repeat(80) + '\n');
 
         // 1️⃣ 사주 계산
@@ -125,7 +125,7 @@ const generateFreeDiagnosis = async (req, res) => {
         // 5️⃣ 응답
         res.json({
             success: true,
-            message: '무료 베이직 진단이 완료되었습니다.',
+            message: '무료 운명 풀이이 완료되었습니다.',
             uniqueId,
             sajuData: sajuResult,
             diagnosis: diagnosis.text,

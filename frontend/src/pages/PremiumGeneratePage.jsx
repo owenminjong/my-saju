@@ -306,7 +306,7 @@ function PremiumGeneratePage() {
                     fontFamily: "'Noto Serif KR', serif",
                     textShadow: '0 2px 10px rgba(197, 160, 89, 0.5)'
                 }}>
-                    프리미엄 사주 분석 중
+                    프리미엄 사주 풀이 중
                 </h2>
 
                 <p style={{

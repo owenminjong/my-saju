@@ -107,7 +107,7 @@ function replaceVariables(template, variables) {
 }
 
 /**
- * 무료 베이직 진단 프롬프트 생성
+ * 무료 운명 풀이 프롬프트 생성
  */
 async function generateFreePrompt(sajuData) {
     const { user, saju, elements, dayMaster, fields, mbti } = sajuData;
@@ -167,7 +167,7 @@ async function generateFreePrompt(sajuData) {
 
 ---
 
-위 데이터로 무료 베이직 진단서 작성.`;
+위 데이터로 무료 운명 풀이서 작성.`;
 
     return {
         systemPrompt,

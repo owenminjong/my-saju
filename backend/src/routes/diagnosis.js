@@ -6,7 +6,7 @@ const diagnosisController = require('../controllers/diagnosisController');
 const { authMiddleware, optionalAuthMiddleware } = require('../middleware/authMiddleware');
 
 /**
- * 무료 베이직 진단 생성
+ * 무료 운명 풀이 생성
  * POST /api/diagnosis/free
  * 인증 선택 (로그인/비로그인 모두 가능)
  */

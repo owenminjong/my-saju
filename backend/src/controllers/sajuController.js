@@ -45,7 +45,7 @@ const analyzeFreeSaju = async (req, res) => {
 
         // 콘솔에 프롬프트 출력
         console.log('\n' + '='.repeat(80));
-        console.log('📋 무료 베이직 진단 프롬프트');
+        console.log('📋 무료 운명 풀이 프롬프트');
         console.log('='.repeat(80) + '\n');
 
         console.log('🤖 SYSTEM PROMPT');
@@ -73,7 +73,7 @@ const analyzeFreeSaju = async (req, res) => {
         console.error('사주 분석 오류:', error);
         res.status(500).json({
             success: false,
-            message: error.message || '사주 분석 중 오류가 발생했습니다.'
+            message: error.message || '사주 풀이 중 오류가 발생했습니다.'
         });
     }
 };

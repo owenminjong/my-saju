@@ -29,7 +29,7 @@ async function getClaudeApiKey() {
 }
 
 /**
- * 무료 베이직 진단 - Claude API 호출
+ * 무료 운명 풀이 - Claude API 호출
  */
 async function callClaudeAPIFree(systemPrompt, userPrompt, userId) {
     try {

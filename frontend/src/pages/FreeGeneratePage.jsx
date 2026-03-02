@@ -12,7 +12,7 @@ function FreeGeneratePage() {
     const hasCalledAPI = useRef(false);
 
     const [progress, setProgress] = useState(0);
-    const [message, setMessage] = useState('당신의 운명을 분석하고 있습니다...');
+    const [message, setMessage] = useState('운명의 실타래를 풀어보고 있습니다...');
 
     useEffect(() => {
         if (!sajuData) {
@@ -179,7 +179,7 @@ function FreeGeneratePage() {
                     fontFamily: "'Noto Serif KR', serif",
                     textShadow: '0 2px 10px rgba(197,160,89,0.5)'
                 }}>
-                    사주 분석 중
+                    사주 풀이 중
                 </h2>
 
                 <p style={{
@@ -188,7 +188,7 @@ function FreeGeneratePage() {
                     marginBottom: '20px',
                     lineHeight: '1.5'
                 }}>
-                    AI가 당신의 운명을 분석하고 있습니다
+                    월령신녀가 사주를 펼쳐보고 있습니다
                 </p>
 
                 {/* 진행률 바 */}
@@ -234,7 +234,7 @@ function FreeGeneratePage() {
                         lineHeight: '1.5',
                         margin: 0
                     }}>
-                        ✨ 무료 베이직 진단&nbsp;&nbsp;
+                        ✨ 무료 운명 풀이&nbsp;&nbsp;
                         <span style={{ color: '#f4d03f', fontWeight: '600' }}>
                             잠시만 기다려주세요...
                         </span>
