@@ -48,8 +48,11 @@ function SajuResult() {
             const documentHeight = document.documentElement.scrollHeight;
             const windowHeight = window.innerHeight;
             const scrollPercent = (scrollTop + windowHeight) / documentHeight;
-            if (scrollPercent >= 0.8) {
+
+            if (scrollPercent >= 0.9) {
                 setShowPromoCard(true);
+            } else {
+                setShowPromoCard(false);
             }
         };
 
