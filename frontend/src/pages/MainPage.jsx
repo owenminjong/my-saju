@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './MainPage.css';
 import SajuInput from "./SajuInput";
+import { Helmet } from 'react-helmet-async';
 
 const MainPage = () => {
     const navigate = useNavigate();
@@ -141,6 +142,10 @@ const MainPage = () => {
 
     return (
         <div className="wolha-main">
+            <Helmet>
+                <title>월령사주 | 내 성격에 맞는 사주 풀이</title>
+                <meta name="description" content="같은 사주라도 성격이 다르면 인생이 달라집니다. 전통 사주에 성격 분석을 더한 나만의 맞춤형 사주 풀이. 1,920가지 조합 중 단 하나, 무료 성격사주 분석 받아보세요." />
+            </Helmet>
             <canvas ref={canvasRef} id="starfield"></canvas>
 
             {/* Navigation */}

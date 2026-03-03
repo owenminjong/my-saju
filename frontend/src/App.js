@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation, Navigate } from 'react-router-dom';
 import { Menu, X, Home } from 'lucide-react';
+import { HelmetProvider } from 'react-helmet-async';
 import DashboardPage from './pages/admin/DashboardPage';
 import UsersPage from './pages/admin/UsersPage';
 import PromptsPage from './pages/admin/PromptsPage';
@@ -14,7 +15,7 @@ import PremiumPaymentPage from './pages/PremiumPaymentPage';
 import PremiumPaymentSuccess from './pages/PremiumPaymentSuccess';
 import PaymentFail from './pages/PaymentFail';
 import AdminLoginPage from './pages/admin/AdminLoginPage';
-import TokenUsagePage from './pages/admin/TokenUsagePage'; // ⭐ 추가
+import TokenUsagePage from './pages/admin/TokenUsagePage';
 import PromptTestPage from './pages/admin/PromptTestPage';
 
 // 🏠 메인 & 사주 서비스 페이지
@@ -52,11 +53,10 @@ function AdminNav() {
     { path: '/admin', label: '대시보드' },
     { path: '/admin/users', label: '회원 관리' },
     { path: '/admin/orders', label: '주문/결제' },
-    { path: '/admin/token-usage', label: '토큰 사용량' }, // ⭐ 추가
+    { path: '/admin/token-usage', label: '토큰 사용량' },
     { path: '/admin/prompts', label: '프롬프트' },
     { path: '/admin/products', label: '상품 관리' },
     { path: '/admin/api-keys', label: 'API Keys' },
-    // { path: '/admin/payment-test', label: '결제 테스트' },
     { path: '/admin/prompt-test', label: '프롬프트 테스트' },
   ];
 
@@ -67,7 +67,6 @@ function AdminNav() {
     return location.pathname.startsWith(path);
   };
 
-  // 로그아웃 함수
   const handleLogout = () => {
     localStorage.removeItem('adminToken');
     localStorage.removeItem('adminInfo');
@@ -78,7 +77,6 @@ function AdminNav() {
       <nav className="bg-white shadow-lg sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex justify-between h-14 sm:h-16">
-            {/* 로고 & 데스크톱 메뉴 */}
             <div className="flex items-center space-x-2 sm:space-x-4 lg:space-x-8 overflow-x-auto">
               <Link
                   to="/"
@@ -88,7 +86,6 @@ function AdminNav() {
                 <span className="hidden sm:inline">🏠 메인으로</span>
               </Link>
 
-              {/* 데스크톱 메뉴 (lg 이상) */}
               <div className="hidden lg:flex space-x-6">
                 {navItems.map((item) => (
                     <Link
@@ -105,7 +102,6 @@ function AdminNav() {
                 ))}
               </div>
 
-              {/* 태블릿 메뉴 (sm-lg) */}
               <div className="hidden sm:flex lg:hidden space-x-2 overflow-x-auto">
                 {navItems.map((item) => (
                     <Link
@@ -123,7 +119,6 @@ function AdminNav() {
               </div>
             </div>
 
-            {/* 로그아웃 버튼 */}
             <div className="hidden sm:flex items-center">
               <button
                   onClick={handleLogout}
@@ -133,7 +128,6 @@ function AdminNav() {
               </button>
             </div>
 
-            {/* 모바일 햄버거 메뉴 버튼 */}
             <div className="flex items-center sm:hidden">
               <button
                   onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -144,7 +138,6 @@ function AdminNav() {
             </div>
           </div>
 
-          {/* 모바일 드롭다운 메뉴 */}
           {mobileMenuOpen && (
               <div className="sm:hidden border-t border-gray-200">
                 <div className="py-2 space-y-1">
@@ -162,7 +155,6 @@ function AdminNav() {
                         {item.label}
                       </Link>
                   ))}
-                  {/* 모바일 로그아웃 버튼 */}
                   <button
                       onClick={handleLogout}
                       className="block w-full text-left px-4 py-3 text-sm font-medium text-red-600 hover:bg-red-50"
@@ -177,7 +169,6 @@ function AdminNav() {
   );
 }
 
-// 레이아웃 래퍼
 function Layout({ children }) {
   const location = useLocation();
   const isAdminPage = location.pathname.startsWith('/admin') && location.pathname !== '/admin/login';
@@ -195,57 +186,59 @@ function Layout({ children }) {
 
 function App() {
   return (
-      <Router>
-        <Layout>
-          <Routes>
-            {/* 🏠 메인 페이지 */}
-            <Route path="/" element={<MainPage />} />
+      <HelmetProvider>
+        <Router>
+          <Layout>
+            <Routes>
+              {/* 🏠 메인 페이지 */}
+              <Route path="/" element={<MainPage />} />
 
-            {/* 로그인 */}
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/auth/success" element={<AuthSuccess />} />
-            <Route path="/auth/fail" element={<AuthFail />} />
+              {/* 로그인 */}
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/auth/success" element={<AuthSuccess />} />
+              <Route path="/auth/fail" element={<AuthFail />} />
 
-            {/* 🔮 사주 서비스 */}
-            <Route path="/saju-input" element={<SajuInput />} />
-            <Route path="/result" element={<SajuResult />} />
-            <Route path="/premium/result/:diagnosisId" element={<PremiumResult />} />
+              {/* 🔮 사주 서비스 */}
+              <Route path="/saju-input" element={<SajuInput />} />
+              <Route path="/result" element={<SajuResult />} />
+              <Route path="/premium/result/:diagnosisId" element={<PremiumResult />} />
 
-            {/* ✅ 내 사주 결과 목록 */}
-            <Route path="/my-results" element={<MyResults />} />
+              {/* ✅ 내 사주 결과 목록 */}
+              <Route path="/my-results" element={<MyResults />} />
 
-            {/* 🔗 공유 링크 */}
-            <Route path="/r/:encodedData" element={<SharedResult />} />
-            <Route path="/result/:encodedData" element={<SharedResult />} />
+              {/* 🔗 공유 링크 */}
+              <Route path="/r/:encodedData" element={<SharedResult />} />
+              <Route path="/result/:encodedData" element={<SharedResult />} />
 
-            <Route path="/ex-result" element={<SampleResult />} />
+              <Route path="/ex-result" element={<SampleResult />} />
 
-            {/* ⭐ 관리자 로그인 (보호 안됨) */}
-            <Route path="/admin/login" element={<AdminLoginPage />} />
+              {/* ⭐ 관리자 로그인 (보호 안됨) */}
+              <Route path="/admin/login" element={<AdminLoginPage />} />
 
-            {/* 🔧 관리자 페이지 (보호됨) */}
-            <Route path="/admin" element={<AdminRoute><DashboardPage /></AdminRoute>} />
-            <Route path="/admin/users" element={<AdminRoute><UsersPage /></AdminRoute>} />
-            <Route path="/admin/users/:id" element={<AdminRoute><UserDetailPage /></AdminRoute>} />
-            <Route path="/admin/orders" element={<AdminRoute><OrdersPage /></AdminRoute>} />
-            <Route path="/admin/token-usage" element={<AdminRoute><TokenUsagePage /></AdminRoute>} />
-            <Route path="/admin/prompts" element={<AdminRoute><PromptsPage /></AdminRoute>} />
-            <Route path="/admin/products" element={<AdminRoute><ProductsPage /></AdminRoute>} />
-            <Route path="/admin/api-keys" element={<AdminRoute><ApiKeysPage /></AdminRoute>} />
-            <Route path="/admin/payment-test" element={<AdminRoute><PaymentTestPage /></AdminRoute>} />
-            <Route path="/admin/prompt-test" element={<AdminRoute><PromptTestPage /></AdminRoute>} />
+              {/* 🔧 관리자 페이지 (보호됨) */}
+              <Route path="/admin" element={<AdminRoute><DashboardPage /></AdminRoute>} />
+              <Route path="/admin/users" element={<AdminRoute><UsersPage /></AdminRoute>} />
+              <Route path="/admin/users/:id" element={<AdminRoute><UserDetailPage /></AdminRoute>} />
+              <Route path="/admin/orders" element={<AdminRoute><OrdersPage /></AdminRoute>} />
+              <Route path="/admin/token-usage" element={<AdminRoute><TokenUsagePage /></AdminRoute>} />
+              <Route path="/admin/prompts" element={<AdminRoute><PromptsPage /></AdminRoute>} />
+              <Route path="/admin/products" element={<AdminRoute><ProductsPage /></AdminRoute>} />
+              <Route path="/admin/api-keys" element={<AdminRoute><ApiKeysPage /></AdminRoute>} />
+              <Route path="/admin/payment-test" element={<AdminRoute><PaymentTestPage /></AdminRoute>} />
+              <Route path="/admin/prompt-test" element={<AdminRoute><PromptTestPage /></AdminRoute>} />
 
-            {/* 결제 페이지 */}
-            <Route path="/payment/premium" element={<PremiumPaymentPage />} />
-            <Route path="/payment/premium/success" element={<PremiumPaymentSuccess />} />
-            <Route path="/payment/fail" element={<PaymentFail />} />
+              {/* 결제 페이지 */}
+              <Route path="/payment/premium" element={<PremiumPaymentPage />} />
+              <Route path="/payment/premium/success" element={<PremiumPaymentSuccess />} />
+              <Route path="/payment/fail" element={<PaymentFail />} />
 
-            {/* 생성 페이지 */}
-            <Route path="/free/generate" element={<FreeGeneratePage />} />
-            <Route path="/premium/generate" element={<PremiumGeneratePage />} />
-          </Routes>
-        </Layout>
-      </Router>
+              {/* 생성 페이지 */}
+              <Route path="/free/generate" element={<FreeGeneratePage />} />
+              <Route path="/premium/generate" element={<PremiumGeneratePage />} />
+            </Routes>
+          </Layout>
+        </Router>
+      </HelmetProvider>
   );
 }
 

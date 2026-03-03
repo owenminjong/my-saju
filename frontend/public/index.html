@@ -1,19 +1,29 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
   <meta charset="utf-8" />
   <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="theme-color" content="#000000" />
-  <meta
-          name="description"
-          content="Web site created using create-react-app"
-  />
+
+  <!-- SEO 기본 메타태그 -->
+  <meta name="description" content="같은 사주라도 성격이 다르면 인생이 달라집니다. 전통 사주에 성격 분석을 더한 나만의 맞춤형 사주 풀이. 1,920가지 조합 중 단 하나, 무료 성격사주 분석 받아보세요." />
+
+  <!-- 검색엔진 인증 -->
+  <meta name="naver-site-verification" content="c38d4b214c3540fc9e90f1f76c7375a1db8b72e3" />
+  <meta name="google-site-verification" content="kpELu4oXbkOUs-XDLUhMi_O1c3ogTqHMYcBe7hOs9pI" />
+
+  <!-- Google Analytics (GA4) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-Z7Y0ZLM75N"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-Z7Y0ZLM75N');
+  </script>
+
   <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
   <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
-
-  <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
-  <script>eruda.init();</script>
 
   <!-- 토스페이먼츠 SDK -->
   <script src="https://js.tosspayments.com/v1/payment"></script>
@@ -21,7 +31,7 @@
   <!-- 아임포트 SDK -->
   <script src="https://cdn.iamport.kr/v1/iamport.js"></script>
 
-  <!-- 🆕 카카오 SDK -->
+  <!-- 카카오 SDK -->
   <script src="https://developers.kakao.com/sdk/js/kakao.min.js"></script>
 
   <title>월령사주</title>

@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Calendar, User, Heart, ArrowRight, Home } from 'lucide-react';
 import './MyResults.css';
+import { Helmet } from 'react-helmet-async';
 
 const API_BASE_URL = process.env.REACT_APP_API_URL ;
 
@@ -57,6 +58,10 @@ function MyResults() {
     if (loading) {
         return (
             <div className="my-results-page">
+                <Helmet>
+                    <title>내 사주 기록 | 월령신녀 성격사주</title>
+                    <meta name="description" content="나의 성격사주 분석 기록을 한눈에 확인하세요." />
+                </Helmet>
                 <div className="loading-container">
                     <div className="spinner" />
                     <p className="loading-text">결과를 불러오는 중...</p>
@@ -67,6 +72,10 @@ function MyResults() {
 
     return (
         <div className="my-results-page">
+            <Helmet>
+                <title>내 사주 기록 | 월령신녀 성격사주</title>
+                <meta name="description" content="나의 성격사주 분석 기록을 한눈에 확인하세요." />
+            </Helmet>
             <div className="mr-container">
 
                 {/* 헤더 */}

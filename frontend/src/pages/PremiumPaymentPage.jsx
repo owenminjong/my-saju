@@ -4,6 +4,7 @@ import React, { useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { paymentAPI } from '../services/api';
 import { loadTossPayments } from '@tosspayments/payment-sdk';
+import { Helmet } from 'react-helmet-async';
 
 function PremiumPaymentPage() {
     const navigate = useNavigate();
@@ -103,6 +104,10 @@ function PremiumPaymentPage() {
             padding: '20px',
             fontFamily: "'Noto Sans KR', sans-serif"
         }}>
+            <Helmet>
+                <title>프리미엄 성격사주 | 월령신녀</title>
+                <meta name="description" content="연애운, 재물운, 위기 대처법까지. 내 성격에 맞는 구체적인 사주 풀이를 받아보세요. 단순한 운세가 아닌, 당신만의 길을 안내합니다." />
+            </Helmet>
             <div style={{
                 background: 'rgba(255, 255, 255, 0.95)',
                 backdropFilter: 'blur(10px)',

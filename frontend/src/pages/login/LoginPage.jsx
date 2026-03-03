@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { Helmet } from 'react-helmet-async';
 
 const API_BASE_URL = process.env.REACT_APP_API_URL;
 
@@ -60,6 +61,10 @@ function LoginPage() {
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-[#0f172a] via-[#1e293b] to-[#334155]">
+            <Helmet>
+                <title>로그인 | 월령신녀 성격사주</title>
+                <meta name="description" content="월령신녀 성격사주 로그인" />
+            </Helmet>
             <div className="bg-white/10 backdrop-blur-lg rounded-3xl p-8 shadow-2xl border border-white/20 max-w-md w-full">
 
                 {/* 로고 & 타이틀 */}
