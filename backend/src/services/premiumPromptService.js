@@ -250,10 +250,10 @@ function generateStep3Prompt(sajuData, promptTemplate, step1Result, step2Result)
         이름: user.name
     };
 
-    // systemPrompt는 기존 그대로
+    // DB Step3 content → systemPrompt
     const systemPrompt = replaceVariables(promptTemplate.content, variables);
 
-    // DB content → userPrompt 뒤에도 붙이기 위해 변수로 분리
+    // DB Step3 content → userPrompt 뒤에도 붙임
     const dbPromptContent = replaceVariables(promptTemplate.content, variables);
 
     const userPrompt = `## 입력 데이터
@@ -274,32 +274,6 @@ ${step1Result.substring(0, 500)}... (요약)
 ${step2Result.substring(0, 500)}... (요약)
 
 ---
-
-아래 두 파트를 순서대로 모두 작성해주세요.
-
-## PART 1. 2026년 12개월 월간 캘린더 + 건강/개운 보너스
-
-위 사주 데이터를 바탕으로 1월~12월 월간 캘린더를 작성하고,
-마지막에 건강 관리 + 개운법 보너스를 추가해주세요.
-
-**각 월 형식 (반드시 준수):**
-## (이모지) N월 — 간지월 (오행관계)
-"이달의 키워드 한 줄" (큰따옴표로 감싼 부제목)
-
-본문 2~3문장 (이달의 기운과 흐름, 월령신녀 말투로)
-
-💰 재물: 한 줄 — 구체적 행동 지침
-❤️ 인간관계: 한 줄 — 관계·연애 팁
-🎯 핵심 과제: 한 줄 — 이달 집중할 것
-
-- 특별히 길한 달은 헤더에 ⭐ 추가
-- 달 사이마다 --- 구분선
-
----
-
-## PART 2. 연애·결혼 & 궁합
-
-아래 지침에 따라 작성해주세요.
 
 ${dbPromptContent}`;
 
