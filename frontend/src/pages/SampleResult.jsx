@@ -101,7 +101,7 @@ function SampleResult() {
                 {/* 헤더 */}
                 <div className="text-center mb-8">
                     <h1 className="text-4xl font-bold text-white mb-2">
-                        ✨ {user?.name}님의 인생 코드
+                        🌙 {user?.name}님의 인생 코드
                     </h1>
                     <p className="text-white/70">
                         {user?.birthDate} | {user?.birthTime}

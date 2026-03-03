@@ -1,3 +1,6 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Noto+Serif+KR:wght@400;600;700;900&display=swap');
+
+
 /* SajuTable.css */
 
 .st-wrapper {
@@ -19,7 +22,7 @@
     font-size: 11px;
     letter-spacing: 2px;
     color: #b8a882;
-    font-family: 'CocochoiToon', 'Noto Serif KR', serif;
+    font-family: 'Noto Sans KR', sans-serif;
     font-weight: 400;
 }
 
@@ -65,7 +68,7 @@
 
 .st-kr {
     font-size: 10px;
-    font-family: 'CocochoiToon', 'Noto Serif KR', serif;
+    font-family: 'Noto Sans KR', sans-serif;
     font-weight: 500;
     margin-top: 3px;
     letter-spacing: 0.5px;

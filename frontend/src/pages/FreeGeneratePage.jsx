@@ -234,7 +234,7 @@ function FreeGeneratePage() {
                         lineHeight: '1.5',
                         margin: 0
                     }}>
-                        ✨ 무료 운명 풀이&nbsp;&nbsp;
+                        🌙 무료 운명 풀이&nbsp;&nbsp;
                         <span style={{ color: '#f4d03f', fontWeight: '600' }}>
                             잠시만 기다려주세요...
                         </span>

@@ -339,8 +339,8 @@ function SharedResult() {
                         {[
                             {label: '재물운', key: 'wealth', icon: '💰'},
                             {label: '직업운', key: 'career', icon: '💼'},
-                            {label: '연애운', key: 'love', icon: '🌙'},
-                            {label: '건강운', key: 'health', icon: '✨'},
+                            {label: '연애운', key: 'love', icon: '♥️'},
+                            {label: '건강운', key: 'health', icon: '💊'},
                         ].map(({label, key, icon}) => {
                             const gs = gradeStyle(grades[key]);
                             return (

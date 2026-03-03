@@ -1,10 +1,5 @@
 /* SajuResult.css */
-@font-face {
-    font-family: 'CocochoiToon';
-    src: url('../../public/fonts/Griun_Cocochoitoon-Rg.ttf') format('truetype');
-    font-weight: normal;
-    font-style: normal;
-}
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Noto+Serif+KR:wght@400;600;700;900&display=swap');
 
 :root {
     --gold:        #c9a84c;
@@ -18,7 +13,7 @@
     --bg-deep:     #0d0b09;
     --border-dim:  #3d3225;
     --border-gold: #4a3d2a;
-    --font:        'CocochoiToon', 'Noto Serif KR', serif;
+    --font:        'Noto Sans KR', sans-serif;
 }
 
 * {
