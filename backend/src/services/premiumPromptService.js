@@ -236,7 +236,6 @@ ${step1Result}
 function generateStep3Prompt(sajuData, promptTemplate, step1Result, step2Result) {
     const { user, saju, mbti } = sajuData;
 
-    // 변수 준비
     const personalityExpression = convertMBTIToExpression(mbti);
     const birthMonth = parseInt(user.birthDate.match(/(\d+)월/)?.[1]);
     const birthHour = parseInt(saju.hour.branch.time.split('-')[0]);
@@ -247,17 +246,26 @@ function generateStep3Prompt(sajuData, promptTemplate, step1Result, step2Result)
         color: character.color,
         animalName: character.animalName,
         personalityExpression: personalityExpression,
-        dominantEffect: dominantEffect
+        dominantEffect: dominantEffect,
+        이름: user.name
     };
 
-    // 변수 치환
+    // systemPrompt는 기존 그대로
     const systemPrompt = replaceVariables(promptTemplate.content, variables);
 
-    // User Prompt
+    // DB content → userPrompt 뒤에도 붙이기 위해 변수로 분리
+    const dbPromptContent = replaceVariables(promptTemplate.content, variables);
+
     const userPrompt = `## 입력 데이터
 
-**사용자:** ${user.name}
+**사용자:** ${user.name} (${user.gender === 'M' ? '남성' : '여성'})
 **성향:** ${personalityExpression}
+
+**사주:**
+년주: ${saju.year.stem.char}${saju.year.branch.char}
+월주: ${saju.month.stem.char}${saju.month.branch.char}
+일주: ${saju.day.stem.char}${saju.day.branch.char}
+시주: ${saju.hour.stem.char}${saju.hour.branch.char}
 
 **참고: Step 1 인생 로드맵**
 ${step1Result.substring(0, 500)}... (요약)
@@ -267,12 +275,38 @@ ${step2Result.substring(0, 500)}... (요약)
 
 ---
 
-위 내용을 바탕으로 2026년 12개월 월간 캘린더 + 건강/개운 보너스를 작성해주세요.`;
+아래 두 파트를 순서대로 모두 작성해주세요.
+
+## PART 1. 2026년 12개월 월간 캘린더 + 건강/개운 보너스
+
+위 사주 데이터를 바탕으로 1월~12월 월간 캘린더를 작성하고,
+마지막에 건강 관리 + 개운법 보너스를 추가해주세요.
+
+**각 월 형식 (반드시 준수):**
+## (이모지) N월 — 간지월 (오행관계)
+"이달의 키워드 한 줄" (큰따옴표로 감싼 부제목)
+
+본문 2~3문장 (이달의 기운과 흐름, 월령신녀 말투로)
+
+💰 재물: 한 줄 — 구체적 행동 지침
+❤️ 인간관계: 한 줄 — 관계·연애 팁
+🎯 핵심 과제: 한 줄 — 이달 집중할 것
+
+- 특별히 길한 달은 헤더에 ⭐ 추가
+- 달 사이마다 --- 구분선
+
+---
+
+## PART 2. 연애·결혼 & 궁합
+
+아래 지침에 따라 작성해주세요.
+
+${dbPromptContent}`;
 
     return {
         systemPrompt,
         userPrompt,
-        maxTokens: promptTemplate.estimated_tokens || 2000
+        maxTokens: promptTemplate.estimated_tokens || 5000
     };
 }
 
