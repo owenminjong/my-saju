@@ -70,7 +70,7 @@ function LoginPage() {
                 {/* 로고 & 타이틀 */}
                 <div className="text-center mb-8">
                     <h1 className="text-3xl font-bold text-white mb-2">월령신녀</h1>
-                    <p className="text-white/70">AI 사주 × MBTI 웹서비스</p>
+                    <p className="text-white/70">성격으로 보는 진짜 내 사주</p>
                 </div>
 
                 {/* 소셜 로그인 버튼 */}

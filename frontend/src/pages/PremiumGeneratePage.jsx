@@ -411,7 +411,8 @@ function PremiumGeneratePage() {
                     }}>
                         💎 월령신녀의 복채 풀이<br/>
                         <span style={{ color: '#f4d03f', fontWeight: '600' }}>
-                            약 5분 정도 걸려요. 나갔다 오셔도 결과는 사라지지 않아요.
+                            약 5분 정도 걸려요. <br/>
+                            나갔다 오셔도 결과는 사라지지 않아요.
                         </span>
                     </p>
                 </div>

@@ -161,6 +161,8 @@ function normalizeData(resultData) {
             resultData?.imageMetadata?.gender === '여' ? 'F' : '') ||
         '';
 
+    const mbti = resultData?.metadata?.mbti || resultData?.mbti || '';  // ← 추가
+
     const characterImage =
         resultData?.characterImage ||
         resultData?.character_image ||
@@ -169,7 +171,7 @@ function normalizeData(resultData) {
     const elements = resultData?.elements || null;
     const fields   = resultData?.fields   || null;
 
-    return { name, birthDate, gender, characterImage, elements, fields };
+    return { name, birthDate, gender, mbti, characterImage, elements, fields };
 }
 
 async function createShareCanvas(resultData) {
@@ -181,7 +183,7 @@ async function createShareCanvas(resultData) {
     canvas.height = H;
     const ctx = canvas.getContext('2d');
 
-    const { name, birthDate, gender, characterImage, elements, fields } = normalizeData(resultData);
+    const { name, birthDate, gender, mbti, characterImage, elements, fields } = normalizeData(resultData);
     const maskedName = maskName(name);
 
     // ── 배경 ──────────────────────────────────────────
@@ -300,9 +302,10 @@ async function createShareCanvas(resultData) {
 
     if (birthDate) {
         const genderText = gender === 'M' ? '남성' : gender === 'F' ? '여성' : '';
+        const parts = [mbti, birthDate, genderText].filter(Boolean).join('  ·  ');
         ctx.font = '28px sans-serif';
         ctx.fillStyle = 'rgba(255,255,255,0.4)';
-        ctx.fillText(`${birthDate}${genderText ? '  ·  ' + genderText : ''}`, W / 2, nameY + 48);
+        ctx.fillText(parts, W / 2, nameY + 48);
     }
 
     // ── 운세 등급 카드 4개 ────────────────────────────

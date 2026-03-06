@@ -17,20 +17,15 @@ function ShareModal({ isOpen, onClose, resultData, cardRef }) {
         setShareUrl(null);
         setShowUrlBox(false);
 
-        console.log('📦 [ShareModal] 모달 열림');
-        console.log('📦 [ShareModal] characterImage:', resultData.characterImage?.substring(0, 50));
-
         const prepare = async () => {
             try {
-                // 1. 카카오 초기화
-                console.log('🔑 [ShareModal] 카카오 SDK 초기화 시작');
                 await initKakao();
-                console.log('✅ [ShareModal] 카카오 SDK 초기화 완료');
 
-                // 2. minimalData - grade 값만 추출해서 URL 길이 최소화
                 const minimalData = {
                     user: {
                         name: resultData.user?.name,
+                        birthDate: resultData.user?.birthDate,
+                        birthTime: resultData.user?.birthTime,
                     },
                     fields: {
                         wealth: { grade: resultData.fields?.wealth?.grade ?? resultData.fields?.wealth },
@@ -38,7 +33,6 @@ function ShareModal({ isOpen, onClose, resultData, cardRef }) {
                         love:   { grade: resultData.fields?.love?.grade   ?? resultData.fields?.love },
                         health: { grade: resultData.fields?.health?.grade ?? resultData.fields?.health },
                     },
-                    // ✅ elements 전체 추가
                     elements: {
                         distribution: resultData.elements?.distribution || null,
                         status:       resultData.elements?.status       || null,
@@ -46,32 +40,17 @@ function ShareModal({ isOpen, onClose, resultData, cardRef }) {
                     },
                     metadata: {
                         character: resultData.metadata?.character,
+                        mbti:      resultData.metadata?.mbti,
                     },
                     characterImage: resultData.characterImage,
                     imageMetadata:  resultData.imageMetadata,
                 };
 
-                console.log('📊 [ShareModal] minimalData 구성 완료');
-                console.log('📊 [ShareModal] minimalData JSON 크기:', JSON.stringify(minimalData).length, 'bytes');
-
-                // 3. shareUrl 생성
-                console.log('🔗 [ShareModal] shareUrl 생성 요청 중...');
                 const { shareUrl: generatedUrl } = await createShareUrlWithData(minimalData);
-
-                console.log('✅ [ShareModal] shareUrl 생성 완료');
-                console.log('🔗 [ShareModal] shareUrl 길이:', generatedUrl.length, '자');
-                console.log('🔗 [ShareModal] shareUrl:', generatedUrl);
-
-                if (generatedUrl.length > 2000) {
-                    console.warn('⚠️ [ShareModal] shareUrl이 2000자 초과 → 모바일 딥링크 실패 가능성 있음');
-                } else {
-                    console.log('✅ [ShareModal] shareUrl 길이 정상 (2000자 이하)');
-                }
-
                 setShareUrl(generatedUrl);
 
             } catch (error) {
-                console.error('❌ [ShareModal] 공유 사전 준비 실패:', error);
+                // silent
             }
         };
 
@@ -81,29 +60,20 @@ function ShareModal({ isOpen, onClose, resultData, cardRef }) {
     if (!isOpen) return null;
 
     const handleKakaoShare = () => {
-        console.log('💬 [ShareModal] 카카오 공유 버튼 클릭');
-
         if (!shareUrl) {
-            console.warn('⚠️ [ShareModal] shareUrl 미준비 상태');
             alert('공유 준비 중입니다. 잠시 후 다시 시도해주세요.');
             return;
         }
-
-        console.log('💬 [ShareModal] shareKakao 호출');
         shareKakao(shareUrl, resultData);
     };
 
     const handleCopyUrl = () => {
-        console.log('🔗 [ShareModal] URL 복사 버튼 클릭');
-
         if (!shareUrl) {
-            console.warn('⚠️ [ShareModal] shareUrl 미준비 상태');
             alert('공유 준비 중입니다. 잠시 후 다시 시도해주세요.');
             return;
         }
 
         const isIOS = /ipad|iphone/i.test(navigator.userAgent);
-        console.log('📱 [ShareModal] iOS 여부:', isIOS);
 
         if (isIOS) {
             setShowUrlBox(true);
@@ -114,20 +84,14 @@ function ShareModal({ isOpen, onClose, resultData, cardRef }) {
             if (navigator.clipboard && navigator.clipboard.writeText) {
                 navigator.clipboard.writeText(shareUrl)
                     .then(() => {
-                        console.log('✅ [ShareModal] 클립보드 복사 성공');
                         setCopySuccess(true);
                         setTimeout(() => setCopySuccess(false), 2000);
                     })
-                    .catch(() => {
-                        console.warn('⚠️ [ShareModal] clipboard API 실패 → legacy 복사 시도');
-                        legacyCopy();
-                    });
+                    .catch(() => legacyCopy());
             } else {
-                console.log('⚠️ [ShareModal] clipboard API 없음 → legacy 복사');
                 legacyCopy();
             }
         } catch (err) {
-            console.error('❌ [ShareModal] 복사 실패:', err);
             legacyCopy();
         }
     };
@@ -139,19 +103,15 @@ function ShareModal({ isOpen, onClose, resultData, cardRef }) {
         input.select();
         document.execCommand('copy');
         document.body.removeChild(input);
-        console.log('✅ [ShareModal] legacy 복사 완료');
         setCopySuccess(true);
         setTimeout(() => setCopySuccess(false), 2000);
     };
 
     const handleTwitterShare = async () => {
-        console.log('🐦 [ShareModal] 트위터 공유 버튼 클릭');
         try {
             setLoading(true);
             await shareTwitter(resultData);
-            console.log('✅ [ShareModal] 트위터 공유 완료');
         } catch (error) {
-            console.error('❌ [ShareModal] 트위터 공유 실패:', error);
             alert('공유에 실패했습니다. 다시 시도해주세요.');
         } finally {
             setLoading(false);
@@ -159,15 +119,10 @@ function ShareModal({ isOpen, onClose, resultData, cardRef }) {
     };
 
     const handleInstagramShare = async () => {
-        console.log('📸 [ShareModal] 인스타그램 공유 버튼 클릭');
-        console.log('📸 [ShareModal] cardRef:', cardRef);
-        console.log('📸 [ShareModal] cardRef.current:', cardRef?.current);
         try {
             setLoading(true);
             await shareInstagramStory(resultData, cardRef?.current || null);
-            console.log('✅ [ShareModal] 인스타그램 공유 완료');
         } catch (error) {
-            console.error('❌ [ShareModal] 인스타그램 공유 실패:', error);
             if (error.message === 'DESKTOP') {
                 alert('📱 인스타그램 스토리 공유는 모바일에서만 가능합니다.');
             } else if (error.message === 'NOT_SUPPORTED') {

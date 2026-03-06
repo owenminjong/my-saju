@@ -24,6 +24,15 @@ function generateInputHash(sajuData) {
     return crypto.createHash('sha256').update(hashString).digest('hex');
 }
 
+function replaceNameInContent(content, originalName, newName) {
+    const originalFirstName = originalName.slice(1);
+    const newFirstName = newName.slice(1);
+
+    return content
+        .replaceAll(originalName, newName)
+        .replaceAll(originalFirstName, newFirstName);
+}
+
 /**
  * 무료 운명 풀이 생성
  * POST /api/diagnosis/free
@@ -206,8 +215,24 @@ const generatePremiumDiagnosis = async (req, res) => {
 
         if (existing) {
             console.log(`✅ 캐시 히트! 기존 결과 재사용 (기존 ID: ${existing.id})`);
-
             sendProgress(10, '기존 데이터를 확인하고 있습니다...');
+
+            // ✅ saju_data 파싱 (문자열/객체 둘 다 안전하게)
+            const existingSajuData = typeof existing.saju_data === 'string'
+                ? JSON.parse(existing.saju_data)
+                : existing.saju_data;
+
+            const originalName = existingSajuData?.user?.name || '';
+            const newName = sajuData.name;
+
+            // ✅ saju_data 이름 치환
+            const newSajuData = JSON.parse(
+                replaceNameInContent(JSON.stringify(existingSajuData), originalName, newName)
+            );
+
+            // ✅ premium_diagnosis 이름 치환
+            const existingDiagnosis = existing.premium_diagnosis || '';
+            const newDiagnosis = replaceNameInContent(existingDiagnosis, originalName, newName);
 
             const copied = await DiagnosisResult.create({
                 user_id: userId,
@@ -219,14 +244,8 @@ const generatePremiumDiagnosis = async (req, res) => {
                 birth_time: existing.birth_time,
                 gender: existing.gender,
                 mbti: existing.mbti,
-                saju_data: {
-                    ...existing.saju_data,
-                    user: {
-                        ...existing.saju_data.user,
-                        name: sajuData.name
-                    }
-                },
-                premium_diagnosis: existing.premium_diagnosis,
+                saju_data: newSajuData,
+                premium_diagnosis: newDiagnosis,
                 character_image: existing.character_image,
                 image_metadata: existing.image_metadata,
                 diagnosis_type: 'premium'

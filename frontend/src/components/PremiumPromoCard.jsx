@@ -246,31 +246,34 @@ function PremiumPromoCard({ sajuData, productInfo }) {
     return (
         <div className="promo-section">
             <div className="promo-card">
+                <h3 className="promo-title">🌙 월령신녀에게 복채 올리기</h3>
+                <p className="promo-desc">재물운, 연애운, 월별 흐름까지 깊은 이야기</p>
+
                 {isPromotionActive && (
                     <div className="timer-badge">
-                        ⏳ 마감 임박 : <span id="timer">{formatTime(timeLeft)}</span>
+                        ⏳ 할인 종료까지 <span>{formatTime(timeLeft)}</span>
                     </div>
                 )}
 
-                <h3 className="promo-title">종합 운세 전체 풀이</h3>
-                <p className="promo-desc">재물운, 연애운, 월별 흐름 완벽 분석</p>
-
                 {isPromotionActive && productInfo.discount_price ? (
-                    <div className="price-row">
-                        <span className="price-old">{originalPrice.toLocaleString()}원</span>
-                        <span className="price-new">{salePrice.toLocaleString()}원</span>
-                        {discountRate > 0 && (
-                            <span className="discount-label">-{discountRate}%</span>
-                        )}
+                    <div className="price-wrap">
+                        <div className="price-row">
+                            <span className="price-old">{originalPrice.toLocaleString()}원</span>
+                        </div>
+                        <div className="price-row">
+                            <span className="price-new">{salePrice.toLocaleString()}원</span>
+                        </div>
                     </div>
                 ) : (
-                    <div className="price-row">
-                        <span className="price-new">{originalPrice.toLocaleString()}원</span>
+                    <div className="price-wrap">
+                        <div className="price-row">
+                            <span className="price-new">{originalPrice.toLocaleString()}원</span>
+                        </div>
                     </div>
                 )}
 
                 <button className="pay-btn" onClick={handlePaymentClick}>
-                    전체 풀이 확인하기 🔓
+                    전체 이야기 펼쳐보기
                 </button>
             </div>
         </div>

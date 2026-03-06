@@ -1,5 +1,3 @@
-// frontend/src/pages/SharedResult.jsx
-
 import React, { useRef, useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import ShareModal from '../components/ShareModal';
@@ -73,7 +71,7 @@ function SharedResult() {
         };
     }, []);
 
-    // 오행 레이더 차트 Canvas 그리기
+    // 오행 레이더 차트
     useEffect(() => {
         if (!resultData?.elements?.distribution) return;
         const canvas = radarCanvasRef.current;
@@ -103,7 +101,6 @@ function SharedResult() {
 
         ctx.clearRect(0, 0, W, H);
 
-        // 격자
         for (let level = 1; level <= 4; level++) {
             const r = (radius * level) / 4;
             ctx.beginPath();
@@ -117,7 +114,6 @@ function SharedResult() {
             ctx.stroke();
         }
 
-        // 축선
         for (let i = 0; i < sides; i++) {
             const p = getPoint(i, radius);
             ctx.beginPath();
@@ -128,7 +124,6 @@ function SharedResult() {
             ctx.stroke();
         }
 
-        // 데이터 영역
         ctx.beginPath();
         for (let i = 0; i < sides; i++) {
             const r = (counts[i] / maxVal) * radius;
@@ -142,7 +137,6 @@ function SharedResult() {
         ctx.lineWidth = 2;
         ctx.stroke();
 
-        // 포인트
         for (let i = 0; i < sides; i++) {
             const r = (counts[i] / maxVal) * radius;
             const p = getPoint(i, r);
@@ -156,7 +150,6 @@ function SharedResult() {
             ctx.stroke();
         }
 
-        // 라벨
         const labelRadius = radius + 36;
         elementLabels.forEach((label, i) => {
             const p = getPoint(i, labelRadius);
@@ -167,7 +160,6 @@ function SharedResult() {
             ctx.fillText(label, p.x, p.y);
         });
 
-        // 수치
         for (let i = 0; i < sides; i++) {
             const r = (counts[i] / maxVal) * radius;
             const p = getPoint(i, r);
@@ -264,10 +256,9 @@ function SharedResult() {
     };
     const grades = normalizeFields(resultData?.fields);
 
-    const seasonMatch = characterString.match(/띠\s*·\s*([가-힣]+)\s*·/);
-    const timeMatch = characterString.match(/·\s*([가-힣]+)$/);
-    const season = seasonMatch ? seasonMatch[1] : (imageMetadata?.season || '');
-    const timeOfDay = timeMatch ? timeMatch[1] : (imageMetadata?.timeOfDay || '');
+    const mbti = resultData?.metadata?.mbti || '';
+    const birthDate = resultData?.user?.birthDate || '';
+    const birthTime = resultData?.user?.birthTime || '';
 
     const gradeStyle = (grade) => {
         const map = {
@@ -285,7 +276,7 @@ function SharedResult() {
     const hasElements = !!(resultData?.elements?.distribution);
 
     return (
-        <div className="sr-root" style={{fontFamily: "'CocochoiToon', serif"}}>
+        <div className="sr-root">
             <canvas ref={canvasRef} className="sr-canvas"/>
             <div className="sr-noise"/>
 
@@ -294,21 +285,8 @@ function SharedResult() {
                 {/* ── 헤더 ── */}
                 <header className="sr-header sr-reveal">
                     <p className="sr-pretitle">月令神女</p>
-                    {/* ✅ sr-header-divider 제거 */}
                     <p className="sr-header-sub">공유받은 운세</p>
                 </header>
-
-                {/* ── 이름 + 메타 ── */}
-                <section className="sr-hero sr-reveal">
-                    <h1 className="sr-name">{maskedName}님의 <span className="sr-gold">2026년</span></h1>
-                    <div className="sr-tags">
-                        <span className="sr-tag">{animal}띠</span>
-                        <span className="sr-tag-sep">·</span>
-                        <span className="sr-tag">{season}</span>
-                        <span className="sr-tag-sep">·</span>
-                        <span className="sr-tag">{timeOfDay}</span>
-                    </div>
-                </section>
 
                 {/* ── 캐릭터 이미지 ── */}
                 <section className="sr-character-wrap sr-reveal">
@@ -329,7 +307,16 @@ function SharedResult() {
                          style={{display: resultData?.characterImage ? 'none' : 'flex'}}>
                         <span className="sr-animal-emoji">{getAnimalEmoji(animal)}</span>
                     </div>
-                    <p className="sr-character-label">{season} {timeOfDay}의 {animal}</p>
+                </section>
+
+                {/* ── 이름 + 메타 ── */}
+                <section className="sr-hero sr-reveal">
+                    <h1 className="sr-name">{maskedName}님의 운명</h1>
+                    {mbti && <div className="sr-mbti-tag">{mbti}</div>}
+                    <p className="sr-birth-info">
+                        {birthDate}
+                        {birthTime && <><br/>{birthTime}</>}
+                    </p>
                 </section>
 
                 {/* ── 운세 등급 ── */}
@@ -363,13 +350,8 @@ function SharedResult() {
                             ref={radarCanvasRef}
                             width={340}
                             height={280}
-                            style={{
-                                display: 'block',
-                                margin: '0 auto',
-                                maxWidth: '100%',
-                            }}
+                            style={{ display: 'block', margin: '0 auto', maxWidth: '100%' }}
                         />
-                        {/* 오행 수치 텍스트 */}
                         <div className="sr-elements-row">
                             {['목', '화', '토', '금', '수'].map((key, i) => {
                                 const labels = ['목(木)', '화(火)', '토(土)', '금(金)', '수(水)'];
@@ -378,10 +360,7 @@ function SharedResult() {
                                 return (
                                     <div key={key} className="sr-element-item">
                                         <span className="sr-element-label">{labels[i]}</span>
-                                        <span
-                                            className="sr-element-count"
-                                            style={{ color: isOver ? '#ff5e57' : '#c5a059' }}
-                                        >
+                                        <span className="sr-element-count" style={{ color: isOver ? '#ff5e57' : '#c5a059' }}>
                                             {count}
                                         </span>
                                     </div>
@@ -393,13 +372,14 @@ function SharedResult() {
 
                 {/* ── CTA ── */}
                 <section className="sr-cta sr-reveal">
-                    <p className="sr-cta-question">당신의 사주도 궁금하신가요?</p>
+                    <p className="sr-cta-question">같은 사주인데, 왜 가는 길이 다를까요?</p>
                     <p className="sr-cta-desc">
-                        1,920가지 조합 중 단 하나,<br/>
-                        <strong>세상에 나만 받을 수 있는 결과</strong>를 확인해보세요
+                        같은 사주를 가진 사람도<br/>
+                        성격에 따라 순탄하게 가기도,<br/>
+                        돌아서 힘들게 가기도 합니다.
                     </p>
                     <button className="sr-cta-btn sr-reveal" onClick={() => navigate('/')}>
-                        내 운세 보러가기 →
+                        내 성격 사주 보러가기 →
                     </button>
                 </section>
 
@@ -416,8 +396,10 @@ function SharedResult() {
             }}>
                 <div style={{textAlign: 'center', marginBottom: '16px'}}>
                     <p style={{color: '#c9a84c', fontSize: '12px', letterSpacing: '4px', margin: '0 0 8px'}}>月令神女 · 2026년 운세</p>
-                    <h1 style={{color: '#eae6de', fontSize: '24px', fontWeight: 'bold', margin: 0}}>{maskedName}님의 2026년</h1>
-                    <p style={{color: '#9a9590', fontSize: '13px', margin: '8px 0 0'}}>{animal}띠 · {season} · {timeOfDay}</p>
+                    <h1 style={{color: '#eae6de', fontSize: '24px', fontWeight: 'bold', margin: 0}}>{maskedName}님의 운명</h1>
+                    {mbti && <p style={{color: '#c9a84c', fontSize: '13px', margin: '8px 0 0', letterSpacing: '2px'}}>{mbti}</p>}
+                    <p style={{color: '#9a9590', fontSize: '12px', margin: '6px 0 0'}}>{birthDate}</p>
+                    {birthTime && <p style={{color: '#9a9590', fontSize: '12px', margin: '4px 0 0'}}>{birthTime}</p>}
                 </div>
                 {resultData?.characterImage && (
                     <img src={`${API_BASE_URL}${resultData.characterImage}`} alt="캐릭터" crossOrigin="anonymous"
